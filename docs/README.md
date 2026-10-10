@@ -1,6 +1,6 @@
 # Documentación del proyecto
 
-Este directorio contiene la documentación relacionada con el análisis, las decisiones y el desarrollo del proyecto **Inventario de Tecnologías de Información**, realizado por el grupo N * * de la carrera de Computación - 5to Ciclo.  
+Este directorio contiene la documentación relacionada con el análisis, las decisiones y el desarrollo del proyecto **Inventario de Tecnologías de Información**, realizado por el grupo N * * de la carrera de Computación - 5to Ciclo.
 
 ## Organización de la documentación
 
