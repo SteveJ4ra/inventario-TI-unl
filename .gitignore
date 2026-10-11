@@ -1,0 +1,16 @@
+# Entornos virtuales
+.venv/
+venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos locales
+.vscode/
