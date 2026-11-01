@@ -1,170 +1,67 @@
+# Backend · Inventario TI
 
-# Backend — Inventario de Tecnologías de Información
+Python 3.13, Django 5.2.18, Django REST Framework 3.16.1 y PostgreSQL 17. Versiones exactas: requirements.txt. Implementa activos, custodios, operaciones transaccionales e historial; contratos: [API](../specs/002-registro-consulta-activos/contracts/api.md).
 
-Backend del proyecto Inventario de Tecnologías de Información, desarrollado como parte de la asignatura Desarrollo Basado en Plataformas de la Universidad Nacional de Loja.
+## Preparar una instalación nueva
 
-Esta configuración inicial permite ejecutar Django con Django REST Framework y conectarlo a una base de datos PostgreSQL. Las funcionalidades específicas de gestión de activos se implementarán posteriormente.
-
-## 1. Tecnologías utilizadas
-
-- Python 3.13
-- Django 5.2
-- Django REST Framework 3.16
-- PostgreSQL 17
-- psycopg 3
-- python-dotenv
-
-Las versiones exactas de las dependencias de Python se encuentran en `requirements.txt`.
-
-## 2. Requisitos previos
-
-Antes de comenzar, instalar:
-
-- Python 3.13
-- PostgreSQL 17
-- Git
-
-Los comandos siguientes están orientados a Windows PowerShell. Para otros sistemas operativos será necesario adaptar la activación del entorno virtual y la administración de PostgreSQL.
-
-## 3. Preparar el entorno virtual
-
-Desde la raíz del repositorio:
+PowerShell desde la raíz del repositorio:
 
 ```powershell
-python -m venv backend\.venv
+python -m venv backend/.venv
+& .\backend\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
 ```
 
-Activar el entorno:
+En Linux: `python3.13 -m venv backend/.venv`, después `backend/.venv/bin/python -m pip install -r backend/requirements.txt`.
 
-```powershell
-.\backend\.venv\Scripts\Activate.ps1
-```
-
-Si PowerShell bloquea la activación, se puede habilitar temporalmente para la sesión actual:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-Después, repetir el comando de activación.
-
-## 4. Instalar las dependencias
-
-Con el entorno virtual activado:
-
-```powershell
-python -m pip install -r backend\requirements.txt
-```
-
-## 5. Configurar PostgreSQL
-
-Iniciar PostgreSQL y acceder mediante su usuario administrador:
-
-```powershell
-& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -h localhost -p 5432 -d postgres
-```
-
-Dentro de `psql`, crear un usuario para la aplicación:
+PostgreSQL debe estar activo. Si todavía no existen rol/base, el administrador local puede crearlos desde psql:
 
 ```sql
 CREATE ROLE inventario_app WITH LOGIN;
 ```
 
-Asignar una contraseña de forma interactiva:
-
-```text
-\password inventario_app
-```
-
-Crear la base de datos:
+Asignar contraseña de forma interactiva con `\password inventario_app`. Crear la base propia:
 
 ```sql
-CREATE DATABASE inventario_ti OWNER inventario_app ENCODING 'UTF8';
+CREATE DATABASE inventario_ti OWNER inventario_app ENCODING 'UTF8'
+  LOCALE_PROVIDER icu ICU_LOCALE 'und' TEMPLATE template0;
 ```
 
-Salir de PostgreSQL:
+Se requiere comparación de mayúsculas Unicode para textos con tildes. La base local existente usa Spanish_Ecuador.1252 y fue comprobada; no es necesario recrearla. Las instalaciones nuevas pueden utilizar ICU como en el ejemplo. No crear de nuevo roles/bases que ya existen y no conceder CREATEDB a inventario_app para ejecutar tests.
 
-```text
-\q
-```
+Solo si backend/.env no existe, copiar backend/.env.example y completar localmente DJANGO_SECRET_KEY, DJANGO_DEBUG y DB_NAME/DB_USER/DB_PASSWORD/DB_HOST/DB_PORT. No publicar ese archivo. Generar la clave desde Python con django.core.management.utils.get_random_secret_key y guardarla localmente; no usar una clave fija compartida.
 
-Si el usuario o la base de datos ya existen, no es necesario crearlos nuevamente.
-
-## 6. Configurar las variables de entorno
-
-Desde la raíz del repositorio, copiar el archivo de ejemplo:
+## Migrar y preparar gestores
 
 ```powershell
-Copy-Item backend\.env.example backend\.env
+& .\backend\.venv\Scripts\python.exe backend/manage.py check
+& .\backend\.venv\Scripts\python.exe backend/manage.py migrate
+& .\backend\.venv\Scripts\python.exe backend/manage.py create_gestor
 ```
 
-Editar `backend/.env` y completar los valores necesarios:
+create_gestor pide usuario nuevo y contraseña dos veces; valida ambos y añade el grupo Gestores. No cambia contraseñas de cuentas existentes ni crea superusuarios. Un usuario autenticado sin grupo Gestores, incluso superusuario, no puede operar en el inventario. La autorización institucional de personas reales corresponde al equipo responsable; no hay registro público.
 
-- `DJANGO_SECRET_KEY`: clave secreta de Django.
-- `DJANGO_DEBUG`: usar `True` para el desarrollo local.
-- `DB_NAME`: nombre de la base de datos.
-- `DB_USER`: usuario de PostgreSQL.
-- `DB_PASSWORD`: contraseña del usuario.
-- `DB_HOST`: servidor de PostgreSQL.
-- `DB_PORT`: puerto de PostgreSQL.
+Las migraciones crean las tablas y restricciones propias del inventario, la secuencia de código TI y el trigger que impide reescribir/borrar movimientos. No se registran los modelos de inventario como admin editable. La rectificación añade un evento vinculado y restaura la ficha; no modifica el original.
 
-Para generar una clave secreta de Django:
+## Ejecutar
 
 ```powershell
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+& .\backend\.venv\Scripts\python.exe backend/manage.py runserver 127.0.0.1:8000
 ```
 
-Copiar la clave generada al archivo privado `backend/.env`.
+La pantalla se ejecuta aparte en frontend, normalmente http://127.0.0.1:5173/. API bajo http://127.0.0.1:8000/api/. La raíz del backend puede responder 404; no es una falla de la aplicación. Detener con Ctrl+C.
 
-**No publicar `backend/.env`, contraseñas ni claves secretas en GitHub.**
+Sesiones Django y CSRF en escrituras, incluido login. Orígenes de desarrollo por defecto: http://127.0.0.1:5173 y http://localhost:5173. Para otro puerto, definir DJANGO_CSRF_TRUSTED_ORIGINS con lista separada por comas y configurar el proxy del frontend; no usar comodines. Fechas almacenadas con zona horaria; la web presenta America/Guayaquil.
 
-## 7. Preparar la base de datos
-
-Desde la raíz del repositorio, con el entorno virtual activado:
+## Probar sin alterar la base local
 
 ```powershell
-python backend\manage.py check
+& .\backend\.venv\Scripts\python.exe backend/tools/test_postgres.py
+& .\backend\.venv\Scripts\python.exe backend/manage.py makemigrations --check --dry-run
+& .\backend\.venv\Scripts\python.exe -m pip check
 ```
 
-Aplicar las migraciones iniciales:
+El runner busca initdb/pg_ctl en PostgreSQL 17 de Windows o PATH; PG_BIN permite indicar otra carpeta. Requiere soporte ICU. Crea clúster temporal privado, genera contraseña efímera, escucha solo loopback y detiene/elimina únicamente sus propios archivos. No toca .env ni privilegios del rol de desarrollo. En Linux ejecutarlo como usuario normal. Para un servidor de pruebas preparado por el equipo también puede usarse `python backend/manage.py test inventory`; configurar explícitamente las variables de ese servidor y su rol, no elevar el de la aplicación.
 
-```powershell
-python backend\manage.py migrate
-```
+Resultado comprobado: 28 pruebas backend correctas, incluidas carreras reales PostgreSQL, permisos, CSRF, restricciones Unicode, rollback, inmutabilidad y rectificación. Detalles: [validation.md](../specs/002-registro-consulta-activos/validation.md).
 
-Estas migraciones preparan las tablas predeterminadas de Django. Todavía no crean modelos propios del inventario.
-
-## 8. Ejecutar el servidor de desarrollo
-
-```powershell
-python backend\manage.py runserver 127.0.0.1:8000
-```
-
-Abrir en el navegador:
-
-http://127.0.0.1:8000/
-
-Si la configuración inicial funciona, Django mostrará su página predeterminada.
-
-Para detener el servidor, presionar `Ctrl + C` en PowerShell.
-
-## 9. Estado del desarrollo
-
-La configuración inicial incluye:
-
-- Proyecto Django creado.
-- Django REST Framework registrado.
-- Conexión a PostgreSQL mediante variables de entorno.
-- Dependencias registradas.
-- Migraciones iniciales de Django.
-- Servidor de desarrollo local.
-
-Todavía están pendientes los modelos de activos, las reglas del negocio, los endpoints del inventario y las pruebas funcionales.
-
-## 10. Consideraciones de seguridad
-
-- Utilizar credenciales locales para cada instalación.
-- Mantener el archivo `.env` fuera del control de versiones.
-- No utilizar el usuario administrador `postgres` como usuario de la aplicación.
-- Mantener `DJANGO_DEBUG=True` únicamente en desarrollo local.
-- No considerar esta configuración como preparada para producción.
+Este es un entorno de desarrollo académico. El despliegue público, TLS, copias de seguridad y plazos institucionales de conservación no se declararon implementados. El historial no se borra automáticamente. Credenciales y datos reales deben permanecer fuera del repositorio.

@@ -1,5 +1,7 @@
 # Tareas iniciales — Inventario de Tecnologías de Información
 
+> Documento de contexto inicial. El estado vigente del incremento implementado se consulta en [specs/002-registro-consulta-activos](../002-registro-consulta-activos/spec.md), sus [tareas](../002-registro-consulta-activos/tasks.md) y su [validación](../002-registro-consulta-activos/validation.md). Las preguntas y tareas amplias de este documento se conservan como antecedente; no se marcan automáticamente como completadas ni sustituyen la ratificación del grupo.
+
 **Proyecto:** Inventario de Tecnologías de Información (Proyecto N.º 2)
 **Grupo:** N.º 5 — Universidad Nacional de Loja
 **Estado:** Planificación inicial de tareas
@@ -32,16 +34,25 @@ Las tareas se presentan por fases para facilitar el seguimiento del proyecto. Al
 - [x] **T012.** Registrar las preguntas de clarificación pendientes.
 - [x] **T013.** Preparar el plan técnico inicial con las tecnologías acordadas.
 - [ ] **T014.** Revisar los artefactos SDD y registrar las observaciones del grupo.
-- [ ] **T015.** Integrar los archivos de Spec Kit a `develop` mediante Pull Request.
+- [x] **T015.** Integrar los archivos de Spec Kit a `develop` mediante Pull Request.
 
 ## 4. Fase 3. Preparación del entorno de desarrollo
 
-- [ ] **T016.** Crear la estructura inicial del backend con Django.
-- [ ] **T017.** Configurar un entorno virtual de Python y registrar las dependencias.
-- [ ] **T018.** Preparar la configuración de PostgreSQL para el entorno local.
-- [ ] **T019.** Incorporar Django REST Framework al proyecto.
-- [ ] **T020.** Documentar en el README los pasos para instalar y ejecutar el backend.
+- [x] **T016.** Crear la estructura inicial del backend con Django.
+- [x] **T017.** Configurar un entorno virtual de Python y registrar las dependencias.
+- [x] **T018.** Preparar la configuración de PostgreSQL para el entorno local.
+- [x] **T019.** Incorporar Django REST Framework al proyecto.
+- [x] **T020.** Documentar en el README los pasos para instalar y ejecutar el backend.
 - [ ] **T021.** Comprobar que otro integrante pueda reproducir la configuración siguiendo el README.
+
+### Evidencia de preparación revisada el 20 de octubre de 2026
+
+- **T015:** infraestructura de Spec Kit integrada mediante el [PR #5](https://github.com/SteveJ4ra/inventario-TI-unl/pull/5), commit de fusión `c03adb7`.
+- **T016–T020:** configuración inicial del backend incorporada mediante el [PR #7](https://github.com/SteveJ4ra/inventario-TI-unl/pull/7), commit `2d8bc66` y fusión `231db0b`. Existen el proyecto Django, el registro de DRF, las dependencias y `backend/README.md`.
+- **T017–T018:** entorno virtual local con Python 3.13.14, `pip check` sin incompatibilidades, `manage.py check` sin incidencias, conexión PostgreSQL comprobada con `SELECT 1` y cero migraciones pendientes.
+- **T021:** continúa pendiente la verificación completa de instalación por otro integrante siguiendo el README; la captura de un servidor en ejecución documentada en APE1 no acredita por sí sola todos los pasos de reproducción.
+
+Las reglas del incremento 002 ya fueron aclaradas e implementadas; su avance se registra en sus propios artefactos enlazados arriba. La revisión grupal de T014 y la reproducción por otro integrante de T021 continúan pendientes.
 
 ## 5. Fase 4. Revisión de requisitos
 
