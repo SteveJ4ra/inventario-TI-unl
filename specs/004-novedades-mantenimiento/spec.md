@@ -1,6 +1,6 @@
 # Especificación: novedades, pérdida, recuperación y mantenimiento
 
-**Rama propuesta:** feature/novedades-mantenimiento
+**Rama propuesta:** feature/yandri-004-novedades-mantenimiento
 **Identificador:** 004-novedades-mantenimiento
 **Creado:** 1 de noviembre de 2026
 **Estado:** especificación preparada; no implementada.

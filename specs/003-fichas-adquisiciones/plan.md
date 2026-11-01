@@ -1,6 +1,6 @@
 # Plan: administración de fichas y adquisición
 
-**Rama propuesta:** feature/administracion-fichas-adquisiciones
+**Rama propuesta:** feature/alex-003-fichas-adquisiciones
 **Fecha:** 2026-11-01
 **Spec:** spec.md
 

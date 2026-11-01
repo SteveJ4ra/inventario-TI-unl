@@ -1,6 +1,6 @@
 # Plan: bajas y aprobación
 
-**Rama propuesta:** feature/bajas-aprobacion
+**Rama propuesta:** feature/steven-005-bajas-aprobacion
 **Fecha:** 2026-11-01 | **Spec:** spec.md
 
 ## Resumen

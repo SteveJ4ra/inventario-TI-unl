@@ -19,7 +19,7 @@
 | 007 | [QR de activos](../../specs/007-qr-activos/) | Artefactos SDD preparados | 002 |
 | 008 | [Importación CSV](../../specs/008-importacion-csv/) | Artefactos SDD preparados | 003 y 006 |
 
-Los paquetes 003–008 permanecen completos; no se dividieron ni asignaron a integrantes. Las carpetas `docs/sdd/borradores-anderson/` contienen material previo de preparación/demostración y no prevalecen sobre estos artefactos activos ni sobre las decisiones del equipo.
+Los paquetes 003–008 permanecen completos y se asignaron según las [guías individuales](guias-integrantes/README.md), orientadas a los agentes de código de cada integrante. Las carpetas `docs/sdd/borradores-anderson/` contienen material previo de preparación/demostración y no prevalecen sobre estos artefactos activos ni sobre las decisiones del equipo.
 
 ## Contrato de integración
 

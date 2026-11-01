@@ -1,6 +1,6 @@
 # Plan: novedades y mantenimiento
 
-**Rama propuesta:** feature/novedades-mantenimiento
+**Rama propuesta:** feature/yandri-004-novedades-mantenimiento
 **Fecha:** 2026-11-01 | **Spec:** spec.md
 
 ## Resumen

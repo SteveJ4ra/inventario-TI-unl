@@ -1,6 +1,6 @@
 # Especificación: bajas y aprobación independiente
 
-**Rama propuesta:** feature/bajas-aprobacion
+**Rama propuesta:** feature/steven-005-bajas-aprobacion
 **Identificador:** 005-bajas-aprobacion
 **Creado:** 1 de noviembre de 2026
 **Estado:** especificación preparada; no implementada.

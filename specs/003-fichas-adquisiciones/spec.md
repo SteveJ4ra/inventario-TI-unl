@@ -1,6 +1,6 @@
 # Especificación: administración de fichas y adquisición
 
-**Rama propuesta:** feature/administracion-fichas-adquisiciones
+**Rama propuesta:** feature/alex-003-fichas-adquisiciones
 **Identificador:** 003-fichas-adquisiciones
 **Creado:** 1 de noviembre de 2026
 **Estado:** especificación preparada; no implementada.

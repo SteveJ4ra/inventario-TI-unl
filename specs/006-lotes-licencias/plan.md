@@ -1,6 +1,6 @@
 # Plan: lotes de licencias
 
-**Rama propuesta:** feature/lotes-licencias
+**Rama propuesta:** feature/anderson-006-lotes-licencias
 **Fecha:** 2026-11-01 | **Spec:** spec.md
 
 ## Resumen

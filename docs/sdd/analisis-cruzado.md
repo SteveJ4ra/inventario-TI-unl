@@ -41,7 +41,7 @@ Se conservan controles de autenticación por Gestor, operador limitado a adminis
 - Preparar el mapeo verificado de facultades para todos los activos existentes antes de aplicar migraciones de 003.
 - Definir límites técnicos de bytes, filas y expiración del preview CSV en T002 de 008 antes de habilitar la importación.
 - No quedan decisiones funcionales abiertas en el alcance aclarado por el responsable; antes de implementar, el equipo debe ratificar estas reglas junto con el resto del alcance.
-- En implementación, revisar dependencias y conflictos de migraciones; 005 espera a 003+004 y 008 a 003+006.
+- En implementación, revisar dependencias y conflictos de migraciones; la integración/validación integral de 005 requiere 003+004 y la de 008 requiere 003+006. El desarrollo aislado y apertura del PR pueden avanzar en paralelo siguiendo las guías individuales.
 
 ## Validación pendiente
 

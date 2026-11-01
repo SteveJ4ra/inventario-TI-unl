@@ -54,13 +54,13 @@ El incremento 002 contiene la base de registro, consulta, búsqueda, filtros, cu
 | 2. Specify | specs/003 a specs/008/spec.md | Preparadas con requisitos y aceptación comprobable; pendientes de revisión grupal. |
 | 3. Clarify | docs/sdd/decisiones-alcance-backend.md y aclaraciones en cada spec | Respuestas del responsable registradas hasta DBE-051; revisión grupal pendiente. No equivalen a validación institucional. |
 | 4. Plan | plan.md, research.md, data-model.md, contracts/, quickstart.md | Artefactos preparados para 003–008; límites técnicos pendientes donde se indica. |
-| 5. Tasks | tasks.md | Tareas preparadas y sin marcar; aún no asignadas a los seis estudiantes. |
+| 5. Tasks | tasks.md | Tareas preparadas y sin marcar; paquetes asignados en docs/sdd/guias-integrantes/. |
 | 6. Analyze | revisión de consistencia entre spec/plan/tasks | Pase cruzado realizado y registrado en `docs/sdd/analisis-cruzado.md`; se corrigieron vacíos de criterios/trazabilidad y se integraron decisiones hasta DBE-051. Revisión grupal pendiente. |
 | 7. Implement | código y migraciones | Pendiente del equipo; ninguna tarea nueva se marca completada aquí. |
 | 8. Validate/review | pruebas, aceptación, revisión humana y evidencia | Planeado en validation-plan.md; no ejecutado para los incrementos 003–008. |
 
 ## Preparación para iniciar implementación
 
-La división entre integrantes se hará después; por ahora se conservan completos los paquetes 003–008, sin dividir funcionalidades ni asignar responsables. Cuando el grupo decida iniciar: usar `develop` con PR #9/002 ya integrado (02cb26c); crear una rama `feature/<id>` por paquete desde `develop`; abrir cada PR hacia `develop` con pruebas y evidencia de aceptación. 003, 004, 006 y 007 pueden iniciar desde la base 002. 005 espera a que 003 y 004 estén integrados; 008 espera a 003 y 006. Revisar conflictos de migraciones al integrar cambios paralelos.
+Los paquetes 003–008 se conservan completos, asignados respectivamente a Alex, Yandri, Steven, Anderson, Pedro y Emilio; instrucciones para sus agentes en docs/sdd/guias-integrantes/. Cuando el grupo decida iniciar: usar `develop` con PR #9/002 ya integrado (02cb26c); crear la rama `feature/*` especificada en cada guía desde `develop`; abrir cada PR hacia `develop` con pruebas y evidencia de aceptación. 003, 004, 006 y 007 pueden iniciar desde la base 002. 005 puede desarrollar y abrir PR con contratos mientras faltan 003/004; 008 hace lo mismo para 003/006. La migración y validación integral requieren proveedores reales: declarar pendientes y ordenar merges sin bloquear el avance individual. Revisar conflictos de migraciones al integrar cambios paralelos.
 
 Antes de implementar, ratificar la Constitución con el grupo, completar la facultad verificada de todos los activos legados antes de aplicar la restricción, y fijar límites operativos CSV como tarea técnica T002 de 008. PR #9 ya está integrado en develop; esta preparación parte de 02cb26c.

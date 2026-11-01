@@ -1,6 +1,6 @@
 # Especificación: QR de activos físicos
 
-**Rama propuesta:** feature/qr-activos
+**Rama propuesta:** feature/pedro-007-qr-activos
 **Identificador:** 007-qr-activos
 **Estado:** especificación preparada; no implementada.
 **Decisiones:** DBE-033, DBE-045.

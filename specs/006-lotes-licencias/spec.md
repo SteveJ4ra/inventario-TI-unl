@@ -1,6 +1,6 @@
 # Especificación: control de lotes de licencias de software
 
-**Rama propuesta:** feature/lotes-licencias
+**Rama propuesta:** feature/anderson-006-lotes-licencias
 **Identificador:** 006-lotes-licencias
 **Creado:** 1 de noviembre de 2026
 **Estado:** especificación preparada; no implementada.

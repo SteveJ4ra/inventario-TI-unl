@@ -1,6 +1,6 @@
 # Especificación: importación CSV de activos y licencias
 
-**Rama propuesta:** feature/importacion-csv
+**Rama propuesta:** feature/emilio-008-importacion-csv
 **Identificador:** 008-importacion-csv
 **Estado:** especificación preparada; no implementada.
 **Decisiones:** DBE-034 a DBE-036, DBE-046.
