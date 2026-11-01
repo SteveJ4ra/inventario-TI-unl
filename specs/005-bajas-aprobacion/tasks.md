@@ -5,16 +5,16 @@
 ## Base
 
 - [ ] T001 Probar baja normal, baja No localizado, aprobación, rechazo, cancelación por recuperación y permisos en backend/inventory/tests/test_decommission.py.
-- [ ] T002 Añadir DecommissionRequest, ApprovalDecision, ReviewerProfile y restricciones de estado en backend/inventory/models.py.
+- [ ] T002 Añadir DecommissionRequest, ApprovalDecision, ReviewerProfile, DecommissionEvent enlazado a Movement baja y ampliar constraints; añadir restricciones de estado en backend/inventory/models.py.
 - [ ] T003 Implementar servicios transaccionales y snapshots de baja/solicitud/decisión en backend/inventory/services.py.
-- [ ] T004 Añadir permisos Operator y Reviewer sin conceder acceso global de Gestor en backend/inventory/permissions.py.
-- [ ] T005 Crear comando local para provisionar el primer operador técnico y comando deactivate_gestor; probar ambos en backend/inventory/management/commands/ y backend/inventory/tests/test_manager_command.py.
+- [ ] T004 Reutilizar permiso/sesión Operator de 003 y añadir permiso/sesión Reviewer sin conceder acceso global de Gestor en backend/inventory/permissions.py.
+- [ ] T005 Reutilizar create_operator de 003 y crear comando deactivate_gestor; probar ambos en backend/inventory/management/commands/ y backend/inventory/tests/test_manager_command.py.
 
 ## US1 — Bajas normales
 
 - [ ] T006 [US1] Implementar validación de estado, motivo y baja terminal en backend/inventory/services.py.
 - [ ] T007 [US1] Añadir acción baja normal y motivo en frontend/src/components/AssetDetail.tsx.
-- [ ] T008 [US1] Probar requisito de cerrar mantenimiento, motivo, no aprobación y conservación de historial en backend/inventory/tests/test_decommission.py.
+- [ ] T008 [US1] Probar cierre previo de mantenimiento, motivo, conservación de historial y rectificación de baja con revisión global, sin borrar decisiones ni reactivar movimientos viejos en backend/inventory/tests/test_decommission.py.
 
 ## US2 — Solicitud/decisión
 

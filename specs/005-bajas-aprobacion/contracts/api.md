@@ -16,3 +16,5 @@ Todas las rutas usan sesión/CSRF. Las fechas y autores se asignan en servidor.
 
 La recuperación de activo No localizado cancela por transacción toda solicitud PENDING y registra motivo ASSET_RECOVERED. El reviewer solo ve código, datos relevantes, última condición/ubicación/custodio y eventos de la solicitud. Sin listado general ni campos de edición.
 La ruta de cambio de facultad de 003 debe responder 409 mientras exista solicitud PENDING del activo; este bloqueo se aplica en el servicio transaccional de baja.
+
+Rectificar baja usa el mismo payload de 002: `{movement_id, reason, expected_revision}`; el id apunta al Movement de tipo baja enlazado al evento. Revisor temporal usa sesión adaptada desde 003 y acceso limitado de contratos transversales. No enviar contraseñas temporales en respuestas.

@@ -10,3 +10,7 @@
 - Migración: conservar datos previos; no inventar faculty/origen/fecha.
 - Web: formularios, errores por campo, auditoría visible, no selector de divisa.
 - Ejecución final pendiente; ningún resultado se declara aprobado.
+
+## Casos de integración de revisión final
+
+Operador inicia sesión antes de 005 sin obtener permiso Gestor; prueba alta de documento sin activos y alta atómica activo+línea; fallos revierten ambos. Ediciones incrementan revisión e impiden rectificar movimientos anteriores. Migración usa mapeo verificado, no fixtures.

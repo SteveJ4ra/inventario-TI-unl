@@ -30,3 +30,7 @@
 - Comando deactivate_gestor cambia is_active; no borra ni altera eventos creados.
 - Auth rechaza usuario inactivo.
 Cada reasignación registra operador autor, fecha/hora, revisor anterior y revisor nuevo; Gestores no tienen permiso para ejecutar la operación.
+
+## Rectificación compatible con 002
+
+Cada DecommissionEvent enlaza uno a uno un Movement de tipo nuevo `baja`; ampliar choices y constraints del Movement de 002. El movimiento contiene before/after completos, lifecycle y resulting_revision. `/rectify/` conserva entrada `movement_id`, `reason`, `expected_revision` y enlace rectifies de 002. Solo la baja cuya revisión sigue siendo la actual puede rectificarse; restaura snapshot previo sin borrar aprobación/solicitud ni reabrirla como pendiente. Una baja aprobada rectificada deja No localizado, con los antecedentes originales conservados. No rectificar una rectificación ni reactivar movimientos antiguos.

@@ -6,7 +6,7 @@
 
 ## Backend
 - [ ] T003 Implementar servicio de URL QR sin usar Host no confiable.
-- [ ] T004 Implementar endpoint autenticado de SVG y errores documentados.
+- [ ] T004 Implementar endpoint autenticado de SVG, resolución exacta por código TI y errores documentados en backend/inventory/views.py y urls.py.
 - [ ] T005 Proteger/validar destino local de retorno tras login.
 
 ## Frontend

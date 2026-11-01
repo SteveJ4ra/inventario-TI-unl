@@ -10,3 +10,5 @@
 6. Editar a 3 en uso; verificar 7 remanentes e historial.
 7. Crear DEVICE_SEAT; comparar filtros y búsqueda.
 8. Verificar un usuario no gestor; acceso denegado.
+
+Antes de ejecutar Spec Kit, seleccionar `specs/006-lotes-licencias` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

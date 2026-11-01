@@ -5,12 +5,12 @@
 ## Fase 1 — Fundamentos
 
 - [ ] T001 Añadir casos API y de servicio para documentos de compra/donación, importes compartidos, fecha desconocida y restricciones de edición en backend/inventory/tests/test_acquisitions.py.
-- [ ] T002 Añadir pruebas de permisos para administración de facultades y edición de ficha en backend/inventory/tests/test_permissions.py.
+- [ ] T002 Añadir pruebas de sesión/provisión local de Operador, permisos para administración de facultades y edición de ficha en backend/inventory/tests/test_permissions.py.
 - [ ] T003 Crear Faculty, AcquisitionDocument, AcquisitionLine y modelos de auditoría en backend/inventory/models.py.
 - [ ] T004 Obtener y completar manualmente con el grupo el mapeo de facultad responsable para cada activo existente; detener la migración si faltan datos verificados. Crear migración compatible, sin completar origen/facultad por suposición, en backend/inventory/migrations/.
 - [ ] T005 Implementar validaciones condicionales de compra/donación y fecha desconocida en backend/inventory/serializers.py.
-- [ ] T006 Implementar servicios atómicos de adquisición y actualización auditada en backend/inventory/services.py.
-- [ ] T007 Añadir rutas y vistas protegidas para facultades, adquisición, edición y auditoría en backend/inventory/urls.py y backend/inventory/views.py.
+- [ ] T006 Implementar alta atómica de activo+línea con documento existente, revisión global y servicios atómicos de adquisición y actualización auditada en backend/inventory/services.py.
+- [ ] T007 Implementar create_operator y permisos/sesión de Operador en management/commands/, permissions.py y auth_views.py; añadir rutas y vistas protegidas para facultades, adquisición, edición y auditoría en backend/inventory/urls.py y backend/inventory/views.py.
 
 ## US1 — Compra compartida
 

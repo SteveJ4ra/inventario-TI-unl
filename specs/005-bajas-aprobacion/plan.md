@@ -5,7 +5,7 @@
 
 ## Resumen
 
-Añadir estados de baja y flujo de aprobación específico para activos No localizados. Reutilizar autenticación de sesión del proyecto y grupos/permisos de Django; incorporar el permiso limitado de revisor y el operador técnico de cuentas. Mantener todo registro append-only.
+Añadir estados de baja y flujo de aprobación específico para activos No localizados. Reutilizar autenticación de sesión del proyecto y grupos/permisos de Django; incorporar el permiso limitado de revisor y el operador técnico de cuentas. Mantener evidencia histórica append-only y proyecciones de estado actual transaccionales.
 
 ## Contexto técnico
 
@@ -18,7 +18,7 @@ Stack de 002: Python 3.13, Django 5.2, DRF 3.16, PostgreSQL 17; React 19, TypeSc
 - DecommissionRequest con motivo, requester, assignee y estado PENDING/REJECTED/APPROVED/CANCELLED.
 - ApprovalDecision inmutable, con resultado y motivo de rechazo.
 - Cuenta Reviewer con faculty_id, active y must_change_password; autorización de endpoint específica, no permiso Gestor.
-- Operator para administrar cuentas revisoras. No es cargo institucional nuevo.
+- Operator existente desde 003 para administrar cuentas revisoras. No es cargo institucional nuevo.
 - Comando local deactivate_gestor; alta create_gestor existente permanece.
 - UI separa bandeja de revisión y administración de cuentas. La lista Faculty de 003 es común.
 
@@ -50,3 +50,7 @@ Trazabilidad y separación de funciones son centrales. La regla de doble revisi�
 El servicio de cambio de facultad definido por 003 debe verificar, bajo bloqueo transaccional del activo, que no haya una solicitud de baja PENDING. La comprobación se implementa junto con la máquina de estados de solicitud; no se cambia la elegibilidad de una solicitud ya abierta.
 
 Solo el Operator puede reasignar solicitudes pendientes, incluidas aquellas necesarias para desactivar un revisor. La operación registra actor, fecha, revisor anterior y nuevo.
+
+## Contratos compartidos
+
+Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.

@@ -53,5 +53,19 @@ API propuesta en contracts/api.md; web en contracts/web.md. La organización de 
 ## Riesgos y resolución
 
 - La lista real de facultades no está disponible: el operador la carga manualmente; no inventar valores institucionales.
-- Datos existentes podrían no tener adquisición/facultad: migración no debe fabricar información. Completar con datos de prueba o una tarea de saneamiento autorizada.
+- Datos existentes podrían no tener adquisición/facultad: migración no debe fabricar información. Completar con datos verificados mediante saneamiento autorizado; fixtures solo en entornos de prueba.
 - Una factura contiene conceptos no asignables: no imponer que suma de líneas sea igual al total de factura, pues impuestos/envío podrían diferir.
+
+## Contratos compartidos
+
+Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.
+
+## Fundamentos de acceso y creación sin dependencia circular
+
+Introducir aquí el comando local `create_operator`, permiso de Operador y adaptación de login/me/logout conforme al contrato transversal. 003 debe poder administrarse sin que 005 exista.
+
+Primero se registra el documento compartido de adquisición (metadatos; sin exigir ids de activos aún inexistentes). `POST /api/assets/` se amplía con `faculty_id`, `acquisition_document_id`, `item_value` y fecha de adquisición o motivo de desconocimiento, junto con los campos de 002. Crea activo y AcquisitionLine en la misma transacción. Las líneas opcionales en el alta del documento solo enlazan activos ya existentes. Así el registro manual y CSV usan el mismo servicio sin crear activos incompletos intermedios.
+
+Preparar el mapeo verificado de facultad antes de migrar; crear tabla/columnas, cargar facultades y aplicar el mapeo antes de exigir NOT NULL. La adquisición histórica no se inventa: agregar esquema compatible y no activar restricciones obligatorias sobre datos legados hasta completar los datos verificados; para nuevas altas exigirlos desde la activación del flujo 003. No sustituir datos reales por fixtures en una migración de despliegue.
+
+Importes Decimal y código de moneda se guardan en el documento y en snapshots. La configuración central define moneda de nuevos registros; cambiarla en el futuro no reetiqueta importes históricos. No se incorpora conversión monetaria ni selector visual.

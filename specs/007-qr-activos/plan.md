@@ -19,3 +19,9 @@ El QR y el código TI son identificadores, no secretos. Aplicar CSRF donde corre
 ## Despliegue
 
 Configurar URL canónica HTTPS de la aplicación. Una modificación posterior puede hacer que QRs impresos apunten a una dirección antigua; documentar procedimiento de despliegue antes de imprimir a escala.
+
+## Contratos compartidos
+
+Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.
+
+La ruta web /assets/code/{code} resuelve por GET /api/assets/by-code/{code}/ autenticado. Mantener el contrato Asset existente; no usar búsqueda parcial del listado para resolver identidad.

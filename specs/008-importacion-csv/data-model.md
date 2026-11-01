@@ -16,3 +16,5 @@ Entidad técnica `ImportBatch` propuesta:
 | applied_result | Conteos/identificadores resultantes; idempotencia |
 
 La persistencia de `ImportBatch` y el plazo de expiración se decidirán técnicamente con datos sensibles mínimos. La tabla no es fuente de verdad del activo/lote creado.
+
+Persistir filas normalizadas inmutables además de resumen/errores mientras el lote sea confirmable; un resumen/hash sin filas no basta para crear registros. Aplicación y registro APPLIED/resultados pertenecen a la misma transacción. Conservar un resultado mínimo tras eliminar contenido temporal para responder reintentos sin duplicar.

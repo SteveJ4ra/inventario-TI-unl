@@ -10,3 +10,7 @@
 - Recuperar no inventa devolución ni reactiva mantenimiento; requiere condición y ubicación.
 - Concurrencia: dos incidentes/transiciones simultáneas no producen estados incompatibles.
 - Probar API y UI después de implementar; no se afirma validación hasta ejecutar.
+
+## Casos de integración de revisión final
+
+En PostgreSQL, pérdida desde Asignado limpia custodia y assignment sin violar constraint. Rechazar entrega/devolución/condición en No localizado. Rectificar movimiento anterior a una novedad/mantenimiento falla. GET de mantenimiento permite prellenar antes del cierre.

@@ -26,3 +26,7 @@
 - incident, asset, found_at, found_by, inspected_condition, recovered_location, note.
 - Cierra la situación UNLOCATED y deja asset LOCATED/Disponible/sin custodio.
 - Si mantenimiento fue interrumpido, no lo reactiva.
+
+## Migración de la restricción de custodia
+
+Aplicar la invariante de contratos transversales: localizado permite disponible/null o asignado/custodio; No localizado/Baja exige assignment=null y current_custodian=null. Reemplazar el CheckConstraint de 002 y ampliar snapshots con lifecycle_status. Todos los eventos de activo incrementan su revisión aunque no sean Movement, para impedir rectificaciones antiguas.

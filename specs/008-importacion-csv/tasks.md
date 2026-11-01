@@ -9,7 +9,7 @@
 - [ ] T004 Implementar parser CSV seguro y validadores reutilizados de 003/006.
 - [ ] T005 Implementar vista previa completa, errores saneados y hash inmutable.
 - [ ] T006 Implementar ciclo confirmación doble con usuario/estado/hash.
-- [ ] T007 Aplicar activos o lotes en transacción todo-o-nada e idempotencia.
+- [ ] T007 Aplicar activos o lotes con batch bloqueado, revalidación contra DB actual, transacción todo-o-nada e idempotencia 201 inicial/200 reintento.
 - [ ] T008 Aplicar autorización, expiración, cancelación y límites técnicos.
 
 ## Frontend

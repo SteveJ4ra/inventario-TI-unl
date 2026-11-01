@@ -24,7 +24,7 @@
 ## Asset metadata audit
 
 - asset, actor, created_at, reason, before_json, after_json.
-- Solo campos descriptivos y faculty_id.
+- Campos descriptivos y adquisición. La facultad usa exclusivamente AssetFacultyChange y permiso Operador.
 - No reemplaza movimientos de condición, asignación, custodio o ubicación.
 
 ## Custodian profile audit

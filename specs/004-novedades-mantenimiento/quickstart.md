@@ -11,3 +11,5 @@
 7. Intentar entregar/devolver como si estuviera presente; verificar rechazo.
 8. Recuperar, inspeccionar y registrar condición/ubicación; verificar mismo código, Disponible/sin custodio y mantenimiento previo no reactivado.
 9. Ejecutar pruebas de API/web indicadas en validation-plan.md al implementar.
+
+Antes de ejecutar Spec Kit, seleccionar `specs/004-novedades-mantenimiento` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

@@ -8,3 +8,5 @@
 6. Simular doble clic/reintento de confirmación y vencimiento de preview; verificar idempotencia y ausencia de parciales.
 
 Guía futura de aceptación; no se ha ejecutado.
+
+Antes de ejecutar Spec Kit, seleccionar `specs/008-importacion-csv` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

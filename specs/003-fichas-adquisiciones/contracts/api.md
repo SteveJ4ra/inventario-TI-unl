@@ -21,4 +21,10 @@ Asset date: acquired_on o date_unknown_reason; exactamente una alternativa váli
 Asset edit: reason y solo campos descriptivos/adquisición; facultad y cambios de estado se rechazan en esta ruta. Faculty change usa ruta de operador, reason y before/after audit.
 Currency: respuesta monetaria incluye currency=USD; cliente no puede elegir otra moneda.
 
-Errores: 400 validación, 401/403 acceso, 404 inexistente, 409 duplicado/conflicto; sin cambios parciales ante error.
+Errores: 400 validación, 403 acceso, 404 inexistente, 409 duplicado/conflicto; sin cambios parciales ante error.
+
+## Extensión de alta y acceso
+
+POST `/api/acquisitions/` admite metadatos del documento con `items` omitido/vacío; items, si se aportan, solo enlaza activos existentes. POST `/api/assets/` mantiene los campos de 002 y exige `faculty_id`, `acquisition_document_id`, `item_value` y exactamente una alternativa `acquired_on`/`date_unknown_reason`. El documento y la facultad deben existir; tipo del documento determina valor de compra o estimado. Activo y línea se guardan juntos o nada.
+
+PATCH de activo/facultad y documento compartido exige `expected_revision` (documentos: revisiones de todos los activos afectados). La facultad inicial la indica el Gestor al registrar; cualquier cambio posterior solo se hace por la ruta de Operador. Se implementan provisión y sesión de Operador en este incremento, según contratos transversales.

@@ -8,3 +8,5 @@
 6. Repetir con código inexistente y cuenta sin permiso; comprobar que no se revela ficha.
 
 Este procedimiento describe aceptación futura; no se ha ejecutado.
+
+Antes de ejecutar Spec Kit, seleccionar `specs/007-qr-activos` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

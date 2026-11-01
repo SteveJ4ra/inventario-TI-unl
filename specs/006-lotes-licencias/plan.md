@@ -17,7 +17,7 @@ Agregar modelos, servicios y API para cantidades agregadas de puestos. El módul
 
 ## Modelo y reglas
 
-SoftwareLicenseLot con product_name, publisher/vendor, license_model USER_SEAT/DEVICE_SEAT, purchased_quantity, in_use_quantity, starts_on obligatorio, ends_on nullable, created_by/created_at/revision. LicenseLotAudit guarda actor, tiempo y before/after.
+SoftwareLicenseLot con product_name, vendor, license_model USER_SEAT/DEVICE_SEAT, purchased_quantity, in_use_quantity, starts_on obligatorio, ends_on nullable, created_by/created_at/revision. LicenseLotAudit guarda actor, tiempo y before/after.
 remaining_quantity se calcula; no se persiste como fuente de verdad. Temporal status se calcula: starts_on futura → Por iniciar; ends_on anterior a hoy → Vencido; otro caso → Vigente. Si ends_on es nulo no vence.
 Un lote vencido mantiene remaining_quantity como conteo, pero UI lo denomina remanentes y marca Vencido.
 Si purchased_quantity baja de in_use_quantity, rechazar hasta que gestor ajuste uso primero.
@@ -30,3 +30,7 @@ Migración no requiere tocar modelos existentes. Pruebas del modelo, servicio, p
 ## Constitution Check
 
 Cumple trazabilidad y límites; evita catálogo de asignaciones individuales y proveedores externos. Revisar contra constitución ratificada antes de implementar.
+
+## Contratos compartidos
+
+Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.

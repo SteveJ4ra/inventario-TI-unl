@@ -38,3 +38,7 @@ La condición se actualiza mediante el servicio de condición existente. El inic
 ## Constitution Check
 
 Cumple trazabilidad, integridad, acceso limitado y simplicidad. Mantener estado de la constitución como propuesta; revisión contra ratificación pendiente antes de implementación. No ocultar incertidumbres institucionales como reglas verificadas.
+
+## Contratos compartidos
+
+Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.

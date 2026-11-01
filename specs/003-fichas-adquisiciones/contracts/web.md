@@ -8,3 +8,5 @@
 - Operador: pantalla de mantenimiento manual de facultades; no sincroniza con sistemas institucionales.
 - Montos se presentan como USD; la UI no contiene selector de moneda.
 - Los errores se muestran junto al campo y la vista de ficha muestra historial de cambios.
+
+La selección de facultad por Gestor corresponde solo al alta. La edición posterior se ofrece únicamente al Operador, con motivo y diferencias antes/después; 005 bloquea si existe solicitud pendiente. Registrar primero metadatos de factura/respaldo y reutilizar su id al crear activos; no pedir ids de activos inexistentes.

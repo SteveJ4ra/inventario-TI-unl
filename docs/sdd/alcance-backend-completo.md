@@ -8,7 +8,7 @@
 
 Preparar el backend del proyecto de Inventario de TI a partir del tema 2 del banco de proyectos: mantener información actual de activos tecnológicos y parte de su historial de ciclo de vida. El alcance evita inventar procesos institucionales que el grupo no conoce. No se integra con sistemas de la UNL ni se declara que estas reglas sean política institucional.
 
-El incremento 002 contiene la base de registro, consulta, búsqueda, filtros, custodios, entregas, devoluciones, cambios de condición y rectificación. Su PR #9 queda separado y pendiente; estos documentos planifican incrementos posteriores sin fusionarlo ni modificar el estado remoto. La existencia de artefactos SDD no significa que 003–008 estén implementados o validados.
+El incremento 002 contiene la base de registro, consulta, búsqueda, filtros, custodios, entregas, devoluciones, cambios de condición y rectificación. Su PR #9 está integrado en develop (02cb26c); estos documentos planifican incrementos posteriores sin fusionarlo ni modificar el estado remoto. La existencia de artefactos SDD no significa que 003–008 estén implementados o validados.
 
 ## Incrementos planificados
 
@@ -61,6 +61,6 @@ El incremento 002 contiene la base de registro, consulta, búsqueda, filtros, cu
 
 ## Preparación para iniciar implementación
 
-La división entre integrantes se hará después; por ahora se conservan completos los paquetes 003–008, sin dividir funcionalidades ni asignar responsables. Cuando el grupo decida iniciar: integrar primero PR #9/002 en `develop`; crear una rama `feature/<id>` por paquete desde `develop`; abrir cada PR hacia `develop` con pruebas y evidencia de aceptación. 003, 004, 006 y 007 pueden iniciar desde la base 002. 005 espera a que 003 y 004 estén integrados; 008 espera a 003 y 006. Revisar conflictos de migraciones al integrar cambios paralelos.
+La división entre integrantes se hará después; por ahora se conservan completos los paquetes 003–008, sin dividir funcionalidades ni asignar responsables. Cuando el grupo decida iniciar: usar `develop` con PR #9/002 ya integrado (02cb26c); crear una rama `feature/<id>` por paquete desde `develop`; abrir cada PR hacia `develop` con pruebas y evidencia de aceptación. 003, 004, 006 y 007 pueden iniciar desde la base 002. 005 espera a que 003 y 004 estén integrados; 008 espera a 003 y 006. Revisar conflictos de migraciones al integrar cambios paralelos.
 
-Antes de implementar, ratificar la Constitución con el grupo, completar la facultad verificada de todos los activos legados antes de aplicar la restricción, y fijar límites operativos CSV como tarea técnica T002 de 008. El PR #9 permanece sin cambios en esta preparación.
+Antes de implementar, ratificar la Constitución con el grupo, completar la facultad verificada de todos los activos legados antes de aplicar la restricción, y fijar límites operativos CSV como tarea técnica T002 de 008. PR #9 ya está integrado en develop; esta preparación parte de 02cb26c.

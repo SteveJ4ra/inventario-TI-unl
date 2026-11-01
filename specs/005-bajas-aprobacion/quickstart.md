@@ -11,5 +11,7 @@
 7. Crear nueva solicitud con motivo actualizado.
 8. Crear otra solicitud, recuperar activo antes de decisión y verificar cancelación con motivo.
 9. Intentar desactivar reviewer con solicitud pendiente; reasignar y volver a desactivar.
-10. Cambiar contraseña temporal en primer login; probar que antes del cambio solo se permite esa acción.
+10. Cambiar contraseña temporal en primer login; probar que antes del cambio solo se permite consultar sesión, cerrar sesión y cambiar contraseña.
 11. Desactivar Gestor por comando y verificar que su autoría previa permanece.
+
+Antes de ejecutar Spec Kit, seleccionar `specs/005-bajas-aprobacion` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

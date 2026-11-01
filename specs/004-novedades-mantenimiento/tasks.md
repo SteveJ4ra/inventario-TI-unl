@@ -5,9 +5,9 @@
 ## Fundamentos
 
 - [ ] T001 Probar transiciones de localización, condición, asignación, pérdida/robo y mantenimiento activo en backend/inventory/tests/test_incidents.py y backend/inventory/tests/test_maintenance.py.
-- [ ] T002 Añadir LifecycleStatus y snapshots con migración compatible en backend/inventory/models.py y backend/inventory/migrations/.
+- [ ] T002 Añadir LifecycleStatus, assignment nullable para No localizado/Baja, reemplazo de asset_custody_consistent y snapshots con migración compatible en backend/inventory/models.py y backend/inventory/migrations/.
 - [ ] T003 Implementar Incident, MaintenanceEvent y RecoveryEvent con constraints en backend/inventory/models.py.
-- [ ] T004 Añadir servicios transaccionales y revisión de revision/estado en backend/inventory/services.py.
+- [ ] T004 Añadir servicios transaccionales, revisión global y guardas para que rectificaciones de 002 no ignoren eventos nuevos; validar revision/estado en backend/inventory/services.py.
 - [ ] T005 Exponer rutas, permisos y errores de conflicto en backend/inventory/views.py y backend/inventory/urls.py.
 
 ## US1 — Novedad de daño/observación

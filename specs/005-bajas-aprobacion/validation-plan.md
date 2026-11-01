@@ -12,3 +12,7 @@
 - Desactivar Gestor conserva autoría.
 - Concurrencia: doble solicitud/decisión/baja no duplica transiciones.
 - Ejecutar pruebas y revisión de privacidad después de implementación; no hay resultados todavía.
+
+## Casos de integración de revisión final
+
+Revisor temporal no usa API antes de cambio inicial; Operador puede reasignar y Gestor no. Probar carrera recuperación/aprobación, desactivación/reasignación y facultad/decisión. Rectificar baja enlazada restaura snapshot sin borrar solicitud/decisión.
