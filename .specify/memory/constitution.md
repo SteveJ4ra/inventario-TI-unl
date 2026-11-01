@@ -4,7 +4,7 @@
 > **Documento base:** Elaborado por Anderson, con asistencia de IA.
 > **Proyecto:** Inventario de Tecnologías de Información — Grupo 5.
 > **Stack acordado:** Python, Django, Django REST Framework, PostgreSQL, React y React Native con Expo.
-> **Nota:** Los permisos, procesos institucionales y reglas específicas de gestión de activos todavía requieren clarificación.
+> **Nota:** El responsable del proyecto ya respondió decisiones funcionales para el alcance académico backend en `docs/sdd/decisiones-alcance-backend.md`. El documento y esas decisiones siguen pendientes de revisión/ratificación grupal y no declaran políticas institucionales de la UNL.
 > Propósito: definir principios transversales de ingeniería. Esta constitución no decide qué funcionalidades institucionales son obligatorias ni selecciona frameworks.
 
 ## Principios
@@ -16,7 +16,7 @@ Toda funcionalidad propuesta deberá tener relación identificable con una neces
 
 ### II. Integridad y calidad de la información
 
-El diseño debe preservar la consistencia de la información y permitir detectar datos inválidos o contradictorios. Las reglas concretas de identificación, custodia, baja, historial y conservación de datos **siguen pendientes de clarificación**.
+El diseño debe preservar la consistencia de la información y permitir detectar datos inválidos o contradictorios. Las reglas concretas de identificación, custodia, baja, historial y conservación de datos están especificadas para el alcance académico en las decisiones registradas; requieren revisión del equipo antes de implementación y no sustituyen políticas institucionales.
 **Razón:** Una ficha actual del activo y sus movimientos no deberían contradecirse.
 
 ### III. Seguridad, privacidad y acceso responsable
@@ -53,7 +53,7 @@ El trabajo se limitará al alcance validado. Los cambios en Git deberán ser ras
 
 - [ ] Confirmar si POO será un enfoque del backend y en qué capas.
 - [ ] Confirmar la estrategia de pruebas y el uso o no de TDD.
-- [ ] Ajustar exigencias de seguridad a las políticas y usuarios reales.
+- [ ] Ajustar exigencias de seguridad a las políticas y usuarios reales; las reglas funcionales ya propuestas requieren ratificación del equipo.
 - [ ] Revisar si hay requisitos del docente no incorporados.
 - [ ] Registrar responsables y fecha de ratificación; solo entonces asignar versión estable.
 
