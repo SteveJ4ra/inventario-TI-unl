@@ -1,87 +1,86 @@
-# Inventario de Tecnologías de Información
+# Inventario de Tecnologías de Información · UNL
 
-Proyecto académico para el análisis y desarrollo de un sistema de inventario de tecnologías de información de la Universidad Nacional de Loja.
+Proyecto académico del Grupo 5 para registrar y consultar activos tecnológicos y conservar la trazabilidad de su custodia. Se desarrolla por incrementos mediante Spec-Driven Development (SDD) con GitHub Spec Kit.
 
-## 1. Descripción del proyecto
+## Incremento implementado
 
-El proyecto tiene como propósito analizar, especificar y desarrollar progresivamente una solución informática para la gestión de activos tecnológicos.
+API Django REST Framework y pantalla React + TypeScript con:
 
-Se busca organizar la información de los activos de TI, considerando aspectos como su identificación, ubicación, responsable, estado y movimientos durante su ciclo de vida.
+- Acceso de gestores autorizados, con iguales permisos sobre todo el inventario.
+- Registro de activos con código TI automático, identificación individual y prevención de duplicados por marca/modelo/serie.
+- Registro de personas custodias sin cuenta de acceso.
+- Listado, ficha, búsqueda parcial y filtros combinados.
+- Entregas, devoluciones y cambios reales de condición con motivo cuando corresponde.
+- Historial con autoría y rectificación del último movimiento elegible, conservando el original y restaurando la situación anterior.
+- Controles de concurrencia, CSRF y restricciones de integridad en PostgreSQL.
 
-El alcance funcional y las decisiones técnicas se definirán mediante el análisis de requisitos y las actividades de especificación del equipo.
+Las seis categorías y las reglas funcionales provienen de las respuestas documentadas de Steven; la FPGA fue únicamente un ejemplo. No se implementan edición general, eliminación, órdenes de mantenimiento, portal de custodios, reportes ni aplicación móvil en este incremento.
 
-## 2. Objetivo
+## Ejecutar localmente
 
-Desarrollar una propuesta de sistema de inventario de tecnologías de información que facilite la organización, consulta y trazabilidad de los activos tecnológicos, a partir de requisitos previamente analizados y documentados.
+Requisitos: Python 3.13, PostgreSQL 17 y Node.js 22.23.1 o compatible con las versiones fijadas. Preparación completa de base de datos y .env: [backend/README.md](backend/README.md). Frontend: [frontend/README.md](frontend/README.md).
 
-## 3. Metodología de desarrollo
+En una instalación ya configurada, PowerShell desde la raíz:
 
-El proyecto incorpora el enfoque **Spec-Driven Development (SDD)**, apoyado por GitHub Spec Kit para organizar progresivamente la especificación, clarificación y planificación de los requisitos antes de su implementación.
+```powershell
+& .\backend\.venv\Scripts\python.exe backend/manage.py migrate
+& .\backend\.venv\Scripts\python.exe backend/manage.py create_gestor
+npm.cmd --prefix frontend ci
+```
 
-Los artefactos de especificación se incorporarán conforme avance el análisis del proyecto.
+El comando create_gestor pide usuario y contraseña localmente; no hay credenciales predeterminadas. No vuelve administrador general al gestor. Si ya tienes un gestor autorizado no necesitas crear otro.
 
-## 4. Organización del repositorio
+En dos terminales:
 
-La estructura inicial incluye:
+```powershell
+& .\backend\.venv\Scripts\python.exe backend/manage.py runserver 127.0.0.1:8000
+```
 
-- `README.md`: presentación general e instrucciones iniciales del proyecto.
-- `CONTRIBUTING.md`: pautas para colaborar, utilizar ramas y registrar contribuciones.
-- `docs/`: documentación del análisis, las decisiones y el desarrollo del proyecto.
+```powershell
+cd frontend
+npm.cmd run dev
+```
 
-La estructura se ampliará según las necesidades identificadas y las tecnologías seleccionadas.
+Abrir [la pantalla web local](http://127.0.0.1:5173/). La API está bajo /api/ en el backend; la raíz de Django no sirve la pantalla React. En Linux se usa backend/.venv/bin/python. No copiar encima del .env privado existente.
 
-## 5. Primeros pasos
+## Pruebas y estado comprobado
 
-Para obtener una copia del repositorio es necesario contar con Git instalado.
+```powershell
+& .\backend\.venv\Scripts\python.exe backend/tools/test_postgres.py
+npm.cmd --prefix frontend test -- --run
+npm.cmd --prefix frontend run build
+```
 
-**Clonar el repositorio:**
+El runner crea PostgreSQL temporal privado en loopback, usa credenciales efímeras, ejecuta las pruebas y lo detiene/elimina. Requiere binarios PostgreSQL 17 con ICU; PG_BIN permite indicar su carpeta bin. No concede CREATEDB al usuario de la aplicación ni cambia backend/.env. Ejecutarlo como usuario normal, no como root en Linux.
 
-`git clone https://github.com/SteveJ4ra/inventario-TI-unl.git`
+Validación automatizada del 1 de noviembre de 2026: **28 pruebas backend, 17 pruebas frontend y compilación correctas**. El 20 de octubre se verificó además el recorrido real en navegador con dos gestores ficticios, custodia, rectificación, búsqueda/filtros y conflicto de un formulario obsoleto. Evidencia y límites: [validation.md](specs/002-registro-consulta-activos/validation.md). La reproducción por otro integrante y la revisión por pares siguen pendientes; no se declara despliegue productivo.
 
-**Acceder al directorio:**
+## Ruta SDD y organización
 
-`cd inventario-TI-unl`
+| Artefacto / carpeta | Propósito |
+|---|---|
+| [.specify/memory/constitution.md](.specify/memory/constitution.md) | Principios propuestos; ratificación del grupo pendiente. |
+| [specs/001-inventario-ti/](specs/001-inventario-ti/) | Contexto inicial conservado. |
+| [Decisiones del incremento](docs/sdd/decisiones-incremento-registro-consulta.md) | 36 decisiones confirmadas y su evidencia. |
+| [spec.md](specs/002-registro-consulta-activos/spec.md) | Qué se requiere, reglas y aceptación. |
+| [plan.md](specs/002-registro-consulta-activos/plan.md) | Cómo se diseñó, modelo y contratos. |
+| [tasks.md](specs/002-registro-consulta-activos/tasks.md) | Desglose y estado real de 38 tareas. |
+| [quickstart.md](specs/002-registro-consulta-activos/quickstart.md) | Recorrido reproducible de validación. |
+| backend/inventory/ | Modelos, servicios, API, comandos y pruebas. |
+| frontend/ | Pantalla web, cliente API y pruebas. |
 
-**Cambiar a la rama de integración:**
+Se siguió specify → clarify → plan → tasks → analyze → implement. Las reglas de negocio fueron aclaradas antes de programar; el análisis detectó y corrigió con aprobación de Steven una dependencia circular en las tareas de pruebas. La implementación contó con asistencia de Codex; la revisión humana del equipo continúa siendo necesaria.
 
-`git switch develop`
+## Seleccionar el incremento en Spec Kit
 
-**Consultar el estado del repositorio:**
+El marcador .specify/feature.json es local y está ignorado por Git. En una copia nueva, antes de usar las skills de Spec Kit, seleccionar explícitamente el directorio activo en la sesión PowerShell:
 
-`git status`
+```powershell
+$env:SPECIFY_FEATURE_DIRECTORY = "specs/002-registro-consulta-activos"
+```
 
-Para realizar contribuciones, se recomienda consultar el archivo `CONTRIBUTING.md` antes de comenzar.
+Esto conserva la rama Git feature/registro-consulta-activos; el identificador lógico es 002-registro-consulta-activos. No requiere reinicializar Spec Kit ni reemplazar Copilot por Codex. Los scripts incluidos son PowerShell; en Linux requieren pwsh. Esta configuración de Spec Kit es independiente de ejecutar la aplicación con Python y npm.
 
-## 6. Tecnologías y ejecución
+## Colaboración
 
-El proyecto se encuentra en una etapa inicial de análisis y configuración.
-
-La selección del lenguaje de programación, framework, base de datos y demás herramientas está pendiente de evaluación y justificación por parte del equipo.
-
-Una vez definidas e incorporadas las tecnologías, esta sección incluirá:
-
-- Requisitos de software y versiones compatibles.
-- Instalación de dependencias.
-- Configuración del entorno de desarrollo.
-- Comandos para ejecutar el sistema.
-- Procedimiento de verificación del funcionamiento.
-
-Actualmente no existe una aplicación ejecutable configurada en el repositorio.
-
-## 7. Trabajo colaborativo
-
-El equipo utiliza una estrategia básica de ramas:
-
-- `main`: versiones estables.
-- `develop`: integración de contribuciones.
-- `feature/*`: desarrollo de tareas específicas.
-
-Las contribuciones se registran mediante commits y se integran a través de pull requests, de acuerdo con las pautas descritas en `CONTRIBUTING.md`.
-
-## 8. Estado del proyecto
-
-**En desarrollo — fase inicial.**
-
-El equipo trabaja en la delimitación del problema, identificación de actores, especificación de requisitos, selección de tecnologías y configuración del entorno colaborativo.
-
-La información de este documento se actualizará conforme se validen los resultados de estas actividades.
+Ramas main/develop/feature; contribuciones y revisión antes de integrar según [CONTRIBUTING.md](CONTRIBUTING.md). No publicar .env, contraseñas, datos institucionales o archivos temporales. Mantener la revisión de este incremento en su rama feature sin atribuir aprobación al equipo antes de obtenerla.

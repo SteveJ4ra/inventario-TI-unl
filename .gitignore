@@ -14,3 +14,10 @@ __pycache__/
 
 # Archivos locales
 .vscode/
+# Frontend y resultados locales
+node_modules/
+dist/
+coverage/
+*.log
+*.tmp
+*.egg-info/

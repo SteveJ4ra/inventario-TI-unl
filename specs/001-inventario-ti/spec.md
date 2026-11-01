@@ -1,5 +1,7 @@
 # Especificación inicial — Inventario de Tecnologías de Información
 
+> Documento de contexto inicial. El estado vigente del incremento implementado se consulta en [specs/002-registro-consulta-activos](../002-registro-consulta-activos/spec.md), sus [tareas](../002-registro-consulta-activos/tasks.md) y su [validación](../002-registro-consulta-activos/validation.md). Las preguntas y tareas amplias de este documento se conservan como antecedente; no se marcan automáticamente como completadas ni sustituyen la ratificación del grupo.
+
 **Proyecto:** Inventario de Tecnologías de Información (Proyecto N.º 2)
 **Grupo:** N.º 5 — Universidad Nacional de Loja
 **Estado:** Especificación inicial en revisión
