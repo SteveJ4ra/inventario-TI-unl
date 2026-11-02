@@ -10,7 +10,7 @@ from typing import ContextManager, Protocol
 
 from .retirement_policy import (
     RetirementRequestState, create_request, decide_request,
-    reassign_request, validate_normal_retirement,
+    reassign_request, validate_normal_retirement, require_id,
 )
 
 
@@ -63,24 +63,44 @@ class RetirementStore(Protocol):
 
 
 def _authorize(store: RetirementStore, user_id: int, role: str) -> None:
-    if not store.has_role(user_id, role):
+    require_id(user_id)
+    if store.has_role(user_id, role) is not True:
         raise PermissionError("forbidden")
 
 
 def _asset(store: RetirementStore, asset_id: int, expected_revision: int) -> AssetState:
+    require_id(asset_id)
+    if type(expected_revision) is not int or expected_revision < 0:
+        raise ValueError("invalid_revision")
     asset = store.lock_asset(asset_id)
-    if asset.revision != expected_revision:
+    if type(asset.id) is not int or asset.id != asset_id:
+        raise ValueError("asset_identity_mismatch")
+    if type(asset.revision) is not int or asset.revision != expected_revision:
         raise ValueError("stale_revision")
     return asset
 
 
 def _request_for_asset(store: RetirementStore, request_id: int, asset: AssetState) -> RequestRecord:
+    require_id(request_id)
     request = store.lock_request(request_id)
+    if type(request.id) is not int or request.id != request_id:
+        raise ValueError("request_identity_mismatch")
     if request.asset_id != asset.id:
         raise ValueError("request_asset_mismatch")
     if request.state.asset_faculty_id != asset.faculty_id:
         raise ValueError("asset_faculty_changed")
     return request
+
+
+def _require_unlocated(asset: AssetState) -> None:
+    if (
+        asset.lifecycle != "no_localizado"
+        or asset.assignment is not None
+        or asset.custodian_id is not None
+        or asset.maintenance_active is not False
+    ):
+        raise ValueError("inconsistent_unlocated_state")
+    require_id(asset.faculty_id, "faculty_required")
 
 
 def retire_normal(store: RetirementStore, *, asset_id: int, actor_id: int, expected_revision: int, reason: str):
@@ -95,9 +115,11 @@ def request_retirement(store: RetirementStore, *, asset_id: int, actor_id: int, 
     with store.atomic():
         _authorize(store, actor_id, "manager")
         asset = _asset(store, asset_id, expected_revision)
+        require_id(reviewer_id)
         reviewer = store.reviewer(reviewer_id)
-        if reviewer.id != reviewer_id:
+        if type(reviewer.id) is not int or reviewer.id != reviewer_id:
             raise ValueError("reviewer_identity_mismatch")
+        _require_unlocated(asset)
         state = create_request(unlocated=asset.lifecycle == "no_localizado", has_pending_request=store.has_pending_request(asset.id), requester_id=actor_id, reviewer_id=reviewer.id, asset_faculty_id=asset.faculty_id, reviewer_faculty_id=reviewer.faculty_id, reviewer_active=reviewer.active, reason=reason)
         return store.save_request(asset, state, reviewer)
 
@@ -108,8 +130,9 @@ def decide_retirement(store: RetirementStore, *, asset_id: int, request_id: int,
         asset = _asset(store, asset_id, expected_revision)
         request = _request_for_asset(store, request_id, asset)
         reviewer = store.reviewer(actor_id)
-        if reviewer.id != actor_id:
+        if type(reviewer.id) is not int or reviewer.id != actor_id:
             raise ValueError("reviewer_identity_mismatch")
+        _require_unlocated(asset)
         state, note = decide_request(request.state, actor_id=actor_id, reviewer_faculty_id=reviewer.faculty_id, reviewer_active=reviewer.active, unlocated=asset.lifecycle == "no_localizado", decision=decision, reason=reason)
         return store.save_decision(asset, request, actor_id, state, note, reviewer)
 
@@ -119,10 +142,10 @@ def reassign_retirement(store: RetirementStore, *, asset_id: int, request_id: in
         _authorize(store, actor_id, "operator")
         asset = _asset(store, asset_id, expected_revision)
         request = _request_for_asset(store, request_id, asset)
-        if asset.lifecycle != "no_localizado":
-            raise ValueError("request_ineligible")
+        _require_unlocated(asset)
+        require_id(reviewer_id)
         reviewer = store.reviewer(reviewer_id)
-        if reviewer.id != reviewer_id:
+        if type(reviewer.id) is not int or reviewer.id != reviewer_id:
             raise ValueError("reviewer_identity_mismatch")
         state = reassign_request(request.state, is_operator=True, reviewer_id=reviewer.id, reviewer_faculty_id=reviewer.faculty_id, reviewer_active=reviewer.active)
         return store.save_reassignment(asset, request, actor_id, state, reviewer)

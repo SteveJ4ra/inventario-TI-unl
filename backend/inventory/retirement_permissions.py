@@ -6,12 +6,17 @@ REVIEWER_GROUP = "Revisores"
 
 
 def reviewer_has_account(user):
-    if not (user.is_authenticated and user.is_active):
+    if user is None or not (user.is_authenticated and user.is_active):
         return False
     if not user.groups.filter(name=REVIEWER_GROUP).exists():
         return False
+    if type(user.pk) is not int or user.pk <= 0:
+        return False
     profile = getattr(user, "reviewer_profile", None)
-    return profile is not None and getattr(profile, "faculty_id", None) is not None
+    if profile is None or getattr(profile, "user_id", None) != user.pk:
+        return False
+    faculty_id = getattr(profile, "faculty_id", None)
+    return type(faculty_id) is int and faculty_id > 0
 
 
 class IsReviewerAccount(BasePermission):
@@ -32,7 +37,7 @@ class IsAssignedReviewer(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return reviewer_has_account(user) and not getattr(user.reviewer_profile, "must_change_password", True)
+        return reviewer_has_account(user) and getattr(user.reviewer_profile, "must_change_password", None) is False
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view) and getattr(obj, "assigned_reviewer_id", None) == request.user.pk

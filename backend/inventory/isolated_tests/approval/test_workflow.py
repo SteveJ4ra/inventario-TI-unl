@@ -80,3 +80,29 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             request_retirement(self.store, asset_id=1, actor_id=1, reviewer_id=2, expected_revision=3, reason="pérdida")
         self.assertEqual(self.store.writes, [])
+
+    def test_wrong_asset_and_request_returned_by_adapter_never_write(self):
+        original_asset = self.store.asset
+        self.store.lock_asset = lambda asset_id: replace(original_asset, id=99)
+        with self.assertRaises(ValueError):
+            request_retirement(self.store, asset_id=1, actor_id=1, reviewer_id=2, expected_revision=3, reason="pérdida")
+        self.store.lock_asset = lambda asset_id: original_asset
+        self.store.lock_request = lambda request_id: replace(self.store.request, id=99)
+        with self.assertRaises(ValueError):
+            decide_retirement(self.store, asset_id=1, request_id=7, actor_id=2, expected_revision=3, decision="approve")
+        self.assertEqual(self.store.writes, [])
+
+    def test_boolean_revision_and_actor_id_are_not_integers(self):
+        for change in ({"expected_revision": True}, {"actor_id": True}):
+            args = dict(asset_id=1, actor_id=1, reviewer_id=2, expected_revision=3, reason="pérdida") | change
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                request_retirement(self.store, **args)
+        self.assertEqual(self.store.writes, [])
+
+    def test_unlocated_snapshot_cannot_keep_current_assignment_or_maintenance(self):
+        for change in ({"assignment": "asignado", "custodian_id": 5}, {"maintenance_active": True}, {"faculty_id": None}):
+            store = Store()
+            store.asset = replace(store.asset, **change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                request_retirement(store, asset_id=1, actor_id=1, reviewer_id=2, expected_revision=3, reason="Pérdida")
+            self.assertEqual(store.writes, [])

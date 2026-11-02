@@ -1,14 +1,18 @@
-# Validación 005: evidencia parcial
+# Validación del avance backend 005
 
-**Fecha:** 1 de noviembre de 2026. No se validó el flujo integral de bajas ni se autoriza su uso.
+**Fecha:** 1 de noviembre de 2026. **Estado:** avance parcialmente validado; no se validó el flujo completo. Las tareas no se declaran completas.
 
-| Verificación | Resultado | Alcance |
+Comandos ejecutados desde la raíz con `backend/.venv/Scripts/python.exe`:
+
+| Comando | Resultado actual | Qué verifica |
 |---|---|---|
-| `python -m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 13 pruebas | Reglas y orquestación con doble en memoria; no valida transacciones ni API reales. |
-| `backend/tools/test_postgres.py inventory.tests.test_deactivate_gestor --verbosity 2` | PASS: 2 pruebas | PostgreSQL temporal; desactivación, acceso y autoría. |
-| `backend/tools/test_postgres.py` | PASS: 30 pruebas | Base 002 y comando de desactivación; no implementa endpoints 005. |
-| `backend/tools/test_postgres.py inventory.tests.test_retirement_serializers inventory.tests.test_retirement_permissions --verbosity 2` | PASS: 9 pruebas | Validación estricta y permisos aislados; no prueba endpoints reales. |
-| Frontend | FUERA DEL ALCANCE ACTUAL | Los componentes añadidos previamente se retiraron por indicación del usuario; sus antiguas pruebas no se atribuyen a la versión actual. |
-| Integración de 003/004 y flujos API/DB 005 | DEPENDENCIA NO INTEGRADA | Faculty/Operador de 003 y lifecycle/recuperación de 004 no están en develop; falta implementación real del adaptador. |
+| `-m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 19 tests | Dominio/orquestación; Store es doble solo de pruebas. |
+| `backend/tools/test_postgres.py` | PASS: 44 tests | Regresiones 002, desactivación real y tests aislados de serializadores/permisos. No todos los 44 requieren DB. |
+| `-m pip check` | PASS: No broken requirements found | Dependencias instaladas. |
+| `git diff --check` | PASS | Formato del diff, no comportamiento. |
+| API/DB integral de bajas y aprobación 005 | NO EJECUTABLE / NO IMPLEMENTADO | Sin modelos, migraciones, adaptador ORM, rutas y sesión de revisor integrados. |
+| Frontend | FUERA DEL ALCANCE ACTUAL | No hay cambios frontend respecto de la base develop. |
 
-El runner usa PostgreSQL temporal aislado; no se alteró la base local. Las pruebas con dobles no prueban concurrencia real de aprobación/recuperación, permisos de reviewer ni seguridad del backend.
+Los nuevos casos reprodujeron antes de corregir: aceptación de identidades/banderas ambiguas, falta de comprobación de activo/solicitud retornados y estado de contraseña desconocido. Después de corregir, la suite completa finalizó con código 0.
+
+El runner levanta PostgreSQL temporal privado y lo elimina; no cambia backend/.env ni la DB local. Los tests con callbacks/mocks no demuestran seguridad de endpoints, carreras aprobación/recuperación ni atomicidad del adaptador que aún falta. Informe por FR y hallazgos: [review.md](review.md).

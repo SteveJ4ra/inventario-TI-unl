@@ -35,3 +35,13 @@ class RetirementInputTests(SimpleTestCase):
         self.assertTrue(ReviewerDeactivateInput(data={"active": False}).is_valid())
         self.assertFalse(ReviewerDeactivateInput(data={"active": True}).is_valid())
         self.assertFalse(ReviewerDeactivateInput(data={"active": False, "actor": 1}).is_valid())
+
+    def test_all_inputs_reject_non_objects_and_unknown_fields(self):
+        for cls in (NormalRetirementInput, RetirementRequestInput, RetirementDecisionInput, RetirementReassignmentInput, ReviewerCreateInput, ReviewerDeactivateInput, ReviewerPasswordChangeInput):
+            for payload in ([], "text", {"actor": 1}):
+                with self.subTest(serializer=cls.__name__, payload=payload):
+                    self.assertFalse(cls(data=payload).is_valid())
+
+    def test_username_uses_django_character_rules(self):
+        self.assertFalse(ReviewerCreateInput(data={"username": "bad/user", "faculty_id": 1, "password": "Example42!"}).is_valid())
+        self.assertTrue(ReviewerCreateInput(data={"username": "revisor.unl", "faculty_id": 1, "password": "Example42!"}).is_valid())

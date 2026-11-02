@@ -19,16 +19,37 @@ class RetirementRequestState:
 def require_text(value, code):
     if not isinstance(value, str) or not value.strip():
         raise ValueError(code)
-    return value.strip()
+    value = value.strip()
+    if len(value) > 2000:
+        raise ValueError("reason_too_long")
+    return value
+
+
+def require_id(value, code="invalid_identifier"):
+    if type(value) is not int or value <= 0:
+        raise ValueError(code)
+    return value
+
+
+def require_boolean(value):
+    if type(value) is not bool:
+        raise ValueError("invalid_state_flag")
 
 
 def validate_normal_retirement(*, located, available, has_custodian, maintenance_active, reason):
     require_text(reason, "reason_required")
+    for flag in (located, available, has_custodian, maintenance_active):
+        require_boolean(flag)
     if not located or not available or has_custodian or maintenance_active:
         raise ValueError("ineligible_asset")
 
 
 def validate_reviewer(*, requester_id, reviewer_id, asset_faculty_id, reviewer_faculty_id, reviewer_active):
+    require_boolean(reviewer_active)
+    require_id(requester_id)
+    require_id(reviewer_id)
+    require_id(asset_faculty_id, "faculty_required")
+    require_id(reviewer_faculty_id, "faculty_required")
     if not reviewer_active:
         raise ValueError("inactive_reviewer")
     if requester_id is None or reviewer_id is None or requester_id == reviewer_id:
@@ -41,6 +62,8 @@ def validate_reviewer(*, requester_id, reviewer_id, asset_faculty_id, reviewer_f
 
 def create_request(*, unlocated, has_pending_request, requester_id, reviewer_id, asset_faculty_id, reviewer_faculty_id, reviewer_active, reason):
     reason = require_text(reason, "reason_required")
+    require_boolean(unlocated)
+    require_boolean(has_pending_request)
     if not unlocated or has_pending_request:
         raise ValueError("request_ineligible")
     validate_reviewer(requester_id=requester_id, reviewer_id=reviewer_id, asset_faculty_id=asset_faculty_id, reviewer_faculty_id=reviewer_faculty_id, reviewer_active=reviewer_active)
@@ -48,6 +71,7 @@ def create_request(*, unlocated, has_pending_request, requester_id, reviewer_id,
 
 
 def decide_request(request, *, actor_id, reviewer_faculty_id, reviewer_active, unlocated, decision, reason=""):
+    require_boolean(unlocated)
     if request.status != "pending" or not unlocated:
         raise ValueError("request_not_pending")
     if actor_id != request.reviewer_id:
@@ -60,6 +84,7 @@ def decide_request(request, *, actor_id, reviewer_faculty_id, reviewer_active, u
 
 
 def reassign_request(request, *, is_operator, reviewer_id, reviewer_faculty_id, reviewer_active):
+    require_boolean(is_operator)
     if not is_operator:
         raise ValueError("operator_required")
     if request.status != "pending":

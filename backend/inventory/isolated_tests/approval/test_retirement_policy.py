@@ -21,6 +21,22 @@ class RetirementPolicyTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 validate_reviewer(**(valid | change))
 
+    def test_reviewer_identifiers_and_active_flag_must_be_explicit(self):
+        valid = dict(requester_id=1, reviewer_id=2, asset_faculty_id=10, reviewer_faculty_id=20, reviewer_active=True)
+        for change in ({"reviewer_id": -1}, {"requester_id": True}, {"asset_faculty_id": 0}, {"reviewer_active": "false"}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                validate_reviewer(**(valid | change))
+
+    def test_unknown_normal_retirement_flags_are_rejected(self):
+        for value in (None, "false", 0):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                validate_normal_retirement(located=True, available=True, has_custodian=value, maintenance_active=False, reason="Baja")
+
+    def test_reason_is_limited_at_domain_boundary(self):
+        validate_normal_retirement(located=True, available=True, has_custodian=False, maintenance_active=False, reason=" " * 2000 + "Baja" + " " * 2000)
+        with self.assertRaises(ValueError):
+            validate_normal_retirement(located=True, available=True, has_custodian=False, maintenance_active=False, reason="x" * 2001)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,3 +11,7 @@
 T001, T004 y T005 cuentan con cobertura parcial; T006, T009, T010 y T014 tienen avance de reglas/validadores, no funcionalidad integrada. Las tareas de interfaz se posponen por el alcance backend solicitado. Ninguna tarea se marca completa: faltan persistencia, autorización real, endpoints, migraciones y escenarios integrales de backend.
 
 Para usar la única función integrada, ejecutar `backend/manage.py deactivate_gestor <usuario>` desde entorno configurado. La cuenta se desactiva completa; su historial permanece.
+
+## Correcciones de revisión
+
+Se añadieron validaciones explícitas de identidad/revisión/banderas/snapshots en dominio y orquestación; permisos exigen perfil del mismo usuario y bandera de contraseña exactamente False; username usa validador Django. Regresiones y pendientes por FR en review.md. Solo cambios locales de revisión hasta nueva autorización de publicación.

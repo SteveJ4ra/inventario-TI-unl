@@ -10,3 +10,7 @@
 - Extender Movement/constraints y rectificación de 002; preservar snapshot y decisiones. Conectar login, cambio de contraseña, endpoints y listas filtradas con autorización de servidor.
 - Conectar los validadores y permisos 005 a endpoints reales y al perfil revisor de 003/005; verificar filtrado de solicitudes por usuario en la base de datos y cambio inicial de contraseña. El frontend queda fuera del alcance actual.
 - Repetir PostgreSQL, pruebas backend de roles/CSRF y concurrencia tras integración; resolver migraciones sin modificar migraciones ya aplicadas.
+
+## Contratos precisados por revisión
+
+ReviewerProfile debe exponer `user_id`, `faculty_id` y `must_change_password` booleano no nulo, con relación `user.reviewer_profile`. El permiso preparado usa el grupo técnico `Revisores`; acordar esa constante al conectar provisión y login. Guardas globales deben impedir que una cuenta temporal con otros grupos eluda el cambio inicial. El adaptador debe proteger revisor/rol frente a cambios concurrentes; los tests actuales no certifican esa protección. Ver review.md antes de declarar completa cualquier tarea.

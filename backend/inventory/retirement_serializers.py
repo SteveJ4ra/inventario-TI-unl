@@ -1,5 +1,6 @@
 """Validación de entradas para los endpoints 005; no habilita rutas."""
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from .serializers import StrictSerializer
 
@@ -30,7 +31,7 @@ class RetirementReassignmentInput(StrictSerializer):
 
 
 class ReviewerCreateInput(StrictSerializer):
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=150, validators=[UnicodeUsernameValidator()])
     faculty_id = serializers.IntegerField(min_value=1)
     password = serializers.CharField(write_only=True, trim_whitespace=False)
 

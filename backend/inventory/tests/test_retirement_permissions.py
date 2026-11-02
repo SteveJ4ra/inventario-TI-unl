@@ -5,7 +5,7 @@ from inventory.retirement_permissions import IsAssignedReviewer, IsReviewerAccou
 
 
 def request_for(*, active=True, authenticated=True, member=True, faculty_id=10, must_change=False):
-    user = SimpleNamespace(pk=2, is_active=active, is_authenticated=authenticated, reviewer_profile=SimpleNamespace(faculty_id=faculty_id, must_change_password=must_change), groups=MagicMock())
+    user = SimpleNamespace(pk=2, is_active=active, is_authenticated=authenticated, reviewer_profile=SimpleNamespace(user_id=2, faculty_id=faculty_id, must_change_password=must_change), groups=MagicMock())
     user.groups.filter.return_value.exists.return_value = member
     return SimpleNamespace(user=user)
 
@@ -34,3 +34,20 @@ class ReviewerPermissionTests(SimpleTestCase):
         request = request_for()
         del request.user.reviewer_profile
         self.assertFalse(IsAssignedReviewer().has_permission(request, None))
+
+    def test_unknown_password_state_never_grants_access(self):
+        for value in (None, 0, "", "false"):
+            with self.subTest(value=value):
+                self.assertFalse(IsAssignedReviewer().has_permission(request_for(must_change=value), None))
+
+    def test_profile_must_belong_to_authenticated_user(self):
+        request = request_for()
+        request.user.reviewer_profile.user_id = 3
+        self.assertFalse(IsReviewerAccount().has_permission(request, None))
+
+    def test_invalid_identity_and_faculty_fail_closed(self):
+        for faculty in (0, -1, True):
+            self.assertFalse(IsReviewerAccount().has_permission(request_for(faculty_id=faculty), None))
+        request = request_for()
+        request.user.pk = None
+        self.assertFalse(IsAssignedReviewer().has_object_permission(request, None, SimpleNamespace(assigned_reviewer_id=None)))
