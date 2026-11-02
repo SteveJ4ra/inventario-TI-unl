@@ -4,7 +4,7 @@
 
 | Verificación | Resultado | Alcance |
 |---|---|---|
-| `python -m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 7 pruebas | Reglas puras; no valida transacciones ni API reales. |
+| `python -m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 13 pruebas | Reglas y orquestación con doble en memoria; no valida transacciones ni API reales. |
 | `backend/tools/test_postgres.py inventory.tests.test_deactivate_gestor --verbosity 2` | PASS: 2 pruebas | PostgreSQL temporal; desactivación, acceso y autoría. |
 | `backend/tools/test_postgres.py` | PASS: 30 pruebas | Base 002 y comando de desactivación; no implementa endpoints 005. |
 | `npm.cmd --prefix frontend test -- --run` | PASS: 24 pruebas | Suite completa después de agregar los casos de baja/contraseña. |
