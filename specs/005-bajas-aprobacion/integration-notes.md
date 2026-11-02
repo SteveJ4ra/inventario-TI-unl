@@ -18,3 +18,9 @@ ReviewerProfile debe exponer `user_id`, `faculty_id` y `must_change_password` bo
 La orquestación incluye cancel_for_recovery, que exige actor Gestor, revisión y recovery_event_id. El adaptador debe usar atomic anidado en la misma conexión y el servicio de 004 debe invocarlo dentro de la transacción exterior; aún no se ha probado rollback real.
 
 El adaptador de recuperación debe verificar que recovery_event_id pertenezca al activo bloqueado; si no coincide, rechazar sin cancelación. Esta validación aislada no reemplaza la restricción/integración ORM real.
+
+## Sustitución de pendientes por implementación nueva
+
+Existen ahora modelos/adaptador/API en retirement_models.py, retirement_store.py y retirement_api.py. Queda registrar esos modelos en inventory.models tras integrar proveedores reales, crear migraciones con dependencias reales y RunPython para install_retirement_guards, y combinar URLs/sesión con 003 sin duplicarlas. Los campos de contrato usados son Asset.faculty/lifecycle_status, MaintenanceEvent.status=in_progress, RecoveryEvent.asset y Faculty.active. Confirmar esos nombres con las implementaciones reales.
+
+La configuración contract_tests.settings sustituye InventoryConfig únicamente en el proceso de tests; añade campos/proveedores de prueba y crea esquema con syncdb. Nunca usarla con la base local ni integrarla en settings de despliegue. No simula persistencia: el adaptador y las restricciones se ejecutaron sobre PostgreSQL real, pero no certifica la migración final ni las carreras entre procesos.

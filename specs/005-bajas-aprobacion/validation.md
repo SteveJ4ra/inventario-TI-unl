@@ -16,3 +16,9 @@ Comandos ejecutados desde la raíz con `backend/.venv/Scripts/python.exe`:
 Los nuevos casos reprodujeron antes de corregir: aceptación de identidades/banderas ambiguas, falta de comprobación de activo/solicitud retornados y estado de contraseña desconocido. Después de corregir, la suite completa finalizó con código 0.
 
 El runner levanta PostgreSQL temporal privado y lo elimina; no cambia backend/.env ni la DB local. Los tests con callbacks/mocks no demuestran seguridad de endpoints, carreras aprobación/recuperación ni atomicidad del adaptador que aún falta. Informe por FR y hallazgos: [review.md](review.md).
+
+## Pruebas nuevas de contrato PostgreSQL
+
+`backend/.venv/Scripts/python.exe backend/tools/test_postgres.py contract_tests --settings=contract_tests.settings --verbosity 1`: PASS, 12 tests. Se creó el esquema de prueba con FK reales, proveedores mínimos de 003/004 y triggers de inmutabilidad de 005. Se verificaron modelos, servicios ORM y HTTP/sesiones contra PostgreSQL real. Esto NO es prueba de integración con el código de Alex/Yandri, ni prueba de migraciones de despliegue: en esta configuración exclusiva de tests se usa syncdb para construir el esquema.
+
+Se verificaron: solicitud pendiente única; no autoasignación SQL; rechazo con motivo; contraseña inicial; modelo y SQL directo inmutables; baja/decisión persistentes; doble decisión rechazada; rollback exterior de baja y cancelación con evento de recuperación; revisor ajeno sin acceso a lista/decisión; prohibición de acceso a administración para anónimo/Gestor.

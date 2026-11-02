@@ -15,3 +15,9 @@ Para usar la única función integrada, ejecutar `backend/manage.py deactivate_g
 ## Correcciones de revisión
 
 Se añadieron validaciones explícitas de identidad/revisión/banderas/snapshots en dominio y orquestación; permisos exigen perfil del mismo usuario y bandera de contraseña exactamente False; username usa validador Django. Regresiones y pendientes por FR en review.md. Solo cambios locales de revisión hasta nueva autorización de publicación.
+
+## Avance ORM y HTTP con proveedores de contrato
+
+Se añadieron retirement_models.py (ReviewerProfile, DecommissionRequest, ApprovalDecision, DecommissionEvent, RetirementAudit), retirement_store.py (adaptador ORM), retirement_api.py (endpoints) y retirement_schema.py (guardas PostgreSQL). Esta implementación se prueba con contract_tests.settings y proveedores mínimos solo de prueba. NO está registrada en la configuración productiva actual, porque Faculty y los campos lifecycle de 003/004 aún no existen allí. Por eso la aplicación normal todavía no expone estos endpoints.
+
+Las pruebas comprobaron bajas reales en DB, decisiones, restricciones SQL, aislamiento de consulta por revisor, contraseña temporal, rollback exterior de baja/cancelación e inmutabilidad de decisión ante SQL directo. La migración final, integración de login con 003, rectificación de baja y pruebas de carreras todavía faltan. No activar contract_tests.settings para trabajar con datos reales.
