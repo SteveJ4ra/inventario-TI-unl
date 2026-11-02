@@ -8,5 +8,5 @@
 - Implementar adaptador ORM de RetirementStore en retirement_workflow.py: atomic real, bloqueo de activo antes de solicitud, acceso seguro al perfil revisor, comprobación de roles/cambio de contraseña, snapshots, registros append-only y revisión. El puerto y sus tests con dobles no implementan ni prueban bloqueo, persistencia ni autorización reales. Conectar las rutas al adaptador solo al verificarlo en PostgreSQL.
 - Conectar recuperación con cancelación atómica y cambio de facultad bloqueado mientras exista solicitud; comprobar carrera recuperación/aprobación.
 - Extender Movement/constraints y rectificación de 002; preservar snapshot y decisiones. Conectar login, cambio de contraseña, endpoints y listas filtradas con autorización de servidor.
-- Conectar los componentes React a API real y navegación por rol; revisar payloads y validación de campos contra implementación final. Actualmente no están visibles en la aplicación ni realizan solicitudes.
-- Repetir PostgreSQL, pruebas de roles/CSRF, concurrencia y frontend completo tras integración; resolver migraciones sin modificar migraciones ya aplicadas.
+- Conectar los validadores y permisos 005 a endpoints reales y al perfil revisor de 003/005; verificar filtrado de solicitudes por usuario en la base de datos y cambio inicial de contraseña. El frontend queda fuera del alcance actual.
+- Repetir PostgreSQL, pruebas backend de roles/CSRF y concurrencia tras integración; resolver migraciones sin modificar migraciones ya aplicadas.
