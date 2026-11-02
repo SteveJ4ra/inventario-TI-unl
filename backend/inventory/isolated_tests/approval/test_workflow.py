@@ -33,6 +33,7 @@ class Store:
         return self.request
     def reviewer(self, user_id): return self.reviewers[user_id]
     def has_pending_request(self, asset_id): return self.pending
+    def recovery_event_belongs_to_asset(self, recovery_event_id, asset_id): return recovery_event_id == 42 and asset_id == self.asset.id
     def save_normal_retirement(self, asset, actor_id, reason): self.writes.append(("retire", reason)); return "ok"
     def save_request(self, asset, state, reviewer): self.writes.append(("request", state)); return state
     def save_decision(self, asset, request, actor_id, state, reason, reviewer): self.writes.append(("decision", state.status)); return state
@@ -118,3 +119,8 @@ class WorkflowTests(unittest.TestCase):
         state = cancel_for_recovery(self.store, **args)
         self.assertEqual(state.status, "cancelled")
         self.assertEqual(self.store.writes, [("cancel", "ASSET_RECOVERED", 42)])
+
+    def test_recovery_cannot_link_event_of_other_asset(self):
+        with self.assertRaises(ValueError):
+            cancel_for_recovery(self.store, asset_id=1, request_id=7, actor_id=1, expected_revision=3, recovery_event_id=99)
+        self.assertEqual(self.store.writes, [])
