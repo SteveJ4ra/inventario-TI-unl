@@ -49,12 +49,16 @@ def create_custodian(*, actor, data):
 
 
 def snapshot(asset):
-    return {
+    result = {
         "condition": asset.condition,
         "assignment": asset.assignment,
         "custodian_id": asset.current_custodian_id,
         "location": asset.location,
     }
+
+    if hasattr(asset, "lifecycle_status"):
+        result["lifecycle_status"] = asset.lifecycle_status
+    return result
 
 
 def record_operation(*, asset_id, actor, operation, data):
@@ -67,6 +71,8 @@ def record_operation(*, asset_id, actor, operation, data):
                 "La ficha cambió. Recárgala y revisa antes de repetir.",
                 "stale_revision",
             )
+        if operation != Movement.Type.RECTIFICATION and getattr(asset, "lifecycle_status", "localizado") != "localizado":
+            raise Conflict("La operación requiere un activo localizado.")
         before = snapshot(asset)
         person = None
         target = None
@@ -105,6 +111,7 @@ def record_operation(*, asset_id, actor, operation, data):
             if (
                 not target
                 or target.pk != data["movement_id"]
+                or target.resulting_revision != asset.revision
                 or target.type == Movement.Type.RECTIFICATION
                 or Movement.objects.filter(rectifies=target).exists()
             ):
@@ -117,10 +124,13 @@ def record_operation(*, asset_id, actor, operation, data):
             asset.assignment = previous["assignment"]
             asset.current_custodian_id = previous["custodian_id"]
             asset.location = previous["location"]
+            if "lifecycle_status" in previous and hasattr(asset, "lifecycle_status"):
+                asset.lifecycle_status = previous["lifecycle_status"]
             person = target.custodian
         else:
             raise ValueError("Operación no soportada")
         asset.revision += 1
+        extra_fields = ["lifecycle_status"] if hasattr(asset, "lifecycle_status") else []
         asset.save(
             update_fields=[
                 "condition",
@@ -128,7 +138,7 @@ def record_operation(*, asset_id, actor, operation, data):
                 "current_custodian",
                 "location",
                 "revision",
-            ]
+            ] + extra_fields
         )
         person_snapshot = (
             {

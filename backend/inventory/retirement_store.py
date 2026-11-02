@@ -45,6 +45,10 @@ class DjangoRetirementStore:
         model = apps.get_model("inventory", "RecoveryEvent")
         return model.objects.filter(pk=recovery_event_id, asset_id=asset_id).exists()
 
+    def _reviewer_snapshot(self, user_id):
+        profile = ReviewerProfile.objects.select_related("user", "faculty").get(user_id=user_id)
+        return {"reviewer_id": user_id, "reviewer_label": profile.user.username, "reviewer_faculty_id": profile.faculty_id, "reviewer_faculty_label": profile.faculty.name}
+
     def _snapshot(self, asset):
         return snapshot(asset) | {"lifecycle_status": asset.lifecycle_status, "faculty_id": asset.faculty_id}
 
@@ -61,6 +65,8 @@ class DjangoRetirementStore:
         asset.assignment = None
         asset.current_custodian_id = None
         after = self._snapshot(asset)
+        if request is not None:
+            after = after | self._reviewer_snapshot(actor_id) | {"request_id": request.pk}
         self._audit(asset, actor_id, "retirement", before, after, request)
         movement = Movement.objects.create(asset=asset, type="baja", actor_id=actor_id, actor_label=get_user_model().objects.get(pk=actor_id).username, before=before, after=after, reason=reason, resulting_revision=asset.revision)
         return DecommissionEvent.objects.create(asset=asset, movement=movement, request=request, actor_id=actor_id, reason=reason)
@@ -71,7 +77,7 @@ class DjangoRetirementStore:
     def save_request(self, asset, state, reviewer):
         obj = Asset.objects.get(pk=asset.id)
         request = DecommissionRequest.objects.create(asset=obj, requester_id=state.requester_id, assigned_reviewer_id=state.reviewer_id, asset_faculty_id=state.asset_faculty_id, reason=state.reason)
-        self._audit(obj, state.requester_id, "retirement_requested", {}, {"reason": state.reason, "reviewer_id": reviewer.id, "reviewer_faculty_id": reviewer.faculty_id, "asset_faculty_id": state.asset_faculty_id}, request)
+        self._audit(obj, state.requester_id, "retirement_requested", {}, {"reason": state.reason, "asset_faculty_id": state.asset_faculty_id, "asset_faculty_label": obj.faculty.name} | self._reviewer_snapshot(reviewer.id), request)
         return request
 
     def save_decision(self, asset, request, actor_id, state, reason, reviewer):
@@ -82,7 +88,7 @@ class DjangoRetirementStore:
         if state.status == "approved":
             self._retire(asset.id, actor_id, record.reason, record)
         else:
-            self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_rejected", {"status": "pending"}, {"status": state.status, "reason": reason, "reviewer_faculty_id": reviewer.faculty_id}, record)
+            self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_rejected", {"status": "pending"}, {"status": state.status, "reason": reason} | self._reviewer_snapshot(reviewer.id), record)
         return decision
 
     def save_reassignment(self, asset, request, actor_id, state, reviewer):
@@ -90,7 +96,7 @@ class DjangoRetirementStore:
         previous = record.assigned_reviewer_id
         record.assigned_reviewer_id = reviewer.id
         record.save(update_fields=["assigned_reviewer"])
-        self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_reassigned", {"reviewer_id": previous}, {"reviewer_id": reviewer.id, "reviewer_faculty_id": reviewer.faculty_id}, record)
+        self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_reassigned", {"reviewer_id": previous}, self._reviewer_snapshot(reviewer.id), record)
         return record
 
     def save_recovery_cancellation(self, asset, request, actor_id, state, cause, recovery_event_id):
@@ -99,3 +105,14 @@ class DjangoRetirementStore:
         record.save(update_fields=["status"])
         self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_cancelled", {"status": "pending"}, {"status": state.status, "cause": cause, "recovery_event_id": recovery_event_id}, record)
         return record
+
+
+def assert_faculty_change_allowed(asset_id):
+    """Invocar dentro de la transacción de cambio de facultad de 003."""
+    from django.db import connection
+    from .errors import Conflict
+    if not connection.in_atomic_block:
+        raise RuntimeError("La comprobación requiere la transacción de cambio de facultad.")
+    get_object_or_404(Asset.objects.select_for_update(), pk=asset_id)
+    if DecommissionRequest.objects.filter(asset_id=asset_id, status="pending").exists():
+        raise Conflict("No se cambia la facultad mientras exista una solicitud pendiente.")

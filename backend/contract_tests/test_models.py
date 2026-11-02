@@ -42,3 +42,13 @@ class RetirementModelTests(RetirementFixtures):
             cursor.execute("UPDATE inventory_approvaldecision SET reason=%s WHERE id=%s", ["alterado", decision.id])
         decision.refresh_from_db()
         self.assertEqual(decision.reason, "Revisar")
+
+    def test_retirement_reason_is_required_by_database(self):
+        from inventory.models import Movement
+        from inventory.retirement_models import DecommissionEvent
+        values=dict(asset=self.asset,type="baja",actor=self.requester,actor_label=self.requester.username,before={},after={},resulting_revision=1)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Movement.objects.create(**values,reason="")
+        movement=Movement.objects.create(**values,reason="Daño")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            DecommissionEvent.objects.create(asset=self.asset,movement=movement,actor=self.requester,reason="")

@@ -32,3 +32,11 @@ Asset._meta.constraints.append(models.CheckConstraint(condition=(Q(lifecycle_sta
 
 Movement._meta.constraints = [constraint for constraint in Movement._meta.constraints if constraint.name != "movement_type_valid"]
 Movement._meta.constraints.append(models.CheckConstraint(condition=Q(type__in=["entrega", "devolucion", "cambio_condicion", "rectificacion", "baja"]), name="movement_type_valid"))
+
+
+class Incident(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.PROTECT)
+    type = models.CharField(max_length=32)
+    last_custodian_snapshot = models.JSONField(null=True)
+    class Meta:
+        app_label = "inventory"

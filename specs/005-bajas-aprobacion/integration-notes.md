@@ -1,26 +1,13 @@
-# Integración 005 pendiente
+# Activación e integración 005
 
-**Base:** origin/develop `161187c` (PR #10 integrado). Al revisar el remoto, 003 y 004 aún no estaban integrados.
+Base de implementación: develop 161187c. No se han fusionado ramas de compañeros ni publicado PR nuevo.
 
-- 003 debe aportar Faculty, Operador y su inicio de sesión. No se añadió un Faculty ni Operador duplicado.
-- 004 debe aportar lifecycle, restricciones de custodia, incidentes y recuperación. No se añadió otra recuperación.
-- Faltan modelos ReviewerProfile, DecommissionRequest/Decision/Event y migraciones sobre migraciones reales de 003/004. No se han inventado FKs ni nombres de migración futuros.
-- Implementar adaptador ORM de RetirementStore en retirement_workflow.py: atomic real, bloqueo de activo antes de solicitud, acceso seguro al perfil revisor, comprobación de roles/cambio de contraseña, snapshots, registros append-only y revisión. El puerto y sus tests con dobles no implementan ni prueban bloqueo, persistencia ni autorización reales. Conectar las rutas al adaptador solo al verificarlo en PostgreSQL.
-- Conectar recuperación con cancelación atómica y cambio de facultad bloqueado mientras exista solicitud; comprobar carrera recuperación/aprobación.
-- Extender Movement/constraints y rectificación de 002; preservar snapshot y decisiones. Conectar login, cambio de contraseña, endpoints y listas filtradas con autorización de servidor.
-- Conectar los validadores y permisos 005 a endpoints reales y al perfil revisor de 003/005; verificar filtrado de solicitudes por usuario en la base de datos y cambio inicial de contraseña. El frontend queda fuera del alcance actual.
-- Repetir PostgreSQL, pruebas backend de roles/CSRF y concurrencia tras integración; resolver migraciones sin modificar migraciones ya aplicadas.
+1. Integrar primero proveedores reales 003/004: Faculty, permisos/sesión Operador, Asset.faculty y lifecycle_status, assignment nullable fuera de localizado, MaintenanceEvent.status y RecoveryEvent.asset. El adaptador usa Incident.type lost/stolen y last_custodian_snapshot para contexto. Confirmar los nombres reales y traducir en el adaptador si difieren; no duplicar modelos productivos.
+2. Registrar retirement_models en inventory.models y generar migración contra el grafo real. Solo existe ahora 0003_retirement_movement_type: si otras ramas tienen otra 0003, resolver hojas con una migración merge sin alterar migraciones aplicadas. NO generar una migración productiva desde contract_tests.settings: incluiría proveedores falsos de tests.
+3. Después de crear tablas 005, invocar install_retirement_guards desde una migración; FK reales y eventos auditados deben conservarse.
+4. Combinar retirement_api y sus rutas con login/me/logout de 003 y urls.py, sin duplicar rutas ni permisos. La configuración contract_tests.urls enseña las rutas probadas, pero no debe usarse con datos reales.
+5. Conectar assert_faculty_change_allowed dentro de la transacción y bloqueo del cambio de facultad en 003. Conectar cancel_for_recovery dentro de la transacción exterior de recuperación 004, validando recovery_event_id y revisión resultante antes de guardar el estado final.
+6. ReviewerProfile: user_id, faculty_id y must_change_password no nulo; relación reviewer_profile. Grupos técnicos usados: Gestores, Operadores, Revisores. Confirmar constante Operadores con 003. Cuenta temporal no puede eludir cambio de contraseña por otros grupos.
+7. Ejecutar todas las suites sobre los proveedores reales y revisar carreras/orden de locks con esas implementaciones. Las pruebas contract_tests usan syncdb y agregan campos mínimos solo a su registro de apps. Nunca activar esa configuración con una base de desarrollo real ni en producción.
 
-## Contratos precisados por revisión
-
-ReviewerProfile debe exponer `user_id`, `faculty_id` y `must_change_password` booleano no nulo, con relación `user.reviewer_profile`. El permiso preparado usa el grupo técnico `Revisores`; acordar esa constante al conectar provisión y login. Guardas globales deben impedir que una cuenta temporal con otros grupos eluda el cambio inicial. El adaptador debe proteger revisor/rol frente a cambios concurrentes; los tests actuales no certifican esa protección. Ver review.md antes de declarar completa cualquier tarea.
-
-La orquestación incluye cancel_for_recovery, que exige actor Gestor, revisión y recovery_event_id. El adaptador debe usar atomic anidado en la misma conexión y el servicio de 004 debe invocarlo dentro de la transacción exterior; aún no se ha probado rollback real.
-
-El adaptador de recuperación debe verificar que recovery_event_id pertenezca al activo bloqueado; si no coincide, rechazar sin cancelación. Esta validación aislada no reemplaza la restricción/integración ORM real.
-
-## Sustitución de pendientes por implementación nueva
-
-Existen ahora modelos/adaptador/API en retirement_models.py, retirement_store.py y retirement_api.py. Queda registrar esos modelos en inventory.models tras integrar proveedores reales, crear migraciones con dependencias reales y RunPython para install_retirement_guards, y combinar URLs/sesión con 003 sin duplicarlas. Los campos de contrato usados son Asset.faculty/lifecycle_status, MaintenanceEvent.status=in_progress, RecoveryEvent.asset y Faculty.active. Confirmar esos nombres con las implementaciones reales.
-
-La configuración contract_tests.settings sustituye InventoryConfig únicamente en el proceso de tests; añade campos/proveedores de prueba y crea esquema con syncdb. Nunca usarla con la base local ni integrarla en settings de despliegue. No simula persistencia: el adaptador y las restricciones se ejecutaron sobre PostgreSQL real, pero no certifica la migración final ni las carreras entre procesos.
+El backend 005 ya contiene modelo/adaptador/HTTP y rectificación, pero no está disponible en la aplicación normal antes de estos pasos. La auditoría final debe revisar también nombres de tipos, permisos de grupos existentes, último custodio del reporte y migraciones.

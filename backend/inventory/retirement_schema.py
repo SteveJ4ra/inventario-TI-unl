@@ -2,7 +2,7 @@
 
 
 def install_retirement_guards(connection):
-    tables = ("inventory_approvaldecision", "inventory_decommissionevent", "inventory_retirementaudit")
+    tables = ("inventory_approvaldecision", "inventory_decommissionevent", "inventory_retirementaudit", "inventory_revieweraccountaudit")
     with connection.cursor() as cursor:
         cursor.execute("""CREATE OR REPLACE FUNCTION inventory_retirement_immutable() RETURNS trigger AS $$
         BEGIN RAISE EXCEPTION 'El historial de bajas es inmutable' USING ERRCODE = '55000'; END;

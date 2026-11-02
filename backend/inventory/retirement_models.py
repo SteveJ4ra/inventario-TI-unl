@@ -78,6 +78,8 @@ class DecommissionEvent(ImmutableRecord):
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     reason = models.CharField(max_length=2000)
     occurred_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.CheckConstraint(condition=~Q(reason=""), name="decommission_reason_required")]
 
 
 class RetirementAudit(ImmutableRecord):
@@ -91,3 +93,11 @@ class RetirementAudit(ImmutableRecord):
     occurred_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [models.UniqueConstraint(fields=["asset", "resulting_revision"], name="retirement_audit_revision_unique")]
+
+
+class ReviewerAccountAudit(ImmutableRecord):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="reviewer_account_events")
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="reviewer_account_actions")
+    action = models.CharField(max_length=32)
+    details = models.JSONField()
+    occurred_at = models.DateTimeField(auto_now_add=True)
