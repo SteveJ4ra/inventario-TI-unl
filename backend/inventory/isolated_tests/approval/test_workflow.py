@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from inventory.retirement_policy import RetirementRequestState
-from inventory.retirement_workflow import AssetState, ReviewerState, RequestRecord, retire_normal, request_retirement, decide_retirement, reassign_retirement
+from inventory.retirement_workflow import AssetState, ReviewerState, RequestRecord, retire_normal, request_retirement, decide_retirement, reassign_retirement, cancel_for_recovery
 
 
 class Store:
@@ -37,6 +37,7 @@ class Store:
     def save_request(self, asset, state, reviewer): self.writes.append(("request", state)); return state
     def save_decision(self, asset, request, actor_id, state, reason, reviewer): self.writes.append(("decision", state.status)); return state
     def save_reassignment(self, asset, request, actor_id, state, reviewer): self.writes.append(("reassign", state.reviewer_id)); return state
+    def save_recovery_cancellation(self, asset, request, actor_id, state, cause, recovery_event_id): self.writes.append(("cancel", cause, recovery_event_id)); return state
 
 
 class WorkflowTests(unittest.TestCase):
@@ -106,3 +107,14 @@ class WorkflowTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 request_retirement(store, asset_id=1, actor_id=1, reviewer_id=2, expected_revision=3, reason="Pérdida")
             self.assertEqual(store.writes, [])
+
+    def test_recovery_cancellation_requires_event_and_manager(self):
+        args = dict(asset_id=1, request_id=7, actor_id=1, expected_revision=3, recovery_event_id=42)
+        with self.assertRaises(PermissionError):
+            cancel_for_recovery(self.store, **(args | {"actor_id": 2}))
+        with self.assertRaises(ValueError):
+            cancel_for_recovery(self.store, **(args | {"recovery_event_id": 0}))
+        self.assertEqual(self.store.writes, [])
+        state = cancel_for_recovery(self.store, **args)
+        self.assertEqual(state.status, "cancelled")
+        self.assertEqual(self.store.writes, [("cancel", "ASSET_RECOVERED", 42)])

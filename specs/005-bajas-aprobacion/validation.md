@@ -6,7 +6,7 @@ Comandos ejecutados desde la raíz con `backend/.venv/Scripts/python.exe`:
 
 | Comando | Resultado actual | Qué verifica |
 |---|---|---|
-| `-m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 19 tests | Dominio/orquestación; Store es doble solo de pruebas. |
+| `-m unittest discover -s backend/inventory/isolated_tests/approval -p "test_*.py" -v` | PASS: 20 tests | Dominio/orquestación; Store es doble solo de pruebas. |
 | `backend/tools/test_postgres.py` | PASS: 44 tests | Regresiones 002, desactivación real y tests aislados de serializadores/permisos. No todos los 44 requieren DB. |
 | `-m pip check` | PASS: No broken requirements found | Dependencias instaladas. |
 | `git diff --check` | PASS | Formato del diff, no comportamiento. |

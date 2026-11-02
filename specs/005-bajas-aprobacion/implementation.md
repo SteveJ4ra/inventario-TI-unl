@@ -2,7 +2,7 @@
 
 **Fecha:** 1 de noviembre de 2026. **Estado:** parcial; no declarar implementación completa.
 
-- `backend/inventory/retirement_workflow.py`: orquestación sobre el protocolo RetirementStore para baja, solicitud, decisión y reasignación; exige autorización, revisión y bloqueo de activo antes de solicitud. No tiene adaptador ORM ni rutas activas.
+- `backend/inventory/retirement_workflow.py`: orquestación sobre el protocolo RetirementStore para baja, solicitud, decisión, reasignación y cancelación por recuperación; exige autorización, revisión y bloqueo de activo antes de solicitud. No tiene adaptador ORM ni rutas activas.
 - `backend/inventory/retirement_policy.py`: reglas puras de elegibilidad y transiciones de solicitud/decisión/reasignación/cancelación. No persisten datos ni sustituyen los servicios transaccionales.
 - `backend/inventory/management/commands/deactivate_gestor.py`: desactiva cuenta Gestor sin borrar autoría; rechaza usuario inexistente, no Gestor o ya inactivo.
 - `backend/inventory/retirement_serializers.py` y `retirement_permissions.py`: validación estricta de entradas y permisos de revisor preparados; todavía no están conectados a endpoints ni a un modelo ReviewerProfile real. La interfaz se retiró por decisión de alcance actual: solo backend.

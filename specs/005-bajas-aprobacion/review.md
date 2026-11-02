@@ -38,6 +38,6 @@ Los casos de regresión reprodujeron fallos antes de las correcciones. Las prueb
 
 ## Pruebas y límites
 
-19 tests aislados de dominio/orquestación PASS; 44 tests de suite backend PASS bajo runner PostgreSQL temporal; pip check PASS; diff sin errores de whitespace. No se probaron concurrencia real, rollback, idempotencia de decisiones ni permisos HTTP de los endpoints 005 porque esos endpoints/adaptador/modelos no existen. Los tests con Store en memoria comprueban guardas y orden de llamadas, NO bloqueos ni atomicidad SQL.
+20 tests aislados de dominio/orquestación PASS; 44 tests de suite backend PASS bajo runner PostgreSQL temporal; pip check PASS; diff sin errores de whitespace. No se probaron concurrencia real, rollback, idempotencia de decisiones ni permisos HTTP de los endpoints 005 porque esos endpoints/adaptador/modelos no existen. Los tests con Store en memoria comprueban guardas y orden de llamadas, NO bloqueos ni atomicidad SQL.
 
 La aprobación para publicar un PR queda reservada a Steven. El PR anterior fue cerrado y esta revisión no lo reabre. Se necesita completar modelos/migraciones/servicios/API y después ejecutar los escenarios pendientes de validation-plan.md; no basta con integrar proveedores y asumir que el resto aparecerá automáticamente.

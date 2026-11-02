@@ -10,7 +10,7 @@ from typing import ContextManager, Protocol
 
 from .retirement_policy import (
     RetirementRequestState, create_request, decide_request,
-    reassign_request, validate_normal_retirement, require_id,
+    reassign_request, validate_normal_retirement, require_id, cancel_on_recovery,
 )
 
 
@@ -60,6 +60,7 @@ class RetirementStore(Protocol):
     def save_request(self, asset: AssetState, state: RetirementRequestState, reviewer: ReviewerState): ...
     def save_decision(self, asset: AssetState, request: RequestRecord, actor_id: int, state: RetirementRequestState, reason: str, reviewer: ReviewerState): ...
     def save_reassignment(self, asset: AssetState, request: RequestRecord, actor_id: int, state: RetirementRequestState, reviewer: ReviewerState): ...
+    def save_recovery_cancellation(self, asset: AssetState, request: RequestRecord, actor_id: int, state: RetirementRequestState, cause: str, recovery_event_id: int): ...
 
 
 def _authorize(store: RetirementStore, user_id: int, role: str) -> None:
@@ -149,3 +150,19 @@ def reassign_retirement(store: RetirementStore, *, asset_id: int, request_id: in
             raise ValueError("reviewer_identity_mismatch")
         state = reassign_request(request.state, is_operator=True, reviewer_id=reviewer.id, reviewer_faculty_id=reviewer.faculty_id, reviewer_active=reviewer.active)
         return store.save_reassignment(asset, request, actor_id, state, reviewer)
+
+
+def cancel_for_recovery(store: RetirementStore, *, asset_id: int, request_id: int, actor_id: int, expected_revision: int, recovery_event_id: int):
+    """Cancelar solicitud desde la misma transacción del evento de recuperación.
+
+    El adaptador debe integrar atomic de forma anidada sobre la misma conexión;
+    si falla la recuperación exterior, también se revierte esta cancelación.
+    """
+    with store.atomic():
+        _authorize(store, actor_id, "manager")
+        require_id(recovery_event_id)
+        asset = _asset(store, asset_id, expected_revision)
+        request = _request_for_asset(store, request_id, asset)
+        _require_unlocated(asset)
+        state, cause = cancel_on_recovery(request.state)
+        return store.save_recovery_cancellation(asset, request, actor_id, state, cause, recovery_event_id)

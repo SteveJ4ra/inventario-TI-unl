@@ -14,3 +14,5 @@
 ## Contratos precisados por revisión
 
 ReviewerProfile debe exponer `user_id`, `faculty_id` y `must_change_password` booleano no nulo, con relación `user.reviewer_profile`. El permiso preparado usa el grupo técnico `Revisores`; acordar esa constante al conectar provisión y login. Guardas globales deben impedir que una cuenta temporal con otros grupos eluda el cambio inicial. El adaptador debe proteger revisor/rol frente a cambios concurrentes; los tests actuales no certifican esa protección. Ver review.md antes de declarar completa cualquier tarea.
+
+La orquestación incluye cancel_for_recovery, que exige actor Gestor, revisión y recovery_event_id. El adaptador debe usar atomic anidado en la misma conexión y el servicio de 004 debe invocarlo dentro de la transacción exterior; aún no se ha probado rollback real.
