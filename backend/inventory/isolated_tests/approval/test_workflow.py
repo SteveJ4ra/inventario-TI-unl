@@ -33,7 +33,7 @@ class Store:
         return self.request
     def reviewer(self, user_id): return self.reviewers[user_id]
     def has_pending_request(self, asset_id): return self.pending
-    def recovery_event_belongs_to_asset(self, recovery_event_id, asset_id): return recovery_event_id == 42 and asset_id == self.asset.id
+    def recovery_event_belongs_to_asset(self, recovery_event_id, asset_id, request_id): return recovery_event_id == 42 and asset_id == self.asset.id and request_id == self.request.id
     def save_normal_retirement(self, asset, actor_id, reason): self.writes.append(("retire", reason)); return "ok"
     def save_request(self, asset, state, reviewer): self.writes.append(("request", state)); return state
     def save_decision(self, asset, request, actor_id, state, reason, reviewer): self.writes.append(("decision", state.status)); return state

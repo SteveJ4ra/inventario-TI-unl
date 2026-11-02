@@ -34,3 +34,7 @@ Cada reasignación registra operador autor, fecha/hora, revisor anterior y revis
 ## Rectificación compatible con 002
 
 Cada DecommissionEvent enlaza uno a uno un Movement de tipo nuevo `baja`; ampliar choices y constraints del Movement de 002. El movimiento contiene before/after completos, lifecycle y resulting_revision. `/rectify/` conserva entrada `movement_id`, `reason`, `expected_revision` y enlace rectifies de 002. Solo la baja cuya revisión sigue siendo la actual puede rectificarse; restaura snapshot previo sin borrar aprobación/solicitud ni reabrirla como pendiente. Una baja aprobada rectificada deja No localizado, con los antecedentes originales conservados. No rectificar una rectificación ni reactivar movimientos antiguos.
+
+## Precisiones verificadas en implementación
+
+DecommissionRequest.context_snapshot almacena incident_id, condición, ubicación y último custodio del reporte al solicitar la baja. Se copia a evidencia append-only para evitar alteraciones históricas. RetirementAudit.recovery_event es FK nullable PROTECT a RecoveryEvent; cancelación requiere que RecoveryEvent.incident_id coincida con el incident_id de la solicitud, además de compartir activo. Incluir ambos campos en la migración final de 005, no generar esa migración desde proveedores de contrato.

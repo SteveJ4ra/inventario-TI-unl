@@ -1,8 +1,9 @@
 from django.urls import path
 from inventory.auth_views import CsrfView
-from inventory.views import OperationView
+from inventory.views import OperationView, AssetsView
 from inventory.retirement_api import *
 urlpatterns=[
+ path("api/assets/",AssetsView.as_view()),
  path("api/assets/<int:asset_id>/rectify/",OperationView.as_view(), {"operation":"rectify"}),
  path("api/auth/csrf/",CsrfView.as_view()),
  path("api/auth/login/",RetirementLoginView.as_view()),

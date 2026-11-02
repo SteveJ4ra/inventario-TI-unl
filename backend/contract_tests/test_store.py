@@ -44,7 +44,7 @@ class RetirementStoreTests(RetirementFixtures):
         request=request_retirement(self.store,asset_id=self.asset.id,actor_id=self.requester.id,reviewer_id=self.reviewer.id,expected_revision=0,reason="Pérdida")
         with self.assertRaises(RuntimeError):
             with transaction.atomic():
-                recovery=RecoveryEvent.objects.create(asset=self.asset)
+                recovery=RecoveryEvent.objects.create(asset=self.asset,incident=self.incident)
                 cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=recovery.id)
                 raise RuntimeError("fallo recuperación")
         request.refresh_from_db();self.assertEqual(request.status,"pending")
@@ -92,3 +92,24 @@ class RetirementStoreTests(RetirementFixtures):
             retire_normal(self.store,asset_id=self.asset.id,actor_id=self.requester.id,expected_revision=0,reason="Daño")
         self.asset.refresh_from_db();self.assertEqual(self.asset.lifecycle_status,"localizado")
         self.assertEqual(Movement.objects.count(),0)
+
+    def test_previous_recovery_cannot_cancel_new_incident_request(self):
+        from .providers import Incident
+        old=RecoveryEvent.objects.create(asset=self.asset,incident=self.incident)
+        new_loss=Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot=None)
+        request=request_retirement(self.store,asset_id=self.asset.id,actor_id=self.requester.id,reviewer_id=self.reviewer.id,expected_revision=0,reason="Nueva pérdida")
+        with self.assertRaises(ValueError):
+            cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=old.pk)
+        request.refresh_from_db();self.assertEqual(request.status,"pending")
+        event=RecoveryEvent.objects.create(asset=self.asset,incident=new_loss)
+        cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=event.pk)
+        from django.db.models.deletion import ProtectedError
+        with self.assertRaises(ProtectedError): event.delete()
+
+    def test_no_request_without_loss_report_and_no_partial_writes(self):
+        self.incident.delete()
+        with self.assertRaises(Conflict):
+            request_retirement(self.store,asset_id=self.asset.id,actor_id=self.requester.id,reviewer_id=self.reviewer.id,expected_revision=0,reason="Sin reporte")
+        self.asset.refresh_from_db();self.assertEqual(self.asset.revision,0)
+        self.assertEqual(DecommissionRequest.objects.count(),0)
+        self.assertEqual(RetirementAudit.objects.count(),0)

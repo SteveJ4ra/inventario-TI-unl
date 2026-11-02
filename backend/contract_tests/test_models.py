@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from inventory.models import Asset
 from inventory.retirement_models import ReviewerProfile, DecommissionRequest, ApprovalDecision
-from .providers import Faculty
+from .providers import Faculty, Incident
 
 
 class RetirementFixtures(TestCase):
@@ -15,6 +15,7 @@ class RetirementFixtures(TestCase):
         self.other = Faculty.objects.create(name="Facultad B")
         ReviewerProfile.objects.create(user=self.reviewer, faculty=self.other)
         self.asset = Asset.objects.create(code="TI-900001", name="Equipo", description="Prueba", category="monitor", brand="Marca", model="M", serial_number="S", location="A", condition="averiado", assignment=None, lifecycle_status="no_localizado", faculty=self.faculty, created_by=self.requester)
+        self.incident = Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot=None)
     def create_request(self):
         return DecommissionRequest.objects.create(asset=self.asset, requester=self.requester, assigned_reviewer=self.reviewer, asset_faculty=self.faculty, reason="Pérdida")
 
@@ -52,3 +53,11 @@ class RetirementModelTests(RetirementFixtures):
         movement=Movement.objects.create(**values,reason="Daño")
         with self.assertRaises(IntegrityError), transaction.atomic():
             DecommissionEvent.objects.create(asset=self.asset,movement=movement,actor=self.requester,reason="")
+
+    def test_new_instance_cannot_overwrite_existing_history(self):
+        request=self.create_request()
+        decision=ApprovalDecision.objects.create(request=request,reviewer=self.reviewer,outcome="reject",reason="Original")
+        replacement=ApprovalDecision(pk=decision.pk,request=request,reviewer=self.reviewer,outcome="approve",reason="Cambio")
+        with self.assertRaises((IntegrityError,ValidationError)), transaction.atomic():
+            replacement.save()
+        decision.refresh_from_db();self.assertEqual(decision.outcome,"reject")

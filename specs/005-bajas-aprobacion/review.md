@@ -17,7 +17,7 @@
 
 Los casos de regresión reprodujeron fallos antes de las correcciones. Las pruebas de permiso/serialización son aisladas; solo el comando de desactivación está conectado a persistencia real de 002.
 
-## Revisión por requisito de 005
+## Revisión histórica por requisito de 005 (anterior a la implementación ORM/HTTP)
 
 | Requisito | Evidencia actual y pendiente |
 |---|---|
@@ -45,3 +45,16 @@ La aprobación para publicar un PR queda reservada a Steven. El PR anterior fue 
 ## Estado posterior al avance ORM/HTTP
 
 Los pendientes de código señalados arriba describían el avance anterior. Ahora existen modelos, adaptador, API, auditoría SQL, rectificación y pruebas de concurrencia. Evidencia actual: validation.md (44 base, 24 contrato, 21 aislados). El bloqueo restante es activación/migración definitiva y validación con proveedores reales; integration-notes.md contiene pasos exactos. No interpretar este avance como aprobación de despliegue ni autorización para publicar PR.
+
+## Auditoría actual sobre implementación ORM/HTTP
+
+| Problema | Corrección verificada |
+|---|---|
+| El contexto de una solicitud cambiaba con incidentes futuros; podía revelar un custodio ajeno al reporte original | context_snapshot guardado al crear solicitud y copiado a auditoría; la API devuelve ese snapshot. |
+| Un revisor temporal con grupo Gestores podía entrar por IsManager antiguo | La guarda compartida IsManager también exige cambio inicial completado si existe perfil revisor. Tras cambiar la contraseña recupera sus permisos legítimos. |
+| Evento de recuperación del mismo activo pero de otra pérdida podía cancelar una solicitud nueva | Validar asset_id, request_id e incident_id del snapshot contra el evento; rechazar antes de escribir si no coincide. FK PROTECT conserva la recuperación auditada. |
+| Una instancia nueva con PK de evidencia existente podía intentar UPDATE vía save | Evidencia nueva usa force_insert y rechaza force_update/update_fields; además permanecen triggers PostgreSQL. |
+| Cualquier IntegrityError al provisionar revisor se describía como usuario duplicado | Solo mapear a duplicate_user si realmente existe username; el resto se propaga y revierte toda la transacción. |
+| No localizado sin reporte podía producir una solicitud sin contexto de pérdida | Rechazar la creación y no guardar revisión, solicitud ni auditoría parcial. |
+
+Resultado actual: 30 tests de contrato PostgreSQL, 44 de regresión normal y 21 aislados aprobados. No se publicaron cambios ni se abrió/reabrió PR. El objetivo de activación final con 003/004 y migración definitiva sigue pendiente; esta auditoría no certifica el código de esos proveedores ni el grafo de migración que aún no existe.

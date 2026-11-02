@@ -41,9 +41,13 @@ class DjangoRetirementStore:
     def has_pending_request(self, asset_id):
         return DecommissionRequest.objects.filter(asset_id=asset_id, status="pending").exists()
 
-    def recovery_event_belongs_to_asset(self, recovery_event_id, asset_id):
+    def recovery_event_belongs_to_asset(self, recovery_event_id, asset_id, request_id):
         model = apps.get_model("inventory", "RecoveryEvent")
-        return model.objects.filter(pk=recovery_event_id, asset_id=asset_id).exists()
+        request = DecommissionRequest.objects.get(pk=request_id, asset_id=asset_id)
+        incident_id = request.context_snapshot.get("incident_id")
+        if incident_id is None:
+            return False
+        return model.objects.filter(pk=recovery_event_id, asset_id=asset_id, incident_id=incident_id).exists()
 
     def _reviewer_snapshot(self, user_id):
         profile = ReviewerProfile.objects.select_related("user", "faculty").get(user_id=user_id)
@@ -52,11 +56,11 @@ class DjangoRetirementStore:
     def _snapshot(self, asset):
         return snapshot(asset) | {"lifecycle_status": asset.lifecycle_status, "faculty_id": asset.faculty_id}
 
-    def _audit(self, asset, actor_id, event_type, before, after, request=None):
+    def _audit(self, asset, actor_id, event_type, before, after, request=None, recovery_event_id=None):
         asset.revision += 1
         asset.save(update_fields=["revision", "lifecycle_status", "assignment", "current_custodian"])
         actor = get_user_model().objects.get(pk=actor_id)
-        return RetirementAudit.objects.create(asset=asset, request=request, actor_id=actor_id, event_type=event_type, before=before, after=after | {"actor_label": actor.username}, resulting_revision=asset.revision)
+        return RetirementAudit.objects.create(asset=asset, request=request, recovery_event_id=recovery_event_id, actor_id=actor_id, event_type=event_type, before=before, after=after | {"actor_label": actor.username}, resulting_revision=asset.revision)
 
     def _retire(self, asset_id, actor_id, reason, request=None):
         asset = Asset.objects.get(pk=asset_id)
@@ -76,8 +80,13 @@ class DjangoRetirementStore:
 
     def save_request(self, asset, state, reviewer):
         obj = Asset.objects.get(pk=asset.id)
-        request = DecommissionRequest.objects.create(asset=obj, requester_id=state.requester_id, assigned_reviewer_id=state.reviewer_id, asset_faculty_id=state.asset_faculty_id, reason=state.reason)
-        self._audit(obj, state.requester_id, "retirement_requested", {}, {"reason": state.reason, "asset_faculty_id": state.asset_faculty_id, "asset_faculty_label": obj.faculty.name} | self._reviewer_snapshot(reviewer.id), request)
+        incident = apps.get_model("inventory", "Incident").objects.filter(asset_id=obj.pk, type__in=["lost", "stolen"]).order_by("-id").first()
+        if incident is None:
+            from .errors import Conflict
+            raise Conflict("Se requiere el reporte de pérdida o robo del activo.")
+        context = {"incident_id": incident.pk, "condition": obj.condition, "location": obj.location, "last_custodian": incident.last_custodian_snapshot if incident else None}
+        request = DecommissionRequest.objects.create(context_snapshot=context, asset=obj, requester_id=state.requester_id, assigned_reviewer_id=state.reviewer_id, asset_faculty_id=state.asset_faculty_id, reason=state.reason)
+        self._audit(obj, state.requester_id, "retirement_requested", {}, {"context": context, "reason": state.reason, "asset_faculty_id": state.asset_faculty_id, "asset_faculty_label": obj.faculty.name} | self._reviewer_snapshot(reviewer.id), request)
         return request
 
     def save_decision(self, asset, request, actor_id, state, reason, reviewer):
@@ -103,7 +112,7 @@ class DjangoRetirementStore:
         record = DecommissionRequest.objects.get(pk=request.id)
         record.status = state.status
         record.save(update_fields=["status"])
-        self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_cancelled", {"status": "pending"}, {"status": state.status, "cause": cause, "recovery_event_id": recovery_event_id}, record)
+        self._audit(Asset.objects.get(pk=asset.id), actor_id, "retirement_cancelled", {"status": "pending"}, {"status": state.status, "cause": cause, "recovery_event_id": recovery_event_id}, record, recovery_event_id=recovery_event_id)
         return record
 
 

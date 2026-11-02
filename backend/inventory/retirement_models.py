@@ -23,8 +23,9 @@ class ImmutableRecord(models.Model):
     class Meta:
         abstract = True
     def save(self, *args, **kwargs):
-        if not self._state.adding:
+        if not self._state.adding or kwargs.get("force_update") or kwargs.get("update_fields") is not None:
             raise ValidationError("El historial es inmutable.")
+        kwargs["force_insert"] = True
         return super().save(*args, **kwargs)
     def delete(self, *args, **kwargs):
         raise ValidationError("El historial debe conservarse.")
@@ -47,6 +48,7 @@ class DecommissionRequest(models.Model):
     assigned_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="assigned_retirements")
     asset_faculty = models.ForeignKey("inventory.Faculty", on_delete=models.PROTECT)
     reason = models.CharField(max_length=2000)
+    context_snapshot = models.JSONField(default=dict)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING)
     requested_at = models.DateTimeField(auto_now_add=True)
     class Meta:
@@ -83,6 +85,7 @@ class DecommissionEvent(ImmutableRecord):
 
 
 class RetirementAudit(ImmutableRecord):
+    recovery_event = models.ForeignKey("inventory.RecoveryEvent", null=True, blank=True, on_delete=models.PROTECT)
     asset = models.ForeignKey("inventory.Asset", on_delete=models.PROTECT)
     request = models.ForeignKey(DecommissionRequest, null=True, blank=True, on_delete=models.PROTECT)
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

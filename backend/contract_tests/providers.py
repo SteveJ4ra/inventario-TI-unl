@@ -19,6 +19,7 @@ class MaintenanceEvent(models.Model):
 
 
 class RecoveryEvent(models.Model):
+    incident = models.ForeignKey("inventory.Incident", on_delete=models.PROTECT)
     asset = models.ForeignKey(Asset, on_delete=models.PROTECT)
     class Meta:
         app_label = "inventory"

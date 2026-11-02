@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from rest_framework.test import APIClient
-from .test_store import RetirementStoreTests
 from .test_models import RetirementFixtures
 from inventory.retirement_models import ReviewerProfile, DecommissionRequest
 
@@ -78,3 +77,36 @@ class RetirementApiTests(RetirementFixtures):
             with self.subTest(data_keys=list(data)):
                 self.assertEqual(self.client.post("/api/auth/change-password/",data,format="json").status_code,400)
         self.assertTrue(ReviewerProfile.objects.get(user=self.reviewer).must_change_password)
+
+    def test_request_context_does_not_expose_later_incident_custodian(self):
+        from .providers import Incident
+        Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot={"full_name":"Custodio anterior"})
+        self.client.force_login(self.requester)
+        response=self.client.post(f"/api/assets/{self.asset.pk}/retirement-requests/",{"reason":"Pérdida","reviewer_id":self.reviewer.pk,"expected_revision":0},format="json")
+        self.assertEqual(response.status_code,201,response.content)
+        Incident.objects.create(asset=self.asset,type="stolen",last_custodian_snapshot={"full_name":"Persona posterior"})
+        profile=self.reviewer.reviewer_profile;profile.must_change_password=False;profile.save()
+        self.client.force_login(self.reviewer)
+        response=self.client.get("/api/reviewer/retirement-requests/")
+        self.assertEqual(response.json()[0]["context"]["last_custodian"]["full_name"],"Custodio anterior")
+
+    def test_temporary_reviewer_with_manager_group_cannot_use_legacy_inventory(self):
+        self.reviewer.groups.add(Group.objects.get(name="Gestores"))
+        self.client.force_login(self.reviewer)
+        self.assertEqual(self.client.get("/api/assets/").status_code,403)
+        profile=self.reviewer.reviewer_profile;profile.must_change_password=False;profile.save()
+        self.assertEqual(self.client.get("/api/assets/").status_code,200)
+
+    def test_duplicate_user_is_conflict_but_other_database_errors_are_not_disguised(self):
+        from unittest.mock import patch
+        from django.db import IntegrityError
+        operator=get_user_model().objects.create_user(username="account_operator")
+        operator.groups.add(Group.objects.create(name="Operadores"))
+        self.client.force_login(operator)
+        data={"username":self.reviewer.username,"faculty_id":self.other.pk,"password":"Secure-New-Fixture-785!"}
+        self.assertEqual(self.client.post("/api/operator/reviewers/",data,format="json").status_code,409)
+        data["username"]="rollback_reviewer"
+        with patch("inventory.retirement_api.ReviewerProfile.objects.create",side_effect=IntegrityError("profile_failure")):
+            with self.assertRaises(IntegrityError):
+                self.client.post("/api/operator/reviewers/",data,format="json")
+        self.assertFalse(get_user_model().objects.filter(username="rollback_reviewer").exists())

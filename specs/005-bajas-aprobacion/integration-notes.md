@@ -11,3 +11,5 @@ Base de implementación: develop 161187c. No se han fusionado ramas de compañer
 7. Ejecutar todas las suites sobre los proveedores reales y revisar carreras/orden de locks con esas implementaciones. Las pruebas contract_tests usan syncdb y agregan campos mínimos solo a su registro de apps. Nunca activar esa configuración con una base de desarrollo real ni en producción.
 
 El backend 005 ya contiene modelo/adaptador/HTTP y rectificación, pero no está disponible en la aplicación normal antes de estos pasos. La auditoría final debe revisar también nombres de tipos, permisos de grupos existentes, último custodio del reporte y migraciones.
+
+La auditoría añadió context_snapshot en DecommissionRequest y FK RetirementAudit.recovery_event. La API no consulta custodios de incidentes posteriores. RecoveryEvent debe exponer incident_id y asset_id; cancelación verifica ambos contra solicitud/reporte. El puerto recovery_event_belongs_to_asset ahora recibe también request_id. Conservar la guarda temporal en IsManager al combinar permisos con 003, para que cuentas con múltiples grupos no eludan cambio inicial de contraseña.

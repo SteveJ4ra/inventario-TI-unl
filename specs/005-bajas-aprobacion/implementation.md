@@ -13,3 +13,7 @@
 No se registra retirement_models.py ni retirement_api.py en la configuración normal mientras falten Faculty/lifecycle reales; los tests de contrato los registran con proveedores solo de prueba. No hay fakes de producción. Todos los cambios contaron con asistencia de IA; revisión humana pendiente.
 
 Las tareas frontend se pospusieron por instrucción de Steven. La entrega aún requiere migración del resto del esquema, conexión con los proveedores reales, montaje productivo de URL/sesión y nueva validación antes de marcar tareas completas. No publicar PR sin autorización expresa.
+
+## Correcciones de consistencia y seguridad
+
+Solicitudes conservan context_snapshot en vez de consultar incidentes posteriores; RetirementAudit protege recovery_event por FK. La cancelación comprueba incidente/activo/solicitud y no reutiliza eventos antiguos. IsManager también bloquea cuentas temporales con múltiples grupos. La evidencia usa inserción forzada y no puede sobrescribirse con una nueva instancia de la misma PK. Provisión revierte fallas de perfil sin confundirlas con duplicados. Evidencia completa en review.md/validation.md.

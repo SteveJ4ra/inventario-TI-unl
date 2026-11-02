@@ -105,9 +105,7 @@ class RetireView(APIView):
 
 
 def request_data(record):
-    context={"condition":record.asset.condition,"location":record.asset.location}
-    loss=apps.get_model("inventory","Incident").objects.filter(asset_id=record.asset_id,type__in=["lost","stolen"]).order_by("-id").first()
-    context["last_custodian"]=loss.last_custodian_snapshot if loss else None
+    context=record.context_snapshot
     history=[{"event_type":event.event_type,"occurred_at":event.occurred_at,"resulting_revision":event.resulting_revision,"before":event.before,"after":event.after} for event in RetirementAudit.objects.filter(request=record).order_by("resulting_revision")]
     return {"context":context,"history":history} | {"id":record.pk,"asset_id":record.asset_id,"asset_code":record.asset.code,"reason":record.reason,"status":record.status,"reviewer_id":record.assigned_reviewer_id,"expected_revision":record.asset.revision}
 
@@ -165,7 +163,10 @@ class ReviewersView(APIView):
                 user.groups.add(Group.objects.get_or_create(name="Revisores")[0])
                 ReviewerProfile.objects.create(user=user,faculty=faculty)
                 ReviewerAccountAudit.objects.create(user=user,actor=request.user,action="created",details={"username":user.username,"faculty_id":faculty.pk,"faculty_label":faculty.name,"must_change_password":True})
-        except IntegrityError as exc: raise Conflict("El usuario ya existe.","duplicate_user") from exc
+        except IntegrityError as exc:
+            if get_user_model().objects.filter(username=data["username"]).exists():
+                raise Conflict("El usuario ya existe.","duplicate_user") from exc
+            raise
         return Response({"id":user.pk,"username":user.username,"faculty_id":faculty.pk,"must_change_password":True},status=201)
 
 
