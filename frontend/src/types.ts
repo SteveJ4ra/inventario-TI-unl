@@ -66,6 +66,41 @@ export interface Page {
 export type Fields = Record<string, string>;
 export type Body = Record<string, string | number>;
 export type Action = "deliver" | "return" | "condition" | "rectify";
+export type ImportKind = "assets" | "license_lots";
+export interface ImportIssue {
+  row: number | null;
+  field: string;
+  message: string;
+}
+export interface ImportRow {
+  row: number;
+  values: Record<string, string | number | null>;
+  valid?: boolean;
+}
+export interface AppliedResult {
+  kind?: string;
+  created?: number;
+  [key: string]: unknown;
+}
+export interface ImportBatch {
+  batch_id: string;
+  kind: ImportKind;
+  schema_version: string;
+  state: string;
+  content_hash: string;
+  summary: Record<string, number | string>;
+  errors: ImportIssue[];
+  rows: ImportRow[];
+  row_count: number;
+  page: number;
+  next: string | null;
+  previous: string | null;
+  created_at: string;
+  expires_at: string;
+  confirmed_at: string | null;
+  applied_at: string | null;
+  applied_result: AppliedResult | null;
+}
 export const labels: Record<string, string> = {
   operativo: "Operativo",
   averiado: "Averiado",

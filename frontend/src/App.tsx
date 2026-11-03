@@ -16,6 +16,7 @@ import { AssetForm, CustodianForm } from "./components/Registration";
 import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
+import { ImportPanel } from "./components/Import";
 const emptyOptions: Options = {
   categories: [],
   conditions: [],
@@ -131,6 +132,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [error, setError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
   const [modal, setModal] = useState<"asset" | "person" | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -216,6 +218,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
           onClick={() => {
             setSelected(null);
             setModal(null);
+            setImportOpen(false);
           }}
         >
           ▦ <span>Inventario</span>
@@ -257,6 +260,17 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
               <p>Consulta su estado, ubicación y custodia en un solo lugar.</p>
             </div>
             <div className="heading-actions">
+              <button
+                onClick={() => {
+                  setImportOpen(true);
+                  setSelected(null);
+                  setModal(null);
+                  setError(null);
+                  setMessage("");
+                }}
+              >
+                Importar CSV
+              </button>
               <button onClick={() => setModal("person")}>Nuevo custodio</button>
               <button className="primary" onClick={() => setModal("asset")}>
                 ＋ Registrar activo
@@ -314,7 +328,17 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
               )}
             </section>
           )}
-          {selected === null ? (
+          {importOpen ? (
+            <section className="panel">
+              <ImportPanel
+                onClose={() => {
+                  setImportOpen(false);
+                  setRefresh((n) => n + 1);
+                }}
+                onApplied={() => setRefresh((n) => n + 1)}
+              />
+            </section>
+          ) : selected === null ? (
             <>
               <section className="panel filter-panel">
                 <div className="section-heading">

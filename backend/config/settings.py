@@ -139,6 +139,19 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "inventory.errors.api_exception_handler",
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
 }
+# Importación CSV (008): límites técnicos documentados en
+# specs/008-importacion-csv/implementation.md.
+IMPORT_MAX_BYTES = int(os.environ.get("IMPORT_MAX_BYTES", "2000000"))
+IMPORT_MAX_ROWS = int(os.environ.get("IMPORT_MAX_ROWS", "2000"))
+IMPORT_PREVIEW_TTL_SECONDS = int(
+    os.environ.get("IMPORT_PREVIEW_TTL_SECONDS", "86400")
+)
+IMPORT_RESULT_RETENTION_SECONDS = int(
+    os.environ.get("IMPORT_RESULT_RETENTION_SECONDS", "2592000")
+)
+IMPORT_GATEWAY = os.environ.get(
+    "IMPORT_GATEWAY", "inventory.imports.gateways.DjangoProviderGateway"
+)
 CSRF_FAILURE_VIEW = "inventory.errors.csrf_failure"
 CSRF_TRUSTED_ORIGINS = [
     x

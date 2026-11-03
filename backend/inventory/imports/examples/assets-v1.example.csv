@@ -1,0 +1,4 @@
+name,description,category,brand,model,serial_number,location,condition,faculty_id,acquisition_document_id,document_key,document_source,document_reference,document_date,supplier,invoice_total,support_description,item_value,acquired_on,date_unknown_reason
+Portátil de laboratorio,Equipo para prácticas,portatil,Marca ejemplo,Modelo A,LAB-001,Laboratorio de redes,operativo,1,,FACT-2026-001,compra,FAC-001,2026-01-15,Proveedor ejemplo,2400.00,,1200.00,2026-01-20,
+Monitor auxiliar,Monitor para puesto de trabajo,monitor,Marca ejemplo,Modelo M,LAB-002,Laboratorio de redes,operativo,1,,FACT-2026-001,compra,FAC-001,2026-01-15,Proveedor ejemplo,2400.00,,600.00,2026-01-20,
+Impresora donada,Equipo recibido en donación,impresora,Marca ejemplo,Modelo P,DON-003,Bodega,averiado,1,,DON-2026-004,donacion,DON-004,,,,Carta de donación,450.00,,"No consta fecha de adquisición"
