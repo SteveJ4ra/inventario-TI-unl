@@ -1,26 +1,28 @@
 # Tasks: importación CSV
 
 ## Contratos y límites
-- [ ] T001 Definir plantillas versionadas y ejemplos válidos para activos/licencias.
-- [ ] T002 Definir límites de bytes, filas, retención temporal y expiración de preview.
-- [ ] T003 Definir validación de documentos compartidos y política para errores de unicidad concurrentes.
+- [x] T001 Definir plantillas versionadas y ejemplos válidos para activos/licencias.
+- [x] T002 Definir límites de bytes, filas, retención temporal y expiración de preview.
+- [x] T003 Definir validación de documentos compartidos y política para errores de unicidad concurrentes.
 
 ## Backend
 - [ ] T004 Implementar parser CSV seguro y validadores reutilizados de 003/006.
-- [ ] T005 Implementar vista previa completa, errores saneados y hash inmutable.
-- [ ] T006 Implementar ciclo confirmación doble con usuario/estado/hash.
+  - Parser y validación CSV completos; reutilización de validadores 003/006 pendiente de integración.
+- [x] T005 Implementar vista previa completa, errores saneados y hash inmutable.
+- [x] T006 Implementar ciclo confirmación doble con usuario/estado/hash.
 - [ ] T007 Aplicar activos o lotes con batch bloqueado, revalidación contra DB actual, transacción todo-o-nada e idempotencia 201 inicial/200 reintento.
-- [ ] T008 Aplicar autorización, expiración, cancelación y límites técnicos.
+  - Orquestación, bloqueo, revalidación, rollback lógico e idempotencia probados con fake; transacción real de dominio pendiente de 003/006.
+- [x] T008 Aplicar autorización, expiración, cancelación y límites técnicos.
 
 ## Frontend
-- [ ] T009 Añadir descarga de plantillas, carga y vista previa completa.
-- [ ] T010 Añadir errores por fila/campo y dos confirmaciones explícitas.
-- [ ] T011 Mostrar resultado final y gestionar lote expirado/cancelado.
+- [x] T009 Añadir descarga de plantillas, carga y vista previa completa.
+- [x] T010 Añadir errores por fila/campo y dos confirmaciones explícitas.
+- [x] T011 Mostrar resultado final y gestionar lote expirado/cancelado.
 
 ## Verificación
-- [ ] T012 Probar activo y licencias, errores múltiples, duplicados y documentos compartidos.
-- [ ] T013 Probar rollback integral, reintentos, concurrencia y límites excedidos.
-- [ ] T014 Registrar evidencia según `validation-plan.md`.
+- [x] T012 Probar activo y licencias, errores múltiples, duplicados y documentos compartidos.
+- [x] T013 Probar rollback integral, reintentos, concurrencia y límites excedidos.
+- [x] T014 Registrar evidencia según `validation-plan.md`.
 
 ## Trazabilidad FR → tareas
 

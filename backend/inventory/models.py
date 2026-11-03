@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -153,3 +155,54 @@ class Movement(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("El historial debe conservarse.")
+
+
+class ImportBatch(models.Model):
+    """Lote técnico de importación CSV (008).
+
+    No es fuente de verdad de activos ni licencias: conserva las filas
+    normalizadas y el hash que ligan las dos confirmaciones mientras el lote
+    es confirmable. Al aplicar o vencer se elimina el contenido temporal y se
+    mantiene un resultado mínimo para responder reintentos idempotentes.
+    """
+
+    class Kind(models.TextChoices):
+        ASSETS = "assets", "Activos"
+        LICENSE_LOTS = "license_lots", "Lotes de licencias"
+
+    class State(models.TextChoices):
+        INVALID = "INVALID", "Inválido"
+        PREVIEW_READY = "PREVIEW_READY", "Vista previa lista"
+        CONFIRMED_ONCE = "CONFIRMED_ONCE", "Confirmado una vez"
+        APPLIED = "APPLIED", "Aplicado"
+        EXPIRED = "EXPIRED", "Vencido"
+        CANCELLED = "CANCELLED", "Cancelado"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="import_batches"
+    )
+    kind = models.CharField(max_length=16, choices=Kind.choices)
+    schema_version = models.CharField(max_length=32)
+    state = models.CharField(
+        max_length=16, choices=State.choices, default=State.INVALID
+    )
+    content_hash = models.CharField(max_length=64)
+    preview_summary = models.JSONField(default=dict)
+    errors = models.JSONField(default=list)
+    rows = models.JSONField(null=True, blank=True, default=list)
+    confirmed_hash = models.CharField(max_length=64, blank=True, default="")
+    applied_hash = models.CharField(max_length=64, blank=True, default="")
+    applied_result = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["owner", "state"], name="import_owner_state_idx"),
+        ]

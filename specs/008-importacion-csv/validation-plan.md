@@ -1,6 +1,6 @@
 # Plan de validación: importación CSV
 
-**Estado: pendiente; sin pruebas ejecutadas.**
+**Estado: parcial; suites automáticas ejecutadas. Integración real 003/006 y aceptación manual pendientes. Ver [validation.md](validation.md).**
 
 - Unitarias: cabeceras/versiones, tipos, campos condicionales, fechas, cantidades y normalización.
 - Integración: preview sin escrituras, dos confirmaciones, hash, acceso y CSRF, expiración y cancelación.

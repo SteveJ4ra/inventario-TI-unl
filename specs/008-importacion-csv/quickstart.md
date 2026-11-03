@@ -7,6 +7,6 @@
 5. Repetir con plantilla de lotes de licencias, incluyendo inicio obligatorio y cantidades inválidas.
 6. Simular doble clic/reintento de confirmación y vencimiento de preview; verificar idempotencia y ausencia de parciales.
 
-Guía futura de aceptación; no se ha ejecutado.
+Estado: las suites automáticas de dominio, API/DB y frontend se ejecutaron y pasaron (ver [validation.md](validation.md)). La aceptación manual de los pasos 1–6 con 003/006 reales sigue pendiente porque esos proveedores no están integrados; con el gateway de producción actual la carga responde 503.
 
 Antes de ejecutar Spec Kit, seleccionar `specs/008-importacion-csv` siguiendo [el índice SDD](../../docs/sdd/README.md#seleccionar-el-paquete-correcto-en-spec-kit) y verificar FEATURE_DIR. El chequeo solo verifica documentos; no ejecuta implementación ni pruebas de aceptación.

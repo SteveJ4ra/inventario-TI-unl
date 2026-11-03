@@ -5,5 +5,5 @@
 - [x] Vista previa y dos confirmaciones.
 - [x] Creación atómica, idempotente, códigos de servidor y regla inicial Disponible.
 - [x] Licencia por fila/lote con fecha de inicio obligatoria.
-- [ ] Límites técnicos definidos durante planificación de implementación.
-- [ ] Ejecución y evidencia de aceptación: pendiente.
+- [x] Límites técnicos definidos durante planificación de implementación.
+- [ ] Ejecución y evidencia de aceptación: pendiente de integración real con 003/006 y revisión humana.

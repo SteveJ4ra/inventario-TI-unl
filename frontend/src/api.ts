@@ -1,20 +1,28 @@
-import type { Body } from "./types";
+import type { Body, ImportIssue } from "./types";
 export class ApiError extends Error {
   constructor(
     public status: number,
     public code: string,
     message: string,
     public fields?: Record<string, string[]>,
+    public errors?: ImportIssue[],
+    public batchId?: string,
+    public payload?: unknown,
   ) {
     super(message);
   }
 }
-export async function request<T>(
+async function send<T>(
   path: string,
-  options: { body?: Body; signal?: AbortSignal } = {},
+  options: {
+    body?: Body;
+    form?: FormData;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<T> {
+  const write = Boolean(options.body || options.form);
   const headers: Record<string, string> = {};
-  if (options.body) {
+  if (write) {
     let csrf: Response;
     try {
       csrf = await fetch("/api/auth/csrf/", { credentials: "same-origin" });
@@ -26,19 +34,23 @@ export async function request<T>(
     if (!csrf.ok)
       throw new Error("No se pudo preparar la sesión. Vuelve a intentarlo.");
     headers["X-CSRFToken"] = (await csrf.json()).csrfToken;
-    headers["Content-Type"] = "application/json";
+    if (!options.form) headers["Content-Type"] = "application/json";
   }
-  const uncertain = options.body
+  const uncertain = write
     ? "No se pudo confirmar la operación. Consulta la ficha y el historial antes de repetirla."
     : "No se pudo conectar con el servidor. Comprueba la conexión y vuelve a consultar.";
   let response: Response;
   try {
     response = await fetch("/api" + path, {
-      method: options.body ? "POST" : "GET",
+      method: write ? "POST" : "GET",
       credentials: "same-origin",
       headers,
       signal: options.signal,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body: options.form
+        ? options.form
+        : options.body
+          ? JSON.stringify(options.body)
+          : undefined,
     });
   } catch (error) {
     if (
@@ -61,7 +73,19 @@ export async function request<T>(
       data.code || "request_error",
       data.detail || "No se pudo completar la operación.",
       data.fields,
+      data.errors,
+      data.batch_id,
+      data,
     );
   }
   return data;
+}
+export async function request<T>(
+  path: string,
+  options: { body?: Body; signal?: AbortSignal } = {},
+): Promise<T> {
+  return send<T>(path, options);
+}
+export async function upload<T>(path: string, form: FormData): Promise<T> {
+  return send<T>(path, { form });
 }
