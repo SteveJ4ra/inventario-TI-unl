@@ -142,3 +142,104 @@ class QueryInput(StrictSerializer):
     assignment = serializers.ChoiceField(choices=Assignment.choices, required=False)
     location = serializers.CharField(required=False, max_length=240)
     custodian = serializers.IntegerField(min_value=1, required=False)
+
+
+class JsonIntegerField(serializers.IntegerField):
+    """No convierte booleanos, decimales o cadenas en cantidades JSON."""
+
+    def to_internal_value(self, data):
+        if type(data) is not int:
+            self.fail("invalid")
+        return super().to_internal_value(data)
+
+
+class LicenseLotInput(StrictSerializer):
+    product_name = serializers.CharField(max_length=160)
+    vendor = serializers.CharField(max_length=160)
+    license_model = serializers.ChoiceField(choices=["USER_SEAT", "DEVICE_SEAT"])
+    purchased_quantity = JsonIntegerField(min_value=0, max_value=2147483647)
+    in_use_quantity = JsonIntegerField(min_value=0, max_value=2147483647)
+    starts_on = serializers.DateField()
+    ends_on = serializers.DateField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        merged = {
+            name: getattr(self.instance, name)
+            for name in LicenseLotInput().fields
+        } if self.instance is not None else {}
+        merged.update(attrs)
+        if merged["in_use_quantity"] > merged["purchased_quantity"]:
+            raise serializers.ValidationError({
+                "in_use_quantity": ["La cantidad en uso no puede superar la comprada."]
+            })
+        if merged.get("ends_on") is not None and merged["ends_on"] < merged["starts_on"]:
+            raise serializers.ValidationError({
+                "ends_on": ["La fecha de fin no puede ser anterior a la de inicio."]
+            })
+        return attrs
+
+
+class LicenseLotPatchInput(LicenseLotInput):
+    expected_revision = JsonIntegerField(min_value=0, max_value=9223372036854775806)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in LicenseLotInput().fields:
+            self.fields[name].required = False
+
+    def validate(self, attrs):
+        if set(attrs) <= {"expected_revision"}:
+            raise serializers.ValidationError("Indica al menos un campo del lote para editar.")
+        return super().validate(attrs)
+
+
+class LicenseLotQuery(StrictSerializer):
+    page = serializers.IntegerField(min_value=1, max_value=2147483647, default=1)
+    search = serializers.CharField(max_length=240, required=False, allow_blank=True)
+    license_model = serializers.ChoiceField(choices=["USER_SEAT", "DEVICE_SEAT"], required=False)
+    temporal_status = serializers.ChoiceField(
+        choices=["NOT_STARTED", "CURRENT", "EXPIRED"], required=False
+    )
+
+
+class LicenseHistoryQuery(StrictSerializer):
+    page = serializers.IntegerField(min_value=1, max_value=2147483647, default=1)
+
+
+class LicenseLotOutput(serializers.ModelSerializer):
+    created_by = serializers.SerializerMethodField()
+    remaining_quantity = serializers.IntegerField(read_only=True)
+    temporal_status = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import SoftwareLicenseLot
+
+        model = SoftwareLicenseLot
+        fields = [
+            "id", "product_name", "vendor", "license_model", "purchased_quantity",
+            "in_use_quantity", "remaining_quantity", "starts_on", "ends_on",
+            "temporal_status", "revision", "created_at", "created_by",
+        ]
+
+    def get_created_by(self, lot):
+        return {"id": lot.created_by_id, "username": lot.created_by.username}
+
+    def get_temporal_status(self, lot):
+        return lot.status_on(self.context.get("today"))
+
+
+class LicenseLotAuditOutput(serializers.ModelSerializer):
+    actor = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import LicenseLotAudit
+
+        model = LicenseLotAudit
+        fields = ["id", "lot_id", "actor", "timestamp", "before_json", "after_json", "resulting_revision"]
+
+    def get_actor(self, event):
+        return {
+            "id": event.actor_id,
+            "username": event.actor.username,
+            "recorded_label": event.actor_label,
+        }

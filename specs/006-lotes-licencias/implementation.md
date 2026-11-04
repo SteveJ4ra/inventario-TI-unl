@@ -35,3 +35,13 @@ Se agregan SoftwareLicenseLot y LicenseLotAudit sin enlaces a activos, facturas 
 Migraciones nuevas 0004_license_lots y 0005_license_lot_audit_immutable después de 0003_importbatch, sin modificar migraciones existentes. El trigger impide UPDATE/DELETE de auditoría incluso con QuerySet o SQL directo; revisión única por lote/evento. La etiqueta del autor conserva el nombre registrado.
 
 Prueba focalizada real: `PG_BIN=/usr/lib/postgresql/17/bin PYTHONDONTWRITEBYTECODE=1 backend/.venv/bin/python backend/tools/test_postgres.py inventory.tests.test_license_lots --verbosity 1`: 3 pruebas PASS (límites temporales, integridad DB, inmutabilidad y unicidad). Las migraciones se aplicaron solo en DB efímera; la DB de desarrollo conserva su estado hasta revisión del plan final.
+
+## Parte 3: validación y servicios (T004/T005/T008)
+
+Se agregan entradas/salidas explícitas; campos desconocidos rechazados; cantidades JSON estrictamente enteras (sin bool, float ni cadenas), rango 0–2147483647 de PostgreSQL integer. Edición parcial fusionada con valores vigentes; expected_revision requerido. Edición vacía o sin cambios devuelve 400 sin eventos ficticios.
+
+Servicios de alta/edición verifican Gestor, validan datos y guardan auditoría de alta (revisión 0) y cada modificación real. Edición usa select_for_update y comparación de revisión; un conflicto no escribe. Datos antes/después incluyen todos los campos editables y revisión; autor/hora se generan en servidor.
+
+`inventory.license_services.import_license_lots(actor=..., rows=[valores...])` publica la firma real consumida por 008; prevalidación de todas las filas y transacción íntegra, sin parser/confirmaciones CSV nuevos. La importación puede crear lotes iguales: no se inventó unicidad de producto/proveedor.
+
+Prueba focalizada: mismo runner con `inventory.tests.test_license_lots --verbosity 1`, 8 PASS. Incluye rechazo sin escrituras, validación desde servicios, autor conservado y rollback de alta/edición al fallar auditoría. El mock se usa solo para provocar el fallo; la persistencia y rollback son PostgreSQL reales.
