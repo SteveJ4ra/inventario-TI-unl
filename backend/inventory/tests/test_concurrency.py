@@ -3,8 +3,17 @@ from threading import Barrier
 from django.db import close_old_connections
 from django.test import TransactionTestCase
 from rest_framework.exceptions import APIException
-from inventory.models import Asset, Movement
-from inventory.services import create_asset, create_custodian, record_operation
+from inventory.models import Asset, AssetTransition, Incident, Movement
+from inventory.services import (
+    create_asset,
+    create_custodian,
+    record_event_transition,
+    record_operation,
+    report_incident,
+    recover_asset,
+    resolve_incident,
+    start_maintenance,
+)
 from .base import asset_data, manager
 
 
@@ -91,3 +100,117 @@ class ConcurrencyTests(TransactionTestCase):
         self.assertEqual(
             (asset.revision, asset.assignment, asset.location), (3, "asignado", "Aula")
         )
+
+    def test_incident_and_movement_share_asset_revision_lock(self):
+        asset = create_asset(actor=self.actor, data=asset_data())
+
+        def prepare(locked, incident):
+            incident.type = Incident.Type.OBSERVATION
+            incident.description = "Observación ficticia"
+            incident.reported_by = self.actor
+
+        def add_incident():
+            return record_event_transition(
+                asset_id=asset.pk, actor=self.actor, expected_revision=0,
+                event_model=Incident, apply=prepare,
+            )
+
+        def deliver():
+            return record_operation(
+                asset_id=asset.pk, actor=self.actor, operation=Movement.Type.DELIVERY,
+                data={
+                    "expected_revision": 0, "custodian_id": self.person.pk,
+                    "destination": "Aula",
+                },
+            )
+
+        results = self.race([add_incident, deliver])
+        self.assertEqual([result[0] for result in results].count("ok"), 1)
+        self.assertIn(("error", 409), results)
+        asset.refresh_from_db()
+        self.assertEqual(asset.revision, 1)
+        self.assertEqual(Incident.objects.count(), AssetTransition.objects.count())
+        self.assertEqual(Movement.objects.count() + AssetTransition.objects.count(), 1)
+
+    def test_two_resolutions_with_same_revision_keep_one_note_and_one_audit(self):
+        asset = create_asset(actor=self.actor, data=asset_data())
+        incident = report_incident(
+            asset_id=asset.pk, actor=self.actor,
+            data={"expected_revision": 0, "type": "damage", "description": "Bisagra"},
+        )
+
+        def resolve(note):
+            return resolve_incident(
+                incident_id=incident.pk, actor=self.actor,
+                data={"expected_revision": 1, "resolution_note": note},
+            )
+
+        results = self.race([lambda: resolve("Nota A"), lambda: resolve("Nota B")])
+        self.assertEqual([result[0] for result in results].count("ok"), 1)
+        self.assertIn(("error", 409), results)
+        asset.refresh_from_db()
+        incident.refresh_from_db()
+        self.assertEqual(asset.revision, 2)
+        self.assertEqual(incident.status, "resolved")
+        self.assertEqual(AssetTransition.objects.filter(asset=asset).count(), 2)
+        closure = AssetTransition.objects.get(asset=asset, resulting_revision=2)
+        self.assertEqual(closure.after["event"]["resolution_note"], incident.resolution_note)
+
+    def test_maintenance_and_delivery_cannot_both_win(self):
+        asset = create_asset(actor=self.actor, data=asset_data())
+
+        def start():
+            return start_maintenance(
+                asset_id=asset.pk, actor=self.actor,
+                data={
+                    "expected_revision": 0, "description": "Revisión",
+                    "workshop_location": "Taller",
+                },
+            )
+
+        def deliver():
+            return record_operation(
+                asset_id=asset.pk, actor=self.actor, operation=Movement.Type.DELIVERY,
+                data={
+                    "expected_revision": 0, "custodian_id": self.person.pk,
+                    "destination": "Aula",
+                },
+            )
+
+        results = self.race([start, deliver])
+        self.assertEqual([result[0] for result in results].count("ok"), 1)
+        self.assertIn(("error", 409), results)
+        asset.refresh_from_db()
+        self.assertEqual(asset.revision, 1)
+        self.assertEqual(asset.maintenance_events.count(), AssetTransition.objects.count())
+        self.assertEqual(Movement.objects.count() + AssetTransition.objects.count(), 1)
+        if asset.maintenance_events.exists():
+            self.assertEqual((asset.location, asset.current_custodian_id), ("Taller", None))
+        else:
+            self.assertEqual(asset.current_custodian_id, self.person.pk)
+
+    def test_simultaneous_recovery_records_only_one_event(self):
+        asset = create_asset(actor=self.actor, data=asset_data())
+        incident = report_incident(
+            asset_id=asset.pk, actor=self.actor,
+            data={"expected_revision": 0, "type": "lost", "description": "Extraviado"},
+        )
+
+        def recover(location):
+            return recover_asset(
+                asset_id=asset.pk, actor=self.actor,
+                data={
+                    "expected_revision": 1, "inspection_confirmed": True,
+                    "inspected_condition": "operativo", "recovered_location": location,
+                },
+            )
+
+        results = self.race([lambda: recover("Aula"), lambda: recover("Bodega")])
+        self.assertEqual([result[0] for result in results].count("ok"), 1)
+        self.assertIn(("error", 409), results)
+        asset.refresh_from_db()
+        incident.refresh_from_db()
+        self.assertEqual((asset.revision, incident.status), (2, "recovered"))
+        self.assertEqual(asset.recoveries.count(), 1)
+        self.assertEqual(asset.location, asset.recoveries.get().recovered_location)
+        self.assertEqual(AssetTransition.objects.filter(asset=asset).count(), 2)

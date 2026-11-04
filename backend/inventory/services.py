@@ -1,8 +1,23 @@
+from contextlib import contextmanager
+from copy import deepcopy
+
 from django.db import IntegrityError, connection, transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from .errors import Conflict
-from .models import Asset, Assignment, Condition, Custodian, Movement
+from .models import (
+    Asset,
+    AssetTransition,
+    Assignment,
+    Condition,
+    Custodian,
+    Incident,
+    LifecycleStatus,
+    MaintenanceEvent,
+    Movement,
+    RecoveryEvent,
+)
 from .permissions import is_manager
 
 
@@ -57,20 +72,295 @@ def snapshot(asset):
     }
 
 
-def record_operation(*, asset_id, actor, operation, data):
-    """Bloquea la ficha antes de validar; ficha y evento se confirman juntos."""
-    require_manager(actor)
+def custodian_snapshot(person):
+    if person is None:
+        return None
+    return {
+        "id": person.pk,
+        "full_name": person.full_name,
+        "email": person.email,
+        "department": person.department,
+    }
+
+
+@contextmanager
+def locked_asset(*, asset_id, actor, expected_revision):
+    """Serializa escrituras de 002 y 004 con el mismo bloqueo de ficha."""
     with transaction.atomic():
+        require_manager(actor)
         asset = get_object_or_404(Asset.objects.select_for_update(), pk=asset_id)
-        if asset.revision != data["expected_revision"]:
+        if asset.revision != expected_revision:
             raise Conflict(
                 "La ficha cambió. Recárgala y revisa antes de repetir.",
                 "stale_revision",
             )
+        yield asset
+
+
+def transition_snapshot(asset, event):
+    return {
+        "asset": {**snapshot(asset), "lifecycle_status": asset.lifecycle_status},
+        "event": (
+            {
+                field.attname: deepcopy(getattr(event, field.attname))
+                for field in event._meta.concrete_fields
+            }
+            if event is not None
+            else None
+        ),
+    }
+
+
+def record_event_transition(
+    *, asset_id, actor, expected_revision, event_model, apply, event_id=None
+):
+    """Ejecuta una transición interna y registra evidencia en la misma transacción.
+
+    La operación de dominio valida el estado y prepara las instancias recibidas.
+    Si necesita bloquear otra proyección, lo hace después de bloquear el activo.
+    """
+    event_type = {
+        Incident: AssetTransition.Type.INCIDENT,
+        MaintenanceEvent: AssetTransition.Type.MAINTENANCE,
+        RecoveryEvent: AssetTransition.Type.RECOVERY,
+    }[event_model]
+    with locked_asset(
+        asset_id=asset_id, actor=actor, expected_revision=expected_revision
+    ) as asset:
+        if event_id is None:
+            event = event_model(asset=asset)
+            before = transition_snapshot(asset, None)
+        else:
+            event = get_object_or_404(
+                event_model.objects.select_for_update(), pk=event_id, asset_id=asset.pk
+            )
+            before = transition_snapshot(asset, event)
+
+        apply(asset, event)
+        if event.asset_id != asset.pk:
+            raise ValueError("La proyección debe permanecer asociada al activo bloqueado.")
+        event.save()
+        asset.revision = expected_revision + 1
+        asset.save(
+            update_fields=[
+                "condition", "assignment", "current_custodian", "location",
+                "lifecycle_status", "revision",
+            ]
+        )
+        AssetTransition.objects.create(
+            asset=asset,
+            event_type=event_type,
+            event_id=event.pk,
+            actor=actor,
+            actor_label=actor.username,
+            resulting_revision=asset.revision,
+            before=before,
+            after=transition_snapshot(asset, event),
+        )
+        return asset, event
+
+
+@transaction.atomic
+def report_incident(*, asset_id, actor, data):
+    def apply(asset, incident):
+        if asset.lifecycle_status != LifecycleStatus.LOCATED:
+            raise Conflict("La novedad requiere un activo localizado.", "asset_not_located")
+        if data["type"] not in Incident.Type.values:
+            raise ValidationError({"type": ["Elige un tipo de novedad válido."]})
+        incident.type = data["type"]
+        incident.description = data["description"]
+        incident.reported_by = actor
+        if incident.type in Incident.LOSS_TYPES:
+            maintenance = active_maintenance(asset).select_for_update().first()
+            if maintenance is not None:
+                incident.active_maintenance_snapshot = {
+                    "id": maintenance.pk,
+                    "status": maintenance.status,
+                    "description": maintenance.description,
+                    "workshop_location": maintenance.workshop_location,
+                    "previous_location": maintenance.previous_location,
+                    "started_by_id": maintenance.started_by_id,
+                    "started_at": maintenance.started_at.isoformat(),
+                }
+            incident.last_lifecycle_status = asset.lifecycle_status
+            incident.last_condition = asset.condition
+            incident.last_assignment = asset.assignment
+            incident.last_location = asset.location
+            incident.last_custodian_snapshot = custodian_snapshot(asset.current_custodian)
+            asset.lifecycle_status = LifecycleStatus.UNLOCATED
+            asset.assignment = None
+            asset.current_custodian = None
+
+    asset, incident = record_event_transition(
+        asset_id=asset_id,
+        actor=actor,
+        expected_revision=data["expected_revision"],
+        event_model=Incident,
+        apply=apply,
+    )
+    if incident.active_maintenance_snapshot is not None:
+        interrupt_maintenance(
+            maintenance_id=incident.active_maintenance_snapshot["id"],
+            actor=actor,
+            expected_revision=asset.revision,
+        )
+    return incident
+
+
+def recover_asset(*, asset_id, actor, data):
+    def apply(asset, recovery):
+        if asset.lifecycle_status != LifecycleStatus.UNLOCATED:
+            raise Conflict("Solo se recuperan activos no localizados.")
+        if data["inspection_confirmed"] is not True:
+            raise ValidationError({"inspection_confirmed": ["Confirma la inspección del activo."]})
+        incident = (
+            asset.incidents.select_for_update()
+            .filter(type__in=Incident.LOSS_TYPES, status=Incident.Status.OPEN)
+            .order_by("-reported_at", "-pk")
+            .first()
+        )
+        if incident is None:
+            raise Conflict("El activo no tiene un reporte de pérdida o robo pendiente.")
+
+        # Punto de integración de 005: cancelar una solicitud pendiente aquí,
+        # con el activo bloqueado y dentro de la transacción de recuperación.
+        recovery.incident = incident
+        recovery.found_by = actor
+        recovery.inspected_condition = data["inspected_condition"]
+        recovery.recovered_location = data["recovered_location"]
+        recovery.note = data.get("note", "")
+        incident.status = Incident.Status.RECOVERED
+        incident.save(update_fields=["status"])
+        asset.lifecycle_status = LifecycleStatus.LOCATED
+        asset.assignment = Assignment.AVAILABLE
+        asset.current_custodian = None
+        asset.condition = recovery.inspected_condition
+        asset.location = recovery.recovered_location
+
+    return record_event_transition(
+        asset_id=asset_id, actor=actor, expected_revision=data["expected_revision"],
+        event_model=RecoveryEvent, apply=apply,
+    )
+
+
+def resolve_incident(*, incident_id, actor, data):
+    require_manager(actor)
+    asset_id = get_object_or_404(Incident.objects.only("asset_id"), pk=incident_id).asset_id
+
+    def apply(asset, incident):
+        if (
+            incident.type not in Incident.DAMAGE_OBSERVATION_TYPES
+            or incident.status != Incident.Status.OPEN
+        ):
+            raise Conflict("Solo se resuelven daños u observaciones pendientes.")
+        incident.status = Incident.Status.RESOLVED
+        incident.resolution_note = data["resolution_note"]
+        incident.resolved_by = actor
+        incident.resolved_at = timezone.now()
+
+    _, incident = record_event_transition(
+        asset_id=asset_id,
+        actor=actor,
+        expected_revision=data["expected_revision"],
+        event_model=Incident,
+        event_id=incident_id,
+        apply=apply,
+    )
+    return incident
+
+
+def active_maintenance(asset):
+    return asset.maintenance_events.filter(status=MaintenanceEvent.Status.IN_PROGRESS)
+
+
+def require_available_for_maintenance(asset):
+    if (
+        asset.lifecycle_status != LifecycleStatus.LOCATED
+        or asset.assignment != Assignment.AVAILABLE
+        or asset.current_custodian_id is not None
+    ):
+        raise Conflict("El mantenimiento requiere un activo localizado, disponible y sin custodio.")
+
+
+def start_maintenance(*, asset_id, actor, data):
+    def apply(asset, event):
+        require_available_for_maintenance(asset)
+        if active_maintenance(asset).exists():
+            raise Conflict("El activo ya tiene un mantenimiento en curso.", "maintenance_in_progress")
+        event.description = data["description"]
+        event.started_by = actor
+        event.previous_location = asset.location
+        event.workshop_location = data["workshop_location"]
+        asset.location = event.workshop_location
+
+    return record_event_transition(
+        asset_id=asset_id, actor=actor, expected_revision=data["expected_revision"],
+        event_model=MaintenanceEvent, apply=apply,
+    )
+
+
+def _finish_maintenance(*, maintenance_id, actor, expected_revision, apply):
+    require_manager(actor)
+    asset_id = get_object_or_404(
+        MaintenanceEvent.objects.only("asset_id"), pk=maintenance_id
+    ).asset_id
+
+    def finish(asset, event):
+        if event.status != MaintenanceEvent.Status.IN_PROGRESS:
+            raise Conflict("El mantenimiento ya no está en curso.")
+        apply(asset, event)
+        event.closed_by = actor
+        event.closed_at = timezone.now()
+
+    return record_event_transition(
+        asset_id=asset_id, actor=actor, expected_revision=expected_revision,
+        event_model=MaintenanceEvent, event_id=maintenance_id, apply=finish,
+    )
+
+
+def close_maintenance(*, maintenance_id, actor, data):
+    def apply(asset, event):
+        require_available_for_maintenance(asset)
+        if data["location_confirmed"] is not True:
+            raise ValidationError({"location_confirmed": ["Confirma la ubicación de recepción."]})
+        event.status = MaintenanceEvent.Status.COMPLETED
+        event.result = data["result"]
+        event.receiving_location = data["receiving_location"]
+        event.location_confirmed = True
+        asset.location = event.receiving_location
+
+    return _finish_maintenance(
+        maintenance_id=maintenance_id, actor=actor,
+        expected_revision=data["expected_revision"], apply=apply,
+    )
+
+
+def interrupt_maintenance(*, maintenance_id, actor, expected_revision):
+    """Interrumpe el mantenimiento sin registrar resultado de reparación."""
+    def apply(asset, event):
+        if asset.lifecycle_status != LifecycleStatus.UNLOCATED:
+            raise Conflict("La interrupción requiere un activo no localizado.")
+        event.status = MaintenanceEvent.Status.INTERRUPTED_UNLOCATED
+
+    return _finish_maintenance(
+        maintenance_id=maintenance_id, actor=actor,
+        expected_revision=expected_revision, apply=apply,
+    )
+
+
+def record_operation(*, asset_id, actor, operation, data):
+    """Conserva el formato histórico de Movement y comparte el bloqueo de 004."""
+    with locked_asset(
+        asset_id=asset_id, actor=actor, expected_revision=data["expected_revision"]
+    ) as asset:
+        if asset.lifecycle_status != LifecycleStatus.LOCATED:
+            raise Conflict("La operación requiere un activo localizado.", "asset_not_located")
         before = snapshot(asset)
         person = None
         target = None
         if operation == Movement.Type.DELIVERY:
+            if active_maintenance(asset).exists():
+                raise Conflict("No se puede entregar un activo en mantenimiento.", "maintenance_in_progress")
             if (
                 asset.assignment != Assignment.AVAILABLE
                 or asset.condition != Condition.OPERATIONAL
@@ -106,6 +396,7 @@ def record_operation(*, asset_id, actor, operation, data):
                 not target
                 or target.pk != data["movement_id"]
                 or target.type == Movement.Type.RECTIFICATION
+                or target.resulting_revision != asset.revision
                 or Movement.objects.filter(rectifies=target).exists()
             ):
                 raise Conflict(
@@ -113,6 +404,11 @@ def record_operation(*, asset_id, actor, operation, data):
                     "ineligible_rectification",
                 )
             previous = target.before
+            if (
+                target.type != Movement.Type.CONDITION
+                and active_maintenance(asset).exists()
+            ):
+                raise Conflict("La rectificación es incompatible con el mantenimiento en curso.", "maintenance_in_progress")
             asset.condition = previous["condition"]
             asset.assignment = previous["assignment"]
             asset.current_custodian_id = previous["custodian_id"]
@@ -130,23 +426,13 @@ def record_operation(*, asset_id, actor, operation, data):
                 "revision",
             ]
         )
-        person_snapshot = (
-            {
-                "id": person.pk,
-                "full_name": person.full_name,
-                "email": person.email,
-                "department": person.department,
-            }
-            if person
-            else None
-        )
         movement = Movement.objects.create(
             asset=asset,
             type=operation,
             actor=actor,
             actor_label=actor.username,
             custodian=person,
-            custodian_snapshot=person_snapshot,
+            custodian_snapshot=custodian_snapshot(person),
             before=before,
             after=snapshot(asset),
             note=data.get("note", ""),

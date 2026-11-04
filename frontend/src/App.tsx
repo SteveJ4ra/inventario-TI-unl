@@ -6,16 +6,20 @@ import type {
   Body,
   Custodian,
   Fields,
-  Movement,
+  HistoryEntry,
+  Incident,
+  Maintenance,
   Options,
   Page,
   User,
 } from "./types";
 import { Form, Field, ErrorNotice } from "./components/Form";
 import { AssetForm, CustodianForm } from "./components/Registration";
-import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
+import { AssetFacts, AssetStatusBadge, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
+import { IncidentPanel } from "./components/IncidentPanel";
+import { MaintenancePanel } from "./components/MaintenancePanel";
 import { ImportPanel } from "./components/Import";
 const emptyOptions: Options = {
   categories: [],
@@ -126,7 +130,9 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [refresh, setRefresh] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [asset, setAsset] = useState<Asset | null>(null);
-  const [events, setEvents] = useState<Movement[]>([]);
+  const [events, setEvents] = useState<HistoryEntry[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -162,6 +168,8 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
     if (selected === null) {
       setAsset(null);
       setEvents([]);
+      setIncidents([]);
+      setMaintenance(null);
       setDetailLoading(false);
       return;
     }
@@ -170,13 +178,24 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
     setAsset(null);
     Promise.all([
       request<Asset>(`/assets/${selected}/`, { signal: controller.signal }),
-      request<Movement[]>(`/assets/${selected}/movements/`, {
+      request<HistoryEntry[]>(`/assets/${selected}/history/`, {
+        signal: controller.signal,
+      }),
+      request<Incident[]>(`/assets/${selected}/incidents/`, {
         signal: controller.signal,
       }),
     ])
-      .then(([value, history]) => {
+      .then(async ([value, history, reports]) => {
+        if (controller.signal.aborted) return;
+        const active = value.active_maintenance_id == null ? null
+          : await request<Maintenance>(`/maintenance/${value.active_maintenance_id}/`, {
+            signal: controller.signal,
+          });
+        if (controller.signal.aborted) return;
         setAsset(value);
         setEvents(history);
+        setIncidents(reports);
+        setMaintenance(active);
       })
       .catch((e) => {
         if (!aborted(e)) setError(e);
@@ -186,15 +205,12 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
       });
     return () => controller.abort();
   }, [selected, refresh]);
-  async function operation(action: Action, body: Body) {
-    if (!asset) return;
+  async function writeToAsset(path: string, body: Body, successMessage: string) {
     setError(null);
     setMessage("");
     try {
-      await request(`/assets/${asset.id}/${action}/`, { body });
-      setMessage(
-        "Movimiento registrado. La ficha y el historial están actualizados.",
-      );
+      await request(path, { body });
+      setMessage(successMessage);
       setRefresh((n) => n + 1);
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
@@ -202,6 +218,14 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         setRefresh((n) => n + 1);
       } else throw e;
     }
+  }
+  async function operation(action: Action, body: Body) {
+    if (!asset) return;
+    await writeToAsset(
+      `/assets/${asset.id}/${action}/`,
+      body,
+      "Movimiento registrado. La ficha y el historial están actualizados.",
+    );
   }
   return (
     <div className="workspace">
@@ -390,18 +414,33 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
                       <p>{asset.description}</p>
                     </div>
                     <div className="badges">
-                      <Badge value={asset.condition} />
-                      <Badge value={asset.assignment} />
+                      {asset.lifecycle_status === "localizado" && <Badge value={asset.condition} />}
+                      <AssetStatusBadge asset={asset} />
                     </div>
                   </div>
                   <AssetFacts asset={asset} />
-                  <Movements
+                  <IncidentPanel
+                    key={`incidents-${asset.id}-${asset.revision}`}
+                    asset={asset}
+                    incidents={incidents}
+                    conditions={options.conditions}
+                    onWrite={writeToAsset}
+                  />
+                  <MaintenancePanel
+                    key={`maintenance-${asset.id}-${asset.revision}-${maintenance?.revision}`}
+                    asset={asset}
+                    active={maintenance}
+                    history={events}
+                    locations={options.locations}
+                    onWrite={writeToAsset}
+                  />
+                  {asset.lifecycle_status === "localizado" && <Movements
                     key={`${asset.id}-${asset.revision}`}
                     asset={asset}
                     people={people}
                     options={options}
                     onSubmit={operation}
-                  />
+                  />}
                   <History events={events} />
                 </>
               ) : (
