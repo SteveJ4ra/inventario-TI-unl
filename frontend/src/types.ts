@@ -64,7 +64,7 @@ export interface Page {
   results: Asset[];
 }
 export type Fields = Record<string, string>;
-export type Body = Record<string, string | number>;
+export type Body = Record<string, string | number | null>;
 export type Action = "deliver" | "return" | "condition" | "rectify";
 export type ImportKind = "assets" | "license_lots";
 export interface ImportIssue {
@@ -118,3 +118,38 @@ export const labels: Record<string, string> = {
   equipo_red: "Equipo de red",
   periferico: "Periférico",
 };
+
+export type LicenseModel = "USER_SEAT" | "DEVICE_SEAT";
+export type LicenseStatus = "NOT_STARTED" | "CURRENT" | "EXPIRED";
+export interface LicenseLotValues {
+  product_name: string;
+  vendor: string;
+  license_model: LicenseModel;
+  purchased_quantity: number;
+  in_use_quantity: number;
+  starts_on: string;
+  ends_on: string | null;
+}
+export interface LicenseLot extends LicenseLotValues {
+  id: number;
+  remaining_quantity: number;
+  temporal_status: LicenseStatus;
+  revision: number;
+  created_at: string;
+  created_by: User;
+}
+export interface LicenseLotAudit {
+  id: number;
+  lot_id: number;
+  actor: User & { recorded_label: string };
+  timestamp: string;
+  before_json: Partial<LicenseLotValues> & { revision?: number };
+  after_json: LicenseLotValues & { revision: number };
+  resulting_revision: number;
+}
+export interface LicensePage<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}

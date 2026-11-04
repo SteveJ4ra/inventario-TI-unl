@@ -16,6 +16,7 @@ import { AssetForm, CustodianForm } from "./components/Registration";
 import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
+import { LicenseLots } from "./components/LicenseLots";
 import { ImportPanel } from "./components/Import";
 const emptyOptions: Options = {
   categories: [],
@@ -118,6 +119,7 @@ export default function App() {
 }
 
 function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
+  const [section, setSection] = useState<"assets" | "licenses">("assets");
   const [options, setOptions] = useState(emptyOptions);
   const [people, setPeople] = useState<Custodian[]>([]);
   const [page, setPage] = useState<Page | null>(null);
@@ -135,6 +137,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [importOpen, setImportOpen] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
+    if (section !== "assets") return;
     setLoading(true);
     const params = new URLSearchParams({ ...query, page: String(pageNumber) });
     Promise.all([
@@ -157,7 +160,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [query, pageNumber, refresh]);
+  }, [query, pageNumber, refresh, section]);
   useEffect(() => {
     if (selected === null) {
       setAsset(null);
@@ -214,14 +217,21 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         </div>
         <span className="nav-label">ESPACIO DE TRABAJO</span>
         <button
-          className="nav-active"
+          className={section === "assets" ? "workspace-nav nav-active" : "workspace-nav"}
+          aria-pressed={section === "assets"}
           onClick={() => {
+            setSection("assets");
             setSelected(null);
             setModal(null);
             setImportOpen(false);
           }}
         >
           ▦ <span>Inventario</span>
+        </button>
+        <button className={section === "licenses" ? "workspace-nav nav-active" : "workspace-nav"}
+          aria-pressed={section === "licenses"}
+          onClick={() => { setSection("licenses"); setSelected(null); setModal(null); setImportOpen(false); setError(null); setMessage(""); }}>
+          ▤ <span>Licencias</span>
         </button>
         <div className="sidebar-bottom">
           <span className="avatar">
@@ -236,7 +246,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
       <div className="main-area">
         <header className="topbar">
           <span>
-            Gestión de activos <span className="separator">/</span> Inventario
+            {section === "licenses" ? "Gestión de licencias" : "Gestión de activos"} <span className="separator">/</span> Inventario
             TI
           </span>
           <button
@@ -253,6 +263,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
           </button>
         </header>
         <main className="content">
+          {section === "licenses" ? <LicenseLots /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">INVENTARIO TI</span>
@@ -412,6 +423,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
               )}
             </section>
           )}
+          </>}
           <footer>
             Universidad Nacional de Loja{" "}
             <span>Inventario de tecnologías de información · Grupo 5</span>

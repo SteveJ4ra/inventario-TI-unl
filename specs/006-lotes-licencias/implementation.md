@@ -53,3 +53,11 @@ Endpoints de lista/alta/detalle/PATCH/historial bajo /api/license-lots/. Lista e
 Primera ejecución completa: 67 pruebas, 1 error. Una entrada JSON escalar provocó un ValueError en el tratamiento de errores heredado. Se corrigió el serializador de 006 para devolver non_field_errors estructurado, sin cambiar endpoints de compañeros. Segunda ejecución: 67 PASS.
 
 La suite nueva comprueba sesiones reales con CSRF y origen ajeno, roles sin permiso (incluido superusuario sin Gestores), campos de autor/estado/snapshots manipulados, tipos/rangos/JSON malformado, 404/405, búsqueda tipo SQL injection, paginación y fecha local en dos zonas. La carrera real con dos conexiones permite una sola edición (200 y 409) con auditoría consistente. 008 se probó con su gateway real, CSV/doble confirmación/aplicación e idempotencia sobre SoftwareLicenseLot, no fake. Se conserva pendiente la integración de activos 003 ajena al alcance.
+
+## Parte 5: pantalla web (T007/T009)
+
+Se agrega Licencias a la navegación existente, incluida la vista estrecha. Lista paginada, búsqueda/filtros, alta, detalle, edición parcial vía PATCH y auditoría paginada con antes/después de los siete campos. Formulario exige inicio, permite fin nulo y cantidades cero; muestra remanentes calculados. Lotes vencidos se etiquetan y se aclara que el conteo no equivale a puestos utilizables.
+
+Se reutilizan Form/ErrorNotice, estilos y cliente de sesión/CSRF. El cliente incorpora PATCH y valores null sin cambiar POST existentes. Conflicto 409 recarga ficha/historial y cierra la edición obsoleta sin reintentar la escritura. React representa valores como texto; sin HTML dinámico. Consultas se cancelan al cambiar de vista y los datos privados se desmontan al cerrar sesión.
+
+Verificación tras integrar pantalla: las 20 pruebas frontend existentes PASS; TypeScript y build Vite PASS. Pruebas específicas de 006 quedan para parte 6. No se atribuye un recorrido manual de la pantalla nueva al alumno.

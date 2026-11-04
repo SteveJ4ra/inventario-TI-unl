@@ -2,6 +2,14 @@ import { useState, type ReactNode } from "react";
 import type { Fields } from "../types";
 import { ApiError } from "../api";
 const names: Record<string, string> = {
+  product_name: "Producto",
+  vendor: "Proveedor",
+  license_model: "Modalidad",
+  purchased_quantity: "Cantidad comprada",
+  in_use_quantity: "Cantidad en uso",
+  starts_on: "Inicio de vigencia",
+  ends_on: "Fin de vigencia",
+  expected_revision: "Revisión",
   name: "Nombre",
   description: "Descripción",
   category: "Categoría",
