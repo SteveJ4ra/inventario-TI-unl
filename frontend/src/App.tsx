@@ -17,6 +17,7 @@ import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
 import { ImportPanel } from "./components/Import";
+
 const emptyOptions: Options = {
   categories: [],
   conditions: [],
@@ -25,6 +26,34 @@ const emptyOptions: Options = {
 };
 const aborted = (e: unknown) =>
   e instanceof DOMException && e.name === "AbortError";
+
+// Solo se conserva una ruta interna; nunca se acepta una URL de retorno externa.
+function isQrAssetRoute(): boolean {
+  const path = window.location.pathname;
+  return path === "/assets/code" || path.startsWith("/assets/code/");
+}
+
+function getQrAssetCode(): string | null {
+  const path = window.location.pathname;
+
+  const match = /^\/assets\/code\/([^/]+)\/?$/.exec(path);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    const code = decodeURIComponent(match[1]);
+
+    if (!/^TI-[0-9]+$/.test(code)) {
+      return null;
+    }
+
+    return code;
+  } catch {
+    return null;
+  }
+}
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -133,6 +162,62 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [message, setMessage] = useState("");
   const [modal, setModal] = useState<"asset" | "person" | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  // El enlace del QR se conserva en la barra de direcciones durante el login.
+  // Workspace se monta tras iniciar sesión y resuelve entonces el código TI.
+  const [qrStatus, setQrStatus] = useState<
+    "normal" | "loading" | "not-found" | "denied" | "error"
+  >(isQrAssetRoute() ? "loading" : "normal");
+
+  useEffect(() => {
+    if (!isQrAssetRoute()) return;
+
+    const code = getQrAssetCode();
+    if (!code) {
+      setQrStatus("not-found");
+      return;
+    }
+
+    const controller = new AbortController();
+    request<Asset>(`/assets/by-code/${encodeURIComponent(code)}/`, {
+      signal: controller.signal,
+    })
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        setModal(null);
+        setImportOpen(false);
+        setSelected(result.id);
+        setQrStatus("normal");
+      })
+      .catch((e: unknown) => {
+        if (controller.signal.aborted || aborted(e)) return;
+        if (e instanceof ApiError && e.status === 403) {
+          setQrStatus("denied");
+        } else if (e instanceof ApiError && e.status === 404) {
+          setQrStatus("not-found");
+        } else {
+          setQrStatus("error");
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  function clearQrRoute() {
+    if (isQrAssetRoute()) {
+      window.history.replaceState(null, "", "/");
+    }
+    setQrStatus("normal");
+  }
+
+  function goToInventory() {
+    clearQrRoute();
+    setSelected(null);
+    setModal(null);
+    setImportOpen(false);
+    setError(null);
+    setMessage("");
+  }
+
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -215,11 +300,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         <span className="nav-label">ESPACIO DE TRABAJO</span>
         <button
           className="nav-active"
-          onClick={() => {
-            setSelected(null);
-            setModal(null);
-            setImportOpen(false);
-          }}
+          onClick={goToInventory}
         >
           ▦ <span>Inventario</span>
         </button>
@@ -262,17 +343,27 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
             <div className="heading-actions">
               <button
                 onClick={() => {
+                  goToInventory();
                   setImportOpen(true);
-                  setSelected(null);
-                  setModal(null);
-                  setError(null);
-                  setMessage("");
                 }}
               >
                 Importar CSV
               </button>
-              <button onClick={() => setModal("person")}>Nuevo custodio</button>
-              <button className="primary" onClick={() => setModal("asset")}>
+              <button
+                onClick={() => {
+                  goToInventory();
+                  setModal("person");
+                }}
+              >
+                Nuevo custodio
+              </button>
+              <button
+                className="primary"
+                onClick={() => {
+                  goToInventory();
+                  setModal("asset");
+                }}
+              >
                 ＋ Registrar activo
               </button>
             </div>
@@ -328,7 +419,40 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
               )}
             </section>
           )}
-          {importOpen ? (
+          {qrStatus === "loading" ? (
+            <section className="panel">
+              <p className="empty" role="status">
+                Buscando el activo del código QR…
+              </p>
+            </section>
+          ) : qrStatus === "not-found" ? (
+            <section className="panel">
+              <p className="empty" role="alert">
+                No se encontró el activo solicitado.
+              </p>
+              <button type="button" onClick={goToInventory}>
+                ← Volver al inventario
+              </button>
+            </section>
+          ) : qrStatus === "denied" ? (
+            <section className="panel">
+              <p className="empty" role="alert">
+                No tienes permiso para consultar este activo.
+              </p>
+              <button type="button" onClick={goToInventory}>
+                ← Volver al inventario
+              </button>
+            </section>
+          ) : qrStatus === "error" ? (
+            <section className="panel">
+              <p className="empty" role="alert">
+                No fue posible consultar el activo. Comprueba la conexión.
+              </p>
+              <button type="button" onClick={goToInventory}>
+                ← Volver al inventario
+              </button>
+            </section>
+          ) : importOpen ? (
             <section className="panel">
               <ImportPanel
                 onClose={() => {
@@ -370,10 +494,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
             <section className="panel detail">
               <button
                 className="back"
-                onClick={() => {
-                  setSelected(null);
-                  setError(null);
-                }}
+                onClick={goToInventory}
               >
                 ← Volver al inventario
               </button>
@@ -394,6 +515,52 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
                       <Badge value={asset.assignment} />
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setError(null);
+                      try {
+                        const response = await fetch(
+                          `/api/assets/${asset.id}/qr.svg`,
+                          { credentials: "same-origin" },
+                        );
+                        if (!response.ok) {
+                          if (response.status === 403) {
+                            throw new Error(
+                              "No tienes permisos para descargar este QR.",
+                            );
+                          }
+                          if (response.status === 404) {
+                            throw new Error("No se encontró el activo.");
+                          }
+                          throw new Error("No se pudo descargar el código QR.");
+                        }
+                        if (
+                          !response.headers
+                            .get("Content-Type")
+                            ?.includes("image/svg+xml")
+                        ) {
+                          throw new Error(
+                            "El servidor no devolvió un archivo SVG válido.",
+                          );
+                        }
+
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `${asset.code.replace(/[^A-Za-z0-9_-]/g, "_")}.svg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+                      } catch (e) {
+                        setError(e);
+                      }
+                    }}
+                  >
+                    ↓ Descargar QR (SVG)
+                  </button>
                   <AssetFacts asset={asset} />
                   <Movements
                     key={`${asset.id}-${asset.revision}`}

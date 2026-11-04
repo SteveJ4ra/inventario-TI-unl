@@ -9,6 +9,9 @@ from .imports.views import (
     TemplatesView,
 )
 from .views import (
+
+    AssetQrView,
+    AssetByCodeView,
     AssetsView,
     AssetView,
     CustodiansView,
@@ -24,6 +27,14 @@ urlpatterns = [
     path("auth/logout/", LogoutView.as_view()),
     path("assets/", AssetsView.as_view()),
     path("assets/<int:asset_id>/", AssetView.as_view()),
+path(
+    "assets/by-code/<str:code>/",
+    AssetByCodeView.as_view(),
+),
+path(
+    "assets/<int:asset_id>/qr.svg",
+    AssetQrView.as_view(),
+),
     path("assets/<int:asset_id>/movements/", MovementsView.as_view()),
     path("custodians/", CustodiansView.as_view()),
     path("options/", OptionsView.as_view()),
