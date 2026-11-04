@@ -217,7 +217,9 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         </div>
         <span className="nav-label">ESPACIO DE TRABAJO</span>
         <button
-          className={section === "assets" ? "workspace-nav nav-active" : "workspace-nav"}
+          className={
+            section === "assets" ? "workspace-nav nav-active" : "workspace-nav"
+          }
           aria-pressed={section === "assets"}
           onClick={() => {
             setSection("assets");
@@ -228,9 +230,22 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         >
           ▦ <span>Inventario</span>
         </button>
-        <button className={section === "licenses" ? "workspace-nav nav-active" : "workspace-nav"}
+        <button
+          className={
+            section === "licenses"
+              ? "workspace-nav nav-active"
+              : "workspace-nav"
+          }
           aria-pressed={section === "licenses"}
-          onClick={() => { setSection("licenses"); setSelected(null); setModal(null); setImportOpen(false); setError(null); setMessage(""); }}>
+          onClick={() => {
+            setSection("licenses");
+            setSelected(null);
+            setModal(null);
+            setImportOpen(false);
+            setError(null);
+            setMessage("");
+          }}
+        >
           ▤ <span>Licencias</span>
         </button>
         <div className="sidebar-bottom">
@@ -246,8 +261,10 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
       <div className="main-area">
         <header className="topbar">
           <span>
-            {section === "licenses" ? "Gestión de licencias" : "Gestión de activos"} <span className="separator">/</span> Inventario
-            TI
+            {section === "licenses"
+              ? "Gestión de licencias"
+              : "Gestión de activos"}{" "}
+            <span className="separator">/</span> Inventario TI
           </span>
           <button
             onClick={async () => {
@@ -263,167 +280,175 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
           </button>
         </header>
         <main className="content">
-          {section === "licenses" ? <LicenseLots /> : <>
-          <div className="page-heading">
-            <div>
-              <span className="eyebrow">INVENTARIO TI</span>
-              <h1>Equipos bajo control.</h1>
-              <p>Consulta su estado, ubicación y custodia en un solo lugar.</p>
-            </div>
-            <div className="heading-actions">
-              <button
-                onClick={() => {
-                  setImportOpen(true);
-                  setSelected(null);
-                  setModal(null);
-                  setError(null);
-                  setMessage("");
-                }}
-              >
-                Importar CSV
-              </button>
-              <button onClick={() => setModal("person")}>Nuevo custodio</button>
-              <button className="primary" onClick={() => setModal("asset")}>
-                ＋ Registrar activo
-              </button>
-            </div>
-          </div>
-          {message && (
-            <div className="notice" role="status">
-              ✓ {message}
-              <button
-                onClick={() => setMessage("")}
-                aria-label="Ocultar mensaje"
-              >
-                ×
-              </button>
-            </div>
-          )}
-          {error != null && <ErrorNotice error={error} />}
-          {modal && (
-            <section className="panel registration">
-              <div className="section-heading">
-                <h2>
-                  {modal === "asset"
-                    ? "Registrar activo"
-                    : "Registrar custodio"}
-                </h2>
-                <button onClick={() => setModal(null)}>Cerrar</button>
-              </div>
-              {modal === "asset" ? (
-                <AssetForm
-                  options={options}
-                  onSubmit={async (data) => {
-                    const created = await request<Asset>("/assets/", {
-                      body: data,
-                    });
-                    setSelected(created.id);
-                    setModal(null);
-                    setRefresh((n) => n + 1);
-                    setMessage(
-                      "Activo registrado con código " + created.code + ".",
-                    );
-                  }}
-                />
-              ) : (
-                <CustodianForm
-                  onSubmit={async (data) => {
-                    await request("/custodians/", { body: data });
-                    setModal(null);
-                    setRefresh((n) => n + 1);
-                    setMessage(
-                      "Custodio registrado. Ya puedes seleccionarlo al entregar un activo.",
-                    );
-                  }}
-                />
-              )}
-            </section>
-          )}
-          {importOpen ? (
-            <section className="panel">
-              <ImportPanel
-                onClose={() => {
-                  setImportOpen(false);
-                  setRefresh((n) => n + 1);
-                }}
-                onApplied={() => setRefresh((n) => n + 1)}
-              />
-            </section>
-          ) : selected === null ? (
-            <>
-              <section className="panel filter-panel">
-                <div className="section-heading">
-                  <h2>Encuentra un activo</h2>
-                  <span className="muted">Búsqueda y filtros</span>
-                </div>
-                <Filters
-                  options={options}
-                  people={people}
-                  onApply={(data) => {
-                    setQuery(data);
-                    setPageNumber(1);
-                  }}
-                />
-              </section>
-              <Inventory
-                page={page}
-                loading={loading}
-                pageNumber={pageNumber}
-                onPage={setPageNumber}
-                onSelect={(id) => {
-                  setError(null);
-                  setMessage("");
-                  setSelected(id);
-                }}
-              />
-            </>
+          {section === "licenses" ? (
+            <LicenseLots />
           ) : (
-            <section className="panel detail">
-              <button
-                className="back"
-                onClick={() => {
-                  setSelected(null);
-                  setError(null);
-                }}
-              >
-                ← Volver al inventario
-              </button>
-              {detailLoading ? (
-                <p className="empty" role="status">
-                  Cargando ficha…
-                </p>
-              ) : asset ? (
-                <>
-                  <div className="detail-heading">
-                    <div>
-                      <span className="code">{asset.code}</span>
-                      <h2>{asset.name}</h2>
-                      <p>{asset.description}</p>
-                    </div>
-                    <div className="badges">
-                      <Badge value={asset.condition} />
-                      <Badge value={asset.assignment} />
-                    </div>
+            <>
+              <div className="page-heading">
+                <div>
+                  <span className="eyebrow">INVENTARIO TI</span>
+                  <h1>Equipos bajo control.</h1>
+                  <p>
+                    Consulta su estado, ubicación y custodia en un solo lugar.
+                  </p>
+                </div>
+                <div className="heading-actions">
+                  <button
+                    onClick={() => {
+                      setImportOpen(true);
+                      setSelected(null);
+                      setModal(null);
+                      setError(null);
+                      setMessage("");
+                    }}
+                  >
+                    Importar CSV
+                  </button>
+                  <button onClick={() => setModal("person")}>
+                    Nuevo custodio
+                  </button>
+                  <button className="primary" onClick={() => setModal("asset")}>
+                    ＋ Registrar activo
+                  </button>
+                </div>
+              </div>
+              {message && (
+                <div className="notice" role="status">
+                  ✓ {message}
+                  <button
+                    onClick={() => setMessage("")}
+                    aria-label="Ocultar mensaje"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {error != null && <ErrorNotice error={error} />}
+              {modal && (
+                <section className="panel registration">
+                  <div className="section-heading">
+                    <h2>
+                      {modal === "asset"
+                        ? "Registrar activo"
+                        : "Registrar custodio"}
+                    </h2>
+                    <button onClick={() => setModal(null)}>Cerrar</button>
                   </div>
-                  <AssetFacts asset={asset} />
-                  <Movements
-                    key={`${asset.id}-${asset.revision}`}
-                    asset={asset}
-                    people={people}
-                    options={options}
-                    onSubmit={operation}
+                  {modal === "asset" ? (
+                    <AssetForm
+                      options={options}
+                      onSubmit={async (data) => {
+                        const created = await request<Asset>("/assets/", {
+                          body: data,
+                        });
+                        setSelected(created.id);
+                        setModal(null);
+                        setRefresh((n) => n + 1);
+                        setMessage(
+                          "Activo registrado con código " + created.code + ".",
+                        );
+                      }}
+                    />
+                  ) : (
+                    <CustodianForm
+                      onSubmit={async (data) => {
+                        await request("/custodians/", { body: data });
+                        setModal(null);
+                        setRefresh((n) => n + 1);
+                        setMessage(
+                          "Custodio registrado. Ya puedes seleccionarlo al entregar un activo.",
+                        );
+                      }}
+                    />
+                  )}
+                </section>
+              )}
+              {importOpen ? (
+                <section className="panel">
+                  <ImportPanel
+                    onClose={() => {
+                      setImportOpen(false);
+                      setRefresh((n) => n + 1);
+                    }}
+                    onApplied={() => setRefresh((n) => n + 1)}
                   />
-                  <History events={events} />
+                </section>
+              ) : selected === null ? (
+                <>
+                  <section className="panel filter-panel">
+                    <div className="section-heading">
+                      <h2>Encuentra un activo</h2>
+                      <span className="muted">Búsqueda y filtros</span>
+                    </div>
+                    <Filters
+                      options={options}
+                      people={people}
+                      onApply={(data) => {
+                        setQuery(data);
+                        setPageNumber(1);
+                      }}
+                    />
+                  </section>
+                  <Inventory
+                    page={page}
+                    loading={loading}
+                    pageNumber={pageNumber}
+                    onPage={setPageNumber}
+                    onSelect={(id) => {
+                      setError(null);
+                      setMessage("");
+                      setSelected(id);
+                    }}
+                  />
                 </>
               ) : (
-                <p className="empty">
-                  No fue posible cargar la ficha. Revisa el mensaje o vuelve al
-                  listado.
-                </p>
+                <section className="panel detail">
+                  <button
+                    className="back"
+                    onClick={() => {
+                      setSelected(null);
+                      setError(null);
+                    }}
+                  >
+                    ← Volver al inventario
+                  </button>
+                  {detailLoading ? (
+                    <p className="empty" role="status">
+                      Cargando ficha…
+                    </p>
+                  ) : asset ? (
+                    <>
+                      <div className="detail-heading">
+                        <div>
+                          <span className="code">{asset.code}</span>
+                          <h2>{asset.name}</h2>
+                          <p>{asset.description}</p>
+                        </div>
+                        <div className="badges">
+                          <Badge value={asset.condition} />
+                          <Badge value={asset.assignment} />
+                        </div>
+                      </div>
+                      <AssetFacts asset={asset} />
+                      <Movements
+                        key={`${asset.id}-${asset.revision}`}
+                        asset={asset}
+                        people={people}
+                        options={options}
+                        onSubmit={operation}
+                      />
+                      <History events={events} />
+                    </>
+                  ) : (
+                    <p className="empty">
+                      No fue posible cargar la ficha. Revisa el mensaje o vuelve
+                      al listado.
+                    </p>
+                  )}
+                </section>
               )}
-            </section>
+            </>
           )}
-          </>}
           <footer>
             Universidad Nacional de Loja{" "}
             <span>Inventario de tecnologías de información · Grupo 5</span>

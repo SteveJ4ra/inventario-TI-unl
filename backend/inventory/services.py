@@ -1,8 +1,18 @@
+from datetime import date
+
 from django.db import IntegrityError, connection, transaction
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from .errors import Conflict
-from .models import Asset, Assignment, Condition, Custodian, Movement
+from .models import (
+    Asset,
+    Assignment,
+    Condition,
+    Custodian,
+    Movement,
+    SoftwareLicenseLot,
+    LicenseLotAudit,
+)
 from .permissions import is_manager
 
 
@@ -158,18 +168,23 @@ def record_operation(*, asset_id, actor, operation, data):
 
 
 LICENSE_LOT_FIELDS = (
-    "product_name", "vendor", "license_model", "purchased_quantity",
-    "in_use_quantity", "starts_on", "ends_on",
+    "product_name",
+    "vendor",
+    "license_model",
+    "purchased_quantity",
+    "in_use_quantity",
+    "starts_on",
+    "ends_on",
 )
 
 
 def license_lot_snapshot(lot):
-    from datetime import date
-
     values = {name: getattr(lot, name) for name in LICENSE_LOT_FIELDS}
     return {
-        **{name: value.isoformat() if isinstance(value, date) else value
-           for name, value in values.items()},
+        **{
+            name: value.isoformat() if isinstance(value, date) else value
+            for name, value in values.items()
+        },
         "revision": lot.revision,
     }
 
@@ -186,19 +201,18 @@ def validate_license_lot(data, *, instance=None, patch=False):
 
 
 def _audit_license_lot(lot, actor, before):
-    from .models import LicenseLotAudit
-
     return LicenseLotAudit.objects.create(
-        lot=lot, actor=actor, actor_label=actor.username,
-        before_json=before, after_json=license_lot_snapshot(lot),
+        lot=lot,
+        actor=actor,
+        actor_label=actor.username,
+        before_json=before,
+        after_json=license_lot_snapshot(lot),
         resulting_revision=lot.revision,
     )
 
 
 @transaction.atomic
 def create_license_lot(*, actor, data):
-    from .models import SoftwareLicenseLot
-
     require_manager(actor)
     values = validate_license_lot(data)
     lot = SoftwareLicenseLot.objects.create(created_by=actor, **values)
@@ -208,8 +222,6 @@ def create_license_lot(*, actor, data):
 
 @transaction.atomic
 def update_license_lot(*, lot_id, actor, data):
-    from .models import SoftwareLicenseLot
-
     require_manager(actor)
     lot = get_object_or_404(SoftwareLicenseLot.objects.select_for_update(), pk=lot_id)
     values = validate_license_lot(data, instance=lot, patch=True)

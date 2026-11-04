@@ -8,60 +8,123 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('inventory', '0003_importbatch'),
+        ("inventory", "0003_importbatch"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SoftwareLicenseLot',
+            name="SoftwareLicenseLot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('product_name', models.CharField(max_length=160)),
-                ('vendor', models.CharField(max_length=160)),
-                ('license_model', models.CharField(choices=[('USER_SEAT', 'Por usuario'), ('DEVICE_SEAT', 'Por dispositivo')], max_length=16)),
-                ('purchased_quantity', models.PositiveIntegerField()),
-                ('in_use_quantity', models.PositiveIntegerField()),
-                ('starts_on', models.DateField()),
-                ('ends_on', models.DateField(blank=True, null=True)),
-                ('revision', models.PositiveBigIntegerField(default=0, editable=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_license_lots', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("product_name", models.CharField(max_length=160)),
+                ("vendor", models.CharField(max_length=160)),
+                (
+                    "license_model",
+                    models.CharField(
+                        choices=[
+                            ("USER_SEAT", "Por usuario"),
+                            ("DEVICE_SEAT", "Por dispositivo"),
+                        ],
+                        max_length=16,
+                    ),
+                ),
+                ("purchased_quantity", models.PositiveIntegerField()),
+                ("in_use_quantity", models.PositiveIntegerField()),
+                ("starts_on", models.DateField()),
+                ("ends_on", models.DateField(blank=True, null=True)),
+                ("revision", models.PositiveBigIntegerField(default=0, editable=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="created_license_lots",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-id'],
+                "ordering": ["-id"],
             },
         ),
         migrations.CreateModel(
-            name='LicenseLotAudit',
+            name="LicenseLotAudit",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('actor_label', models.CharField(max_length=150)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('before_json', models.JSONField()),
-                ('after_json', models.JSONField()),
-                ('resulting_revision', models.PositiveBigIntegerField()),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('lot', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='audits', to='inventory.softwarelicenselot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("actor_label", models.CharField(max_length=150)),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("before_json", models.JSONField()),
+                ("after_json", models.JSONField()),
+                ("resulting_revision", models.PositiveBigIntegerField()),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="audits",
+                        to="inventory.softwarelicenselot",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-resulting_revision', '-id'],
+                "ordering": ["-resulting_revision", "-id"],
             },
         ),
         migrations.AddConstraint(
-            model_name='softwarelicenselot',
-            constraint=models.CheckConstraint(condition=models.Q(('license_model__in', ['USER_SEAT', 'DEVICE_SEAT'])), name='license_lot_model_valid'),
+            model_name="softwarelicenselot",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("license_model__in", ["USER_SEAT", "DEVICE_SEAT"])),
+                name="license_lot_model_valid",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='softwarelicenselot',
-            constraint=models.CheckConstraint(condition=models.Q(('in_use_quantity__lte', models.F('purchased_quantity'))), name='license_lot_use_within_purchased'),
+            model_name="softwarelicenselot",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("in_use_quantity__lte", models.F("purchased_quantity"))
+                ),
+                name="license_lot_use_within_purchased",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='softwarelicenselot',
-            constraint=models.CheckConstraint(condition=models.Q(('ends_on__isnull', True), ('ends_on__gte', models.F('starts_on')), _connector='OR'), name='license_lot_dates_ordered'),
+            model_name="softwarelicenselot",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("ends_on__isnull", True),
+                    ("ends_on__gte", models.F("starts_on")),
+                    _connector="OR",
+                ),
+                name="license_lot_dates_ordered",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='licenselotaudit',
-            constraint=models.UniqueConstraint(fields=('lot', 'resulting_revision'), name='license_lot_audit_revision_unique'),
+            model_name="licenselotaudit",
+            constraint=models.UniqueConstraint(
+                fields=("lot", "resulting_revision"),
+                name="license_lot_audit_revision_unique",
+            ),
         ),
     ]

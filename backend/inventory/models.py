@@ -228,7 +228,8 @@ class SoftwareLicenseLot(models.Model):
     revision = models.PositiveBigIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
         related_name="created_license_lots",
     )
 
@@ -244,7 +245,8 @@ class SoftwareLicenseLot(models.Model):
                 name="license_lot_use_within_purchased",
             ),
             models.CheckConstraint(
-                condition=Q(ends_on__isnull=True) | Q(ends_on__gte=models.F("starts_on")),
+                condition=Q(ends_on__isnull=True)
+                | Q(ends_on__gte=models.F("starts_on")),
                 name="license_lot_dates_ordered",
             ),
         ]

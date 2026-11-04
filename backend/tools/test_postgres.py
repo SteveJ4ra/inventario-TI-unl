@@ -63,7 +63,8 @@ def postgres_environment():
             logs = [directory / "launcher.log", directory / "postgres.log"]
             detail = "\n".join(
                 log.read_text(encoding="utf-8", errors="replace")
-                for log in logs if log.exists()
+                for log in logs
+                if log.exists()
             )
             raise RuntimeError(detail.replace(password, "[redactado]"))
 

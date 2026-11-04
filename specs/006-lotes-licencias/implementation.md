@@ -61,3 +61,17 @@ Se agrega Licencias a la navegación existente, incluida la vista estrecha. List
 Se reutilizan Form/ErrorNotice, estilos y cliente de sesión/CSRF. El cliente incorpora PATCH y valores null sin cambiar POST existentes. Conflicto 409 recarga ficha/historial y cierra la edición obsoleta sin reintentar la escritura. React representa valores como texto; sin HTML dinámico. Consultas se cancelan al cambiar de vista y los datos privados se desmontan al cerrar sesión.
 
 Verificación tras integrar pantalla: las 20 pruebas frontend existentes PASS; TypeScript y build Vite PASS. Pruebas específicas de 006 quedan para parte 6. No se atribuye un recorrido manual de la pantalla nueva al alumno.
+
+## Parte 6: integración, interfaz y revisiones de seguridad (T011/T013)
+
+Se agregan 13 pruebas de interfaz: obligatorios/cero/fin nulo, rechazo de cantidades/fechas, errores de campos, bloqueo de doble envío, PATCH con CSRF/sesión/revisión, búsqueda/filtros/páginas, etiquetas y texto HTML escapado, alta/edición/historial, 409 sin reintento, historial paginado, error de red, 403 y logout. Total frontend: 33 PASS; build PASS.
+
+Revisión de integración: el gateway existente de 008 comprobaba solo la presencia del modelo. Se agrega únicamente delegación al validador público de 006 para rechazar cantidades fuera del rango DB antes de confirmar. No cambia parser, estados ni confirmaciones de CSV. Se prueba gateway real y rollback de ambas filas/auditorías al fallar la segunda; el batch sigue confirmable y puede reintentarse. La prueba de rechazo detectó una importación faltante al reducir el diff del archivo compartido; se corrigió y se repitió toda la suite.
+
+Revisión de entradas: JSON solo UTF-8 y 16 KiB, lectura acotada aunque falte Content-Length; respuesta no-store. Un nombre de campo con surrogate Unicode causaba 500 al representar el error; se valida el nombre antes de generar fields y se comprueba respuesta 400. Codificaciones de compresión, Unicode inválido, anidación y JSON no objeto se rechazan sin escribir. Suite final en el stack original: 72 backend PASS (27 nuevas de 006 + 45 de la base), 16 pruebas puras de 008 PASS.
+
+Recorrido automático en Google Chrome 156.0.8078.47 con `backend/tools/smoke_license_lots.py`: PASS en PostgreSQL 17 efímero. Dos gestores ficticios, sesión/CSRF reales, alta cero sin fin, edición auditada, vencido con remanentes, conflicto 409 real, móvil 375px sin desborde y logout. El primer intento falló al localizar el selector de modalidad; se añadió nombre accesible explícito y el recorrido posterior pasó. Captura móvil inspeccionada por Codex, solo datos ficticios; no se agrega al repositorio. No equivale a aceptación manual del alumno ni a revisión humana independiente.
+
+Tras revisar `migrate --plan` y `sqlmigrate` 0004/0005, se aplicaron ambas a la DB local. Comparación de hashes de registros de Asset, Custodian, Movement, ImportBatch y User antes/después: contenido conservado. Había 0 registros de negocio y 1 cuenta; no se crearon cuentas/lotes ficticios en la DB local. Nuevas tablas vacías.
+
+Auditoría inicial: npm audit sin avisos; Bandit sin hallazgos medios/altos en código backend de inventario. pip-audit detectó cinco avisos en DRF 3.16.1. La decisión sobre actualización se solicitó al alumno: no se presenta el escaneo inicial como aprobado. Se preparó una variante temporal de requirements cambiando solo DRF a 3.18.2: 72 pruebas PASS y pip-audit sin vulnerabilidades conocidas en esa variante; no cambia por sí sola la dependencia del proyecto.

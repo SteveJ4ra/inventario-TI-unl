@@ -21,7 +21,8 @@ async function send<T>(
     signal?: AbortSignal;
   } = {},
 ): Promise<T> {
-  const write = options.method === "PATCH" || Boolean(options.body || options.form);
+  const write =
+    options.method === "PATCH" || Boolean(options.body || options.form);
   const headers: Record<string, string> = {};
   if (write) {
     let csrf: Response;
@@ -83,7 +84,11 @@ async function send<T>(
 }
 export async function request<T>(
   path: string,
-  options: { body?: Body; method?: "POST" | "PATCH"; signal?: AbortSignal } = {},
+  options: {
+    body?: Body;
+    method?: "POST" | "PATCH";
+    signal?: AbortSignal;
+  } = {},
 ): Promise<T> {
   return send<T>(path, options);
 }
