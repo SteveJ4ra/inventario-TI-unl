@@ -45,3 +45,11 @@ Servicios de alta/edición verifican Gestor, validan datos y guardan auditoría 
 `inventory.license_services.import_license_lots(actor=..., rows=[valores...])` publica la firma real consumida por 008; prevalidación de todas las filas y transacción íntegra, sin parser/confirmaciones CSV nuevos. La importación puede crear lotes iguales: no se inventó unicidad de producto/proveedor.
 
 Prueba focalizada: mismo runner con `inventory.tests.test_license_lots --verbosity 1`, 8 PASS. Incluye rechazo sin escrituras, validación desde servicios, autor conservado y rollback de alta/edición al fallar auditoría. El mock se usa solo para provocar el fallo; la persistencia y rollback son PostgreSQL reales.
+
+## Parte 4: API y controles de seguridad (T001/T006/T010/T013)
+
+Endpoints de lista/alta/detalle/PATCH/historial bajo /api/license-lots/. Lista e historial limitados a 50 filas por página; búsqueda producto/proveedor y filtros license_model/temporal_status. Un día local calculado por petición mantiene consistentes filtro y estado devuelto. Se conserva HTTP 403 y formato de errores 002; sin PUT/DELETE ni escritura de historia.
+
+Primera ejecución completa: 67 pruebas, 1 error. Una entrada JSON escalar provocó un ValueError en el tratamiento de errores heredado. Se corrigió el serializador de 006 para devolver non_field_errors estructurado, sin cambiar endpoints de compañeros. Segunda ejecución: 67 PASS.
+
+La suite nueva comprueba sesiones reales con CSRF y origen ajeno, roles sin permiso (incluido superusuario sin Gestores), campos de autor/estado/snapshots manipulados, tipos/rangos/JSON malformado, 404/405, búsqueda tipo SQL injection, paginación y fecha local en dos zonas. La carrera real con dos conexiones permite una sola edición (200 y 409) con auditoría consistente. 008 se probó con su gateway real, CSV/doble confirmación/aplicación e idempotencia sobre SoftwareLicenseLot, no fake. Se conserva pendiente la integración de activos 003 ajena al alcance.

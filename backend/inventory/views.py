@@ -158,3 +158,81 @@ class OperationView(APIView):
             },
             status=201,
         )
+
+
+def license_page(request, queryset, page, output, *, context=None):
+    """Paginación acotada, con el mismo tamaño y envoltura que 002."""
+    count = queryset.count()
+    if page > 1 and (page - 1) * 50 >= count:
+        raise ValidationError({"page": ["La página no existe."]})
+
+    def url(number):
+        query = request.query_params.copy()
+        query["page"] = str(number)
+        return request.build_absolute_uri("?" + query.urlencode())
+
+    return Response({
+        "count": count,
+        "next": url(page + 1) if page * 50 < count else None,
+        "previous": url(page - 1) if page > 1 else None,
+        "results": output(queryset[(page - 1) * 50:page * 50], many=True, context=context or {}).data,
+    })
+
+
+class LicenseLotsView(APIView):
+    def get(self, request):
+        from django.utils import timezone
+        from .models import SoftwareLicenseLot
+        from .serializers import LicenseLotOutput, LicenseLotQuery
+
+        data = validated(LicenseLotQuery, request.query_params.dict())
+        today = timezone.localdate()
+        result = SoftwareLicenseLot.objects.select_related("created_by")
+        if data.get("search"):
+            result = result.filter(
+                Q(product_name__icontains=data["search"]) | Q(vendor__icontains=data["search"])
+            )
+        if "license_model" in data:
+            result = result.filter(license_model=data["license_model"])
+        if data.get("temporal_status") == "NOT_STARTED":
+            result = result.filter(starts_on__gt=today)
+        elif data.get("temporal_status") == "EXPIRED":
+            result = result.filter(ends_on__lt=today)
+        elif data.get("temporal_status") == "CURRENT":
+            result = result.filter(starts_on__lte=today).filter(
+                Q(ends_on__isnull=True) | Q(ends_on__gte=today)
+            )
+        return license_page(request, result, data["page"], LicenseLotOutput, context={"today": today})
+
+    def post(self, request):
+        from .serializers import LicenseLotOutput
+
+        lot = services.create_license_lot(actor=request.user, data=request.data)
+        return Response(LicenseLotOutput(lot).data, status=201)
+
+
+class LicenseLotView(APIView):
+    def get(self, request, lot_id):
+        from .models import SoftwareLicenseLot
+        from .serializers import LicenseLotOutput
+
+        lot = get_object_or_404(SoftwareLicenseLot.objects.select_related("created_by"), pk=lot_id)
+        return Response(LicenseLotOutput(lot).data)
+
+    def patch(self, request, lot_id):
+        from .serializers import LicenseLotOutput
+
+        lot = services.update_license_lot(lot_id=lot_id, actor=request.user, data=request.data)
+        return Response(LicenseLotOutput(lot).data)
+
+
+class LicenseLotHistoryView(APIView):
+    def get(self, request, lot_id):
+        from .models import SoftwareLicenseLot
+        from .serializers import LicenseHistoryQuery, LicenseLotAuditOutput
+
+        data = validated(LicenseHistoryQuery, request.query_params.dict())
+        lot = get_object_or_404(SoftwareLicenseLot, pk=lot_id)
+        return license_page(
+            request, lot.audits.select_related("actor"), data["page"], LicenseLotAuditOutput
+        )

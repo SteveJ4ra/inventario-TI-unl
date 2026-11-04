@@ -162,6 +162,13 @@ class LicenseLotInput(StrictSerializer):
     starts_on = serializers.DateField()
     ends_on = serializers.DateField(required=False, allow_null=True)
 
+    def to_internal_value(self, data):
+        if not isinstance(data, dict):
+            raise serializers.ValidationError({
+                "non_field_errors": ["Se requiere un objeto JSON."]
+            })
+        return super().to_internal_value(data)
+
     def validate(self, attrs):
         merged = {
             name: getattr(self.instance, name)
