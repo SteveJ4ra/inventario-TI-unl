@@ -27,3 +27,11 @@ El runner fallaba antes de ejecutar pruebas: `could not create lock file /var/ru
 Comando: `PG_BIN=/usr/lib/postgresql/17/bin PYTHONDONTWRITEBYTECODE=1 backend/.venv/bin/python backend/tools/test_postgres.py`.
 
 Resultado real: 45 pruebas existentes PASS en PostgreSQL temporal 17.11, con migraciones y carreras reales. Es una línea base, no evidencia de 006 implementado.
+
+## Parte 2: modelos y migraciones (T001–T003)
+
+Se agregan SoftwareLicenseLot y LicenseLotAudit sin enlaces a activos, facturas o custodios. Enteros no negativos; uso <= compradas; modalidad limitada a USER_SEAT/DEVICE_SEAT; inicio no nulo y fin >= inicio. Remanentes y estado se calculan. El día fin es inclusivo y se usa `timezone.localdate()` de la zona configurada por Django (UTC en esta base); no se cambia globalmente la zona de 002.
+
+Migraciones nuevas 0004_license_lots y 0005_license_lot_audit_immutable después de 0003_importbatch, sin modificar migraciones existentes. El trigger impide UPDATE/DELETE de auditoría incluso con QuerySet o SQL directo; revisión única por lote/evento. La etiqueta del autor conserva el nombre registrado.
+
+Prueba focalizada real: `PG_BIN=/usr/lib/postgresql/17/bin PYTHONDONTWRITEBYTECODE=1 backend/.venv/bin/python backend/tools/test_postgres.py inventory.tests.test_license_lots --verbosity 1`: 3 pruebas PASS (límites temporales, integridad DB, inmutabilidad y unicidad). Las migraciones se aplicaron solo en DB efímera; la DB de desarrollo conserva su estado hasta revisión del plan final.

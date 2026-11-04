@@ -206,3 +206,92 @@ class ImportBatch(models.Model):
         indexes = [
             models.Index(fields=["owner", "state"], name="import_owner_state_idx"),
         ]
+
+
+class SoftwareLicenseLot(models.Model):
+    class LicenseModel(models.TextChoices):
+        USER_SEAT = "USER_SEAT", "Por usuario"
+        DEVICE_SEAT = "DEVICE_SEAT", "Por dispositivo"
+
+    class TemporalStatus(models.TextChoices):
+        NOT_STARTED = "NOT_STARTED", "Por iniciar"
+        CURRENT = "CURRENT", "Vigente"
+        EXPIRED = "EXPIRED", "Vencido"
+
+    product_name = models.CharField(max_length=160)
+    vendor = models.CharField(max_length=160)
+    license_model = models.CharField(max_length=16, choices=LicenseModel.choices)
+    purchased_quantity = models.PositiveIntegerField()
+    in_use_quantity = models.PositiveIntegerField()
+    starts_on = models.DateField()
+    ends_on = models.DateField(null=True, blank=True)
+    revision = models.PositiveBigIntegerField(default=0, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        related_name="created_license_lots",
+    )
+
+    class Meta:
+        ordering = ["-id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(license_model__in=["USER_SEAT", "DEVICE_SEAT"]),
+                name="license_lot_model_valid",
+            ),
+            models.CheckConstraint(
+                condition=Q(in_use_quantity__lte=models.F("purchased_quantity")),
+                name="license_lot_use_within_purchased",
+            ),
+            models.CheckConstraint(
+                condition=Q(ends_on__isnull=True) | Q(ends_on__gte=models.F("starts_on")),
+                name="license_lot_dates_ordered",
+            ),
+        ]
+
+    @property
+    def remaining_quantity(self):
+        return self.purchased_quantity - self.in_use_quantity
+
+    def status_on(self, today=None):
+        from django.utils import timezone
+
+        today = today if today is not None else timezone.localdate()
+        if self.starts_on > today:
+            return self.TemporalStatus.NOT_STARTED
+        if self.ends_on is not None and self.ends_on < today:
+            return self.TemporalStatus.EXPIRED
+        return self.TemporalStatus.CURRENT
+
+    @property
+    def temporal_status(self):
+        return self.status_on()
+
+
+class LicenseLotAudit(models.Model):
+    lot = models.ForeignKey(
+        SoftwareLicenseLot, related_name="audits", on_delete=models.PROTECT
+    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    actor_label = models.CharField(max_length=150)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    before_json = models.JSONField()
+    after_json = models.JSONField()
+    resulting_revision = models.PositiveBigIntegerField()
+
+    class Meta:
+        ordering = ["-resulting_revision", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["lot", "resulting_revision"],
+                name="license_lot_audit_revision_unique",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ValidationError("El historial de licencias no puede modificarse.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("El historial de licencias debe conservarse.")
