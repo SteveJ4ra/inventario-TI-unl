@@ -9,7 +9,7 @@ Agregar modelos, servicios y API para cantidades agregadas de puestos. El módul
 
 ## Contexto técnico
 
-- Python 3.13, Django 5.2, DRF 3.16, PostgreSQL 17.
+- Python 3.13, Django 5.2, DRF 3.18.2, PostgreSQL 17. Cambio puntual de DRF autorizado por Anderson tras detectar avisos de seguridad en 3.16.1.
 - React 19, TypeScript 7, Vite 8.
 - Decimal no necesario para cantidades; usar enteros positivos/no negativos.
 - No introducir claves de licencia ni adjuntos.
@@ -34,3 +34,12 @@ Cumple trazabilidad y límites; evita catálogo de asignaciones individuales y p
 ## Contratos compartidos
 
 Aplicar [contratos transversales](../../docs/sdd/contratos-transversales.md): sesión/roles, revisión global del activo, historial compatible, transiciones de localización y atomicidad. Esta referencia es parte del plan y de la validación de integración.
+
+
+## Implementación local y decisiones técnicas
+
+Se implementó sobre develop 4247cc8, con 002/008 reales, sin dependencias de 003–005. Modelos y servicios mantienen los nombres canónicos. Migraciones nuevas 0004/0005; alta auditada revisión 0, ediciones reales +1 con bloqueo y expected_revision. Campos desconocidos y de servidor se rechazan. Se conserva la zona configurada UTC y se calcula mediante timezone.localdate().
+
+Paginación de lista/historial a 50 filas; entradas JSON UTF-8 de hasta 16 KiB; enteros estrictos acotados al tipo PostgreSQL. Se agregó el proveedor inventory.license_services que consume el gateway real de 008. No se agregan bibliotecas a la app; solo se actualiza DRF a 3.18.2 por seguridad con autorización del alumno; herramientas de auditoría/navegador se usan desde entornos temporales.
+
+La Constitución fue contrastada como propuesta, sin declarar ratificación ni aprobación grupal. Anderson autorizó implementar localmente. Las cinco revisiones, pruebas y decisiones de seguridad se registran en [reviews.md](reviews.md) y [validation.md](validation.md).

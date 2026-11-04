@@ -1,6 +1,6 @@
 # Implementación de 006 — Lotes de licencias
 
-Fecha: 2026-11-04 (America/Guayaquil). Desarrollo local autorizado por Anderson con asistencia de Codex. Revisión humana y ratificación de Constitución pendientes. No se publica rama ni PR por instrucción del alumno.
+Fecha: 2026-11-04 (America/Guayaquil). Desarrollo local autorizado por Anderson con asistencia de Codex. Revisión humana y ratificación de Constitución pendientes. La implementación se mantuvo local inicialmente; Anderson autorizó después publicar la rama propia y abrir el PR hacia develop. No se autoriza fusión automática.
 
 ## Análisis previo y siete partes
 
@@ -75,3 +75,27 @@ Recorrido automático en Google Chrome 156.0.8078.47 con `backend/tools/smoke_li
 Tras revisar `migrate --plan` y `sqlmigrate` 0004/0005, se aplicaron ambas a la DB local. Comparación de hashes de registros de Asset, Custodian, Movement, ImportBatch y User antes/después: contenido conservado. Había 0 registros de negocio y 1 cuenta; no se crearon cuentas/lotes ficticios en la DB local. Nuevas tablas vacías.
 
 Auditoría inicial: npm audit sin avisos; Bandit sin hallazgos medios/altos en código backend de inventario. pip-audit detectó cinco avisos en DRF 3.16.1. La decisión sobre actualización se solicitó al alumno: no se presenta el escaneo inicial como aprobado. Se preparó una variante temporal de requirements cambiando solo DRF a 3.18.2: 72 pruebas PASS y pip-audit sin vulnerabilidades conocidas en esa variante; no cambia por sí sola la dependencia del proyecto.
+
+## Parte 7: evidencia, tareas y cinco revisiones (T012)
+
+Se actualizan README raíz/backend/frontend, spec/plan/modelo/contratos, tasks, quickstart y estado del plan de validación sin eliminar escenarios. Se entregan validation.md, integration-notes.md, reviews.md y pr-description.md. Las cinco pasadas están documentadas por requisitos/contratos, seguridad, DB/concurrencia, interfaz y reproducción/entrega. Revisión humana y aceptación manual continúan pendientes.
+
+Se verificaron enlaces locales, T001–T013 sin duplicados, cinco revisiones, diff --check, ausencia de valores privados del .env en el diff y exclusión de .env/venv/node_modules. En la verificación inicial se conservaron requirements y lockfile y se dejó constancia del escaneo fallido de DRF 3.16.1. El cierre autorizado de seguridad se documenta a continuación; el lockfile sigue sin cambios.
+
+Commits anteriores de esta entrega: 2388e69 (runner), 84617ce (modelos), 3533967 (servicios), 2056706 (API), 88feea9 (web), cecf509 (pruebas/seguridad). El séptimo commit contiene este cierre documental. Son siete commits en la rama propia. Anderson autorizó su publicación y la creación del PR hacia develop; el texto está preparado en pr-description.md. No se realiza merge automático.
+
+
+### Cierre autorizado de seguridad dentro del séptimo commit
+
+Anderson confirmó actualizar solo DRF a 3.18.2 y repetir las pruebas. Se fijó esa versión en backend/requirements.txt y se instaló con `backend/.venv/bin/python -m pip install --no-deps 'djangorestframework==3.18.2'`. Se comparó el inventario de distribuciones antes/después: únicamente djangorestframework pasó de 3.16.1 a 3.18.2; no se actualizaron otros paquetes ni el lockfile frontend.
+
+Resultados repetidos con el entorno principal actualizado: 72 pruebas backend, 33 frontend y 16 puras PASS; build, check, makemigrations --check --dry-run y pip check PASS. Navegador real nuevamente PASS. pip-audit sin vulnerabilidades conocidas; npm audit sin avisos; Bandit sin hallazgos medios/altos. Las advertencias de despliegue HTTP local/DEBUG y la revisión humana siguen documentadas.
+
+Se actualizan los estados y evidencias de las cinco revisiones para distinguir el hallazgo histórico de la corrección aplicada. Este cierre se incorpora mediante amend al séptimo commit propio sin publicar, conservando exactamente siete commits locales. Hasta ese cierre inicial no se había publicado la rama; la publicación fue autorizada posteriormente por Anderson.
+
+
+### Entrega Git autorizada
+
+Anderson solicitó publicar los commits y crear el pull request. Antes de publicar se verificó árbol limpio, siete commits propios y `git fetch origin`: develop permanecía en 4247cc8998ed810fdb6462941d85f3324260a2ec, sin cambios adicionales que integrar. La credencial Git configurada pertenece a AndersonC15 y tiene permiso push; no se imprime ni se guarda en el código. La rama remota propia y un PR previo no existían al comprobarlos. Se usa Git y la API oficial de GitHub porque gh no está instalado.
+
+La entrega remota usa la rama feature/anderson-006-lotes-licencias y base develop, con solicitud de revisión a un colaborador verificado. La URL y el estado final se informan a partir de la respuesta de GitHub. Se mantienen siete commits, sin force push, autoaprobación o merge automático. La revisión humana, aceptación manual y ratificación del equipo no se sustituyen por esta publicación.

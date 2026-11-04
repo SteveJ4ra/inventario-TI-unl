@@ -1,6 +1,6 @@
 # Plan de validación: 006
 
-**Estado:** pendiente de implementación.
+**Estado:** implementación local y casos funcionales ejecutados; resultados, fallos corregidos y límites en [validation.md](validation.md). Auditoría de dependencias repetida tras actualizar DRF 3.18.2, sin avisos conocidos; revisión humana pendiente.
 
 - Cálculo entero compradas − en uso y límites negativos/superiores.
 - Inicio obligatorio; fin opcional; estados temporales derivados.

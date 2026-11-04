@@ -14,7 +14,7 @@ API Django REST Framework y pantalla React + TypeScript con:
 - Historial con autoría y rectificación del último movimiento elegible, conservando el original y restaurando la situación anterior.
 - Controles de concurrencia, CSRF y restricciones de integridad en PostgreSQL.
 
-Las seis categorías y las reglas funcionales provienen de las respuestas documentadas de Steven; la FPGA fue únicamente un ejemplo. No se implementan edición general, eliminación, órdenes de mantenimiento, portal de custodios, reportes ni aplicación móvil en este incremento.
+Las seis categorías y las reglas funcionales provienen de las respuestas documentadas de Steven; la FPGA fue únicamente un ejemplo. No se implementan edición general de activos, eliminación, órdenes de mantenimiento, portal de custodios, reportes ni aplicación móvil en este incremento.
 
 ## Ejecutar localmente
 
@@ -84,3 +84,12 @@ Esto conserva la rama Git feature/registro-consulta-activos; el identificador l�
 ## Colaboración
 
 Ramas main/develop/feature; contribuciones y revisión antes de integrar según [CONTRIBUTING.md](CONTRIBUTING.md). No publicar .env, contraseñas, datos institucionales o archivos temporales. Mantener la revisión de este incremento en su rama feature sin atribuir aprobación al equipo antes de obtenerla.
+
+
+## Lotes de licencias · 006
+
+La navegación Licencias permite registrar, consultar y editar lotes finitos por usuario/dispositivo con historial auditable. Inicio obligatorio, fin opcional, cantidades cero válidas, remanentes calculados y estado temporal. Los vencidos conservan su conteo y se distinguen de puestos utilizables. No se almacenan claves ni asignaciones individuales.
+
+Migraciones nuevas 0004/0005 y proveedor reutilizable por 008. Lista e historial paginados; sesión/CSRF y expected_revision protegen escrituras. En Linux, antes del runner: `export PG_BIN=/usr/lib/postgresql/17/bin`. La app se abre en 5173; Django sirve /api/ en 8000, cuya raíz puede devolver 404.
+
+Validación local del 4 de noviembre de 2026: 72 pruebas backend, 33 frontend, 16 puras y build correctos; recorrido Chrome real con PostgreSQL efímero. DRF se actualizó de 3.16.1 a 3.18.2 por seguridad, con autorización de Anderson. Tras repetir las pruebas, pip-audit y npm audit no reportan vulnerabilidades conocidas en las dependencias auditadas. No se declara producción segura. [Guía de 006](specs/006-lotes-licencias/quickstart.md), [resultados y límites](specs/006-lotes-licencias/validation.md), [cinco revisiones](specs/006-lotes-licencias/reviews.md). La revisión humana y la integración quedan pendientes del PR hacia develop.
