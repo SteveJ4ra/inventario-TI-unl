@@ -1,0 +1,16 @@
+@startuml
+title C1 - Contexto del Inventario TI
+left to right direction
+actor "Gestor autorizado" as gestor
+actor "Revisor de otra facultad" as revisor
+actor "Operador técnico" as operador
+rectangle "Sistema de Inventario TI" as sistema
+gestor --> sistema : Gestiona activos y movimientos
+revisor --> sistema : Decide solicitudes asignadas
+operador --> sistema : Administra facultades y revisores
+note bottom of sistema
+El custodio se registra como persona;
+no accede a la aplicación en este alcance.
+No hay integración institucional externa.
+end note
+@enduml
