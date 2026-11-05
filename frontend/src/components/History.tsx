@@ -40,6 +40,8 @@ function title(entry: HistoryEntry) {
   switch (entry.event_type) {
     case "movement":
       return `${labels[entry.data.type]} #${entry.event_id}`;
+    case "asset_change": return `Edición de ficha #${entry.event_id}`;
+    case "faculty_change": return `Cambio de facultad #${entry.event_id}`;
     case "incident": {
       const event = entry.data.after.event;
       if (event.type === "lost" || event.type === "stolen") {
@@ -83,6 +85,15 @@ export function History({ events }: { events: HistoryEntry[] }) {
                   ? event.data.actor.recorded_label
                   : event.actor.username}
               </p>
+              {(event.event_type === "asset_change" || event.event_type === "faculty_change") && (
+                <>
+                  <p>{event.data.reason}</p>
+                  <div className="state-diff">
+                    <div><small>Antes</small><pre>{JSON.stringify(event.data.before, null, 2)}</pre></div>
+                    <div><small>Después</small><pre>{JSON.stringify(event.data.after, null, 2)}</pre></div>
+                  </div>
+                </>
+              )}
               {event.event_type === "movement" && <MovementDetails event={event.data} />}
               {event.event_type === "maintenance" && (
                 <>

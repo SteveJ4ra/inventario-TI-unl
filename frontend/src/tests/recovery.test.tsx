@@ -18,7 +18,7 @@ test("reporta robo desde la ficha asignada, muestra custodia anterior y recupera
   const api = vi.mocked(request);
   api.mockReset();
   api.mockImplementation(async (path, opts) => {
-    if (path === "/auth/me/") return asset.created_by;
+    if (path === "/auth/me/") return { ...asset.created_by, permissions: ["inventory.manage"], must_change_password: false };
     if (path.startsWith("/assets/?")) return { count: 1, results: [current] };
     if (path === "/options/") return options;
     if (path === "/custodians/") return [person];

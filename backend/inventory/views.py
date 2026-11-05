@@ -228,23 +228,6 @@ class AssetRecoveryView(APIView):
         return Response(RecoveryOutput(recovery).data, status=201)
 
 
-class HistoryView(APIView):
-    def get(self, request, asset_id):
-        asset = get_object_or_404(Asset, pk=asset_id)
-        events = [
-            *asset.movements.select_related("actor", "rectified_by"),
-            *asset.transitions.all(),
-        ]
-        events.sort(
-            key=lambda event: (
-                event.resulting_revision, event.occurred_at,
-                getattr(event, "event_type", "movement"), event.pk,
-            ),
-            reverse=True,
-        )
-        return Response(HistoryEntry(events, many=True).data)
-
-
 class MaintenanceStartView(APIView):
     def post(self, request, asset_id):
         asset, event = services.start_maintenance(
@@ -354,12 +337,10 @@ class CustodianView(APIView):
 class AssetHistoryView(APIView):
     def get(self, request, asset_id):
         asset = get_object_or_404(Asset, pk=asset_id)
-        events = []
-        for movement in asset.movements.select_related("actor", "rectified_by"):
-            data = MovementOutput(movement).data
-            events.append({"event_type": "movement", "event_id": movement.pk,
-                "occurred_at": movement.occurred_at, "actor": data["actor"],
-                "resulting_revision": movement.resulting_revision, "data": data})
+        events = list(HistoryEntry([
+            *asset.movements.select_related("actor", "rectified_by"),
+            *asset.transitions.all(),
+        ], many=True).data)
         for model, event_type in [(AssetChange, "asset_change"), (AssetFacultyChange, "faculty_change")]:
             for event in model.objects.filter(asset=asset).select_related("actor"):
                 events.append({"event_type": event_type, "event_id": event.pk,

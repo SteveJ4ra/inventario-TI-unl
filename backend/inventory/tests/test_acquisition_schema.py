@@ -42,11 +42,12 @@ class ExpansionSchemaTests(TestCase):
     def test_migration_state_matches_models_and_reverse_is_blocked(self):
         executor = MigrationExecutor(connection)
         self.assertEqual(executor.loader.graph.leaf_nodes("inventory"),
-                         [("inventory", "0004_acquisition_expansion")])
+                         [("inventory", "0006_acquisition_lifecycle")])
         self.assertEqual(MigrationAutodetector(executor.loader.project_state(),
                          ProjectState.from_apps(apps)).changes(graph=executor.loader.graph, trim_to_apps={"inventory"}), {})
         with self.assertRaises(IrreversibleError):
-            executor.migrate([("inventory", "0003_importbatch")])
+            with transaction.atomic():
+                executor.migrate([("inventory", "0003_importbatch")])
         self.assertIn(("inventory", "0004_acquisition_expansion"),
                       executor.recorder.applied_migrations())
         self.assertEqual(Faculty.objects.count(), 0)
