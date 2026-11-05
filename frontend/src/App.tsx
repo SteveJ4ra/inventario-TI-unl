@@ -60,7 +60,7 @@ export default function App() {
     return (
       <main className="startup" role="status">
         Preparando el inventario…
-      </>}</main>
+      </main>
     );
   if (!user)
     return (
@@ -503,54 +503,10 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
                   />}
                   <History events={events} />
                 </>
-              ) : (
-                <section className="panel detail">
-                  <button
-                    className="back"
-                    onClick={() => {
-                      setSelected(null);
-                      setError(null);
-                    }}
-                  >
-                    ← Volver al inventario
-                  </button>
-                  {detailLoading ? (
-                    <p className="empty" role="status">
-                      Cargando ficha…
-                    </p>
-                  ) : asset ? (
-                    <>
-                      <div className="detail-heading">
-                        <div>
-                          <span className="code">{asset.code}</span>
-                          <h2>{asset.name}</h2>
-                          <p>{asset.description}</p>
-                        </div>
-                        <div className="badges">
-                          <Badge value={asset.condition} />
-                          <Badge value={asset.assignment} />
-                        </div>
-                      </div>
-                      <AssetFacts asset={asset} />
-                      <Movements
-                        key={`${asset.id}-${asset.revision}`}
-                        asset={asset}
-                        people={people}
-                        options={options}
-                        onSubmit={operation}
-                      />
-                      <History events={events} />
-                    </>
-                  ) : (
-                    <p className="empty">
-                      No fue posible cargar la ficha. Revisa el mensaje o vuelve
-                      al listado.
-                    </p>
-                  )}
-                </section>
-              )}
-            </>
+              ) : <p className="empty">No fue posible cargar la ficha.</p>}
+            </section>
           )}
+          </>}
           <footer>
             Universidad Nacional de Loja{" "}
             <span>Inventario de tecnologías de información · Grupo 5</span>

@@ -96,6 +96,7 @@ export type HistoryEntry = {
   resulting_revision: number;
 } & (
   | { event_type: "movement"; data: Movement }
+  | { event_type: "asset_change" | "faculty_change"; data: { before: unknown; after: unknown; reason: string } }
   | {
       event_type: "incident";
       data: {
