@@ -31,6 +31,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
 
+# URL pública utilizada para generar los códigos QR de activos.
+PUBLIC_APP_URL = os.environ.get("PUBLIC_APP_URL", "").strip().rstrip("/")
 
 # Application definition
 
