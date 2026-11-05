@@ -30,11 +30,18 @@ export const asset: Asset = {
   location: "Laboratorio",
   condition: "operativo",
   assignment: "disponible",
+  lifecycle_status: "localizado",
+  last_lifecycle_status: null,
+  last_assignment: null,
+  last_condition: null,
+  last_location: null,
+  last_custodian: null,
   current_custodian: null,
   revision: 0,
   created_at: "2026-10-20T12:00:00Z",
   created_by: { id: 1, username: "gestor" },
   rectifiable_movement_id: null,
+  active_maintenance_id: null,
 };
 export const movement: Movement = {
   id: 1,

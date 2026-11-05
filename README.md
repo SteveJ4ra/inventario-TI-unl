@@ -2,7 +2,7 @@
 
 Proyecto académico del Grupo 5 para registrar y consultar activos tecnológicos y conservar la trazabilidad de su custodia. Se desarrolla por incrementos mediante Spec-Driven Development (SDD) con GitHub Spec Kit.
 
-## Incremento implementado
+## Base implementada 002
 
 API Django REST Framework y pantalla React + TypeScript con:
 
@@ -15,6 +15,12 @@ API Django REST Framework y pantalla React + TypeScript con:
 - Controles de concurrencia, CSRF y restricciones de integridad en PostgreSQL.
 
 Las seis categorías y las reglas funcionales provienen de las respuestas documentadas de Steven; la FPGA fue únicamente un ejemplo. No se implementan edición general, eliminación, órdenes de mantenimiento, portal de custodios, reportes ni aplicación móvil en este incremento.
+
+## Paquete 004 · Novedades y mantenimiento
+
+La ficha permite reportar y resolver daños y observaciones, iniciar y cerrar mantenimiento, reportar pérdida o robo y recuperar activos. Conserva el historial de 002 y suma las nuevas transiciones con autoría y revisión. Un activo en taller no se puede entregar. El reporte de pérdida o robo conserva el último estado conocido y la recuperación mantiene el código original.
+
+La rama de 004 requiere las migraciones `inventory.0004_asset_lifecycle_events` y `inventory.0005_asset_transition_evidence`. Para reproducir el recorrido con datos ficticios, consulta el [quickstart de 004](specs/004-novedades-mantenimiento/quickstart.md). Los resultados y sus límites están en la [validación de 004](specs/004-novedades-mantenimiento/validation.md).
 
 ## Ejecutar localmente
 

@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower, Trim
@@ -16,6 +17,12 @@ class Condition(models.TextChoices):
 class Assignment(models.TextChoices):
     AVAILABLE = "disponible", "Disponible"
     ASSIGNED = "asignado", "Asignado"
+
+
+class LifecycleStatus(models.TextChoices):
+    LOCATED = "localizado", "Localizado"
+    UNLOCATED = "no_localizado", "No localizado"
+    RETIRED = "baja", "Baja"
 
 
 class Category(models.TextChoices):
@@ -75,7 +82,14 @@ class Asset(models.Model):
     location = models.CharField(max_length=240)
     condition = models.CharField(max_length=16, choices=Condition.choices)
     assignment = models.CharField(
-        max_length=16, choices=Assignment.choices, default=Assignment.AVAILABLE
+        max_length=16,
+        choices=Assignment.choices,
+        default=Assignment.AVAILABLE,
+        null=True,
+        blank=True,
+    )
+    lifecycle_status = models.CharField(
+        max_length=16, choices=LifecycleStatus.choices, default=LifecycleStatus.LOCATED
     )
     current_custodian = models.ForeignKey(
         Custodian, null=True, blank=True, on_delete=models.PROTECT
@@ -105,8 +119,29 @@ class Asset(models.Model):
             ),
             models.CheckConstraint(
                 condition=(
-                    Q(assignment=Assignment.AVAILABLE, current_custodian__isnull=True)
-                    | Q(assignment=Assignment.ASSIGNED, current_custodian__isnull=False)
+                    (
+                        Q(
+                            lifecycle_status=LifecycleStatus.LOCATED,
+                            assignment__isnull=False,
+                        )
+                        & (
+                            Q(
+                                assignment=Assignment.AVAILABLE,
+                                current_custodian__isnull=True,
+                            )
+                            | Q(
+                                assignment=Assignment.ASSIGNED,
+                                current_custodian__isnull=False,
+                            )
+                        )
+                    )
+                    | Q(
+                        lifecycle_status__in=[
+                            LifecycleStatus.UNLOCATED, LifecycleStatus.RETIRED
+                        ],
+                        assignment__isnull=True,
+                        current_custodian__isnull=True,
+                    )
                 ),
                 name="asset_custody_consistent",
             ),
@@ -189,6 +224,206 @@ class Movement(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("El historial debe conservarse.")
+
+
+class Incident(models.Model):
+    class Type(models.TextChoices):
+        DAMAGE = "damage", "Daño"
+        OBSERVATION = "observation", "Observación"
+        LOST = "lost", "Pérdida"
+        STOLEN = "stolen", "Robo"
+
+    DAMAGE_OBSERVATION_TYPES = (Type.DAMAGE, Type.OBSERVATION)
+    LOSS_TYPES = (Type.LOST, Type.STOLEN)
+
+    class Status(models.TextChoices):
+        OPEN = "open", "Abierto"
+        RESOLVED = "resolved", "Resuelto"
+        RECOVERED = "recovered", "Recuperado"
+        CLOSED_BY_RETIREMENT = "closed_by_retirement", "Cerrado por baja"
+
+    asset = models.ForeignKey(Asset, related_name="incidents", on_delete=models.PROTECT)
+    type = models.CharField(max_length=16, choices=Type.choices)
+    description = models.CharField(max_length=2000)
+    status = models.CharField(max_length=24, choices=Status.choices, default=Status.OPEN)
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT
+    )
+    reported_at = models.DateTimeField(auto_now_add=True)
+    last_lifecycle_status = models.CharField(
+        max_length=16, choices=LifecycleStatus.choices, blank=True
+    )
+    last_condition = models.CharField(max_length=16, choices=Condition.choices, blank=True)
+    last_assignment = models.CharField(
+        max_length=16, choices=Assignment.choices, null=True, blank=True
+    )
+    last_custodian_snapshot = models.JSONField(null=True, blank=True)
+    last_location = models.CharField(max_length=240, blank=True)
+    active_maintenance_snapshot = models.JSONField(null=True, blank=True)
+    resolution_note = models.CharField(max_length=2000, blank=True)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.PROTECT,
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(type__in=["damage", "observation"], status__in=["open", "resolved"])
+                    | Q(
+                        type__in=["lost", "stolen"],
+                        status__in=["open", "recovered", "closed_by_retirement"],
+                    )
+                ),
+                name="incident_type_status_valid",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        status="resolved",
+                        resolved_by__isnull=False,
+                        resolved_at__isnull=False,
+                        resolution_note__regex=r"\S",
+                    )
+                    | (
+                        ~Q(status="resolved")
+                        & Q(
+                            resolved_by__isnull=True,
+                            resolved_at__isnull=True,
+                            resolution_note="",
+                        )
+                    )
+                ),
+                name="incident_resolution_consistent",
+            ),
+        ]
+
+
+class MaintenanceEvent(models.Model):
+    class Status(models.TextChoices):
+        IN_PROGRESS = "in_progress", "En curso"
+        COMPLETED = "completed", "Completado"
+        INTERRUPTED_UNLOCATED = "interrupted_unlocated", "Interrumpido por No localizado"
+
+    asset = models.ForeignKey(
+        Asset, related_name="maintenance_events", on_delete=models.PROTECT
+    )
+    description = models.CharField(max_length=2000)
+    status = models.CharField(
+        max_length=24, choices=Status.choices, default=Status.IN_PROGRESS
+    )
+    started_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    workshop_location = models.CharField(max_length=240)
+    previous_location = models.CharField(max_length=240)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.PROTECT,
+    )
+    closed_at = models.DateTimeField(null=True, blank=True)
+    result = models.CharField(max_length=2000, blank=True)
+    receiving_location = models.CharField(max_length=240, blank=True)
+    location_confirmed = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["asset"],
+                condition=Q(status="in_progress"),
+                name="maintenance_one_active_per_asset",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        status="in_progress",
+                        closed_by__isnull=True,
+                        closed_at__isnull=True,
+                        result="",
+                        receiving_location="",
+                        location_confirmed=False,
+                    )
+                    | Q(
+                        status="completed",
+                        closed_by__isnull=False,
+                        closed_at__isnull=False,
+                        result__regex=r"\S",
+                        receiving_location__regex=r"\S",
+                        location_confirmed=True,
+                    )
+                    | Q(
+                        status="interrupted_unlocated",
+                        closed_by__isnull=False,
+                        closed_at__isnull=False,
+                        result="",
+                        receiving_location="",
+                        location_confirmed=False,
+                    )
+                ),
+                name="maintenance_closure_consistent",
+            ),
+        ]
+
+
+class RecoveryEvent(models.Model):
+    incident = models.OneToOneField(
+        Incident, related_name="recovery", on_delete=models.PROTECT
+    )
+    asset = models.ForeignKey(Asset, related_name="recoveries", on_delete=models.PROTECT)
+    found_at = models.DateTimeField(auto_now_add=True)
+    found_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    inspected_condition = models.CharField(max_length=16, choices=Condition.choices)
+    recovered_location = models.CharField(max_length=240)
+    note = models.CharField(max_length=2000, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(
+                    inspected_condition__in=Condition.values,
+                    recovered_location__regex=r"\S",
+                ),
+                name="recovery_inspection_required",
+            ),
+        ]
+
+
+class AssetTransition(models.Model):
+    """Evidencia de una transición de 004, separada de la proyección editable."""
+
+    class Type(models.TextChoices):
+        INCIDENT = "incident", "Novedad"
+        MAINTENANCE = "maintenance", "Mantenimiento"
+        RECOVERY = "recovery", "Recuperación"
+
+    asset = models.ForeignKey(
+        Asset, related_name="transitions", on_delete=models.PROTECT
+    )
+    event_type = models.CharField(max_length=16, choices=Type.choices)
+    event_id = models.PositiveBigIntegerField()
+    occurred_at = models.DateTimeField(auto_now_add=True)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    actor_label = models.CharField(max_length=150)
+    resulting_revision = models.PositiveBigIntegerField()
+    before = models.JSONField(encoder=DjangoJSONEncoder)
+    after = models.JSONField(encoder=DjangoJSONEncoder)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["asset", "resulting_revision"],
+                name="asset_transition_revision_unique",
+            ),
+        ]
 
 
 class ImportBatch(models.Model):

@@ -651,6 +651,23 @@ td button {
   padding: 0;
   margin: 0;
 }
+.incident-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
+}
+.incident-card h4 {
+  margin: 0 0 8px;
+}
+.maintenance-confirmation {
+  flex-direction: row;
+  align-items: center;
+}
+.maintenance-confirmation input {
+  width: auto;
+}
 .history li {
   padding: 22px 0 22px 22px;
   border-left: 2px solid #d6e7e3;
