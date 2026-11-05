@@ -25,3 +25,7 @@ Las pruebas de inventario usan 003 y 004 reales. La configuración histórica co
 ### Resultado con Django y PostgreSQL reales
 
 277 pruebas de inventario correctas, incluidas cuatro regresiones nuevas de integración 005. Se verificó aprobación y rectificación, cancelación al recuperar y bloqueo del cambio de facultad, rechazo de baja durante mantenimiento y conservación de la adquisición al dar de baja. También pasaron 21 pruebas aisladas de reglas y flujo.
+
+## Revisión sobre develop a3d7128
+
+Se incorporó el grafo de migraciones de los PR originales. La migración 0007 depende de 0006_integrate_features y 0003_retirement_movement_type. Las migraciones ya integradas en develop conservan su contenido. Para verificar este corte se usa el comando backend/tools/test_postgres.py inventory con la configuración normal del proyecto.
