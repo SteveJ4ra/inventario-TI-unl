@@ -939,3 +939,11 @@ a.button:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.field-error { color: #b42318; font-size: .85rem; }
+.invoice-summary { padding: 1rem; margin: 1rem 0; border: 1px solid var(--line, #d8e1e7); border-radius: 12px; }
+.invoice-summary li { margin: .5rem 0; }
+
+.purchase-panel[hidden] { display: none; }
+
+.purchase-flow input[type="checkbox"] { width: auto; margin-right: .5rem; }

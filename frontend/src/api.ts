@@ -16,6 +16,7 @@ async function send<T>(
   path: string,
   options: {
     body?: Body;
+    method?: "PATCH";
     form?: FormData;
     signal?: AbortSignal;
   } = {},
@@ -42,7 +43,7 @@ async function send<T>(
   let response: Response;
   try {
     response = await fetch("/api" + path, {
-      method: write ? "POST" : "GET",
+      method: options.method || (write ? "POST" : "GET"),
       credentials: "same-origin",
       headers,
       signal: options.signal,
@@ -72,7 +73,7 @@ async function send<T>(
       response.status,
       data.code || "request_error",
       data.detail || "No se pudo completar la operación.",
-      data.fields,
+      flattenFields(data.fields),
       data.errors,
       data.batch_id,
       data,
@@ -82,10 +83,53 @@ async function send<T>(
 }
 export async function request<T>(
   path: string,
-  options: { body?: Body; signal?: AbortSignal } = {},
+  options: { body?: Body; method?: "PATCH"; signal?: AbortSignal } = {},
 ): Promise<T> {
   return send<T>(path, options);
 }
 export async function upload<T>(path: string, form: FormData): Promise<T> {
   return send<T>(path, { form });
 }
+
+
+// Reutiliza el transporte de sesión/CSRF; los importes se mantienen como cadenas.
+function confirmedDocument(document: import("./types").AcquisitionDocument) {
+  if (!document || !Number.isSafeInteger(document.id) || document.id < 1 || !Array.isArray(document.items)
+      || !["PURCHASE", "DONATION"].includes(document.source) || typeof document.currency !== "string"
+      || typeof document.reference !== "string")
+    throw new Error("No se pudo confirmar el documento. Consúltalo antes de volver a intentar el registro.");
+  return document;
+}
+export const purchases = {
+  createInvoice: async (data: import("./types").PurchaseInvoiceInput) => confirmedDocument(
+    await request<import("./types").AcquisitionDocument>("/acquisitions/", { body: { ...data, items: data.items?.map(item => ({ ...item })), source: "PURCHASE" } })),
+  invoice: async (id: number, signal?: AbortSignal) => confirmedDocument(
+    await request<import("./types").AcquisitionDocument>("/acquisitions/" + id + "/", { signal })),
+  faculties: (signal?: AbortSignal) => request<import("./types").Faculty[]>("/faculties/", { signal }),
+  register: async (data: import("./types").PurchaseAssetInput) => {
+    const asset = await request<import("./types").PurchasedAsset>("/assets/", { body: { ...data } });
+    if (!asset || !Number.isSafeInteger(asset.id) || typeof asset.code !== "string"
+        || asset.acquisition?.document_id !== data.acquisition_document_id || typeof asset.acquisition.item_value !== "string")
+      throw new Error("No se pudo confirmar el activo. Consulta el documento antes de volver a intentar el registro.");
+    return asset;
+  },
+};
+
+function flattenFields(value: unknown, prefix = ""): Record<string, string[]> | undefined {
+  if (value == null || typeof value !== "object") return undefined;
+  const result: Record<string, string[]> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    const path = prefix ? prefix + "." + key : key;
+    if (Array.isArray(entry) && entry.every(item => typeof item === "string")) result[path] = entry;
+    else Object.assign(result, flattenFields(entry, path));
+  }
+  return result;
+}
+
+// Metadatos distintos; transporte, lectura y alta de activo/línea compartidos.
+export const donations = {
+  createSupport: async (data: import("./types").DonationDocumentInput) => confirmedDocument(
+    await request<import("./types").AcquisitionDocument>("/acquisitions/", { body: {
+      ...data, items: data.items?.map(item => ({ ...item })), source: "DONATION",
+    } })),
+};

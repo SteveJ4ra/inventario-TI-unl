@@ -1,3 +1,6 @@
+import { CustodianEditor } from "./components/CustodianEditForm";
+import { AssetEditForm } from "./components/AssetEditForm";
+import { FacultyManagement } from "./components/FacultyManagement";
 import { useEffect, useState } from "react";
 import { ApiError, request } from "./api";
 import type {
@@ -9,14 +12,17 @@ import type {
   Movement,
   Options,
   Page,
-  User,
+  SessionUser,
+  AcquisitionDocument,
+  HistoryEvent,
 } from "./types";
 import { Form, Field, ErrorNotice } from "./components/Form";
-import { AssetForm, CustodianForm } from "./components/Registration";
+import { CustodianForm } from "./components/Registration";
 import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
 import { ImportPanel } from "./components/Import";
+import { AcquisitionForm } from "./components/AcquisitionForm";
 const emptyOptions: Options = {
   categories: [],
   conditions: [],
@@ -27,14 +33,14 @@ const aborted = (e: unknown) =>
   e instanceof DOMException && e.name === "AbortError";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<unknown>(null);
   useEffect(() => {
     const controller = new AbortController();
     const clear = () => setUser(null);
     window.addEventListener("session-expired", clear);
-    request<User>("/auth/me/", { signal: controller.signal })
+    request<SessionUser>("/auth/me/", { signal: controller.signal })
       .then(setUser)
       .catch((e) => {
         if (!aborted(e) && !(e instanceof ApiError && e.status === 403))
@@ -88,7 +94,7 @@ export default function App() {
         </section>
         <section className="login-form">
           <div>
-            <span className="eyebrow">ACCESO DE GESTORES</span>
+            <span className="eyebrow">ACCESO AUTORIZADO</span>
             <h2>Bienvenido al inventario</h2>
             <p className="muted">Ingresa con tu cuenta autorizada.</p>
             {error != null && <ErrorNotice error={error} />}
@@ -96,7 +102,7 @@ export default function App() {
               submit="Ingresar"
               onSubmit={async (data) => {
                 setError(null);
-                const result = await request<User>("/auth/login/", {
+                const result = await request<SessionUser>("/auth/login/", {
                   body: data,
                 });
                 setUser(result);
@@ -114,10 +120,22 @@ export default function App() {
         </section>
       </main>
     );
-  return <Workspace user={user} onExit={() => setUser(null)} />;
+  if (user.permissions?.includes("faculties.manage") && !user.permissions?.includes("inventory.manage"))
+    return <FacultyManagement key={user.id} onExit={() => setUser(null)} />;
+  if (!user.permissions?.includes("inventory.manage")) return <main className="login">
+    <section className="panel">
+      <h1>Acceso restringido</h1>
+      <p>Tu cuenta no tiene acceso al inventario de Gestores.</p>
+      <Form submit="Cerrar sesión" onSubmit={async () => { await request("/auth/logout/", { body: {} }); setUser(null); }}>
+        <p>Sesión de {user.username}</p>
+      </Form>
+    </section>
+  </main>;
+  return <Workspace key={user.id} user={user} onExit={() => setUser(null)} />;
 }
 
-function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
+function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) {
+  const [adminOpen, setAdminOpen] = useState(false);
   const [options, setOptions] = useState(emptyOptions);
   const [people, setPeople] = useState<Custodian[]>([]);
   const [page, setPage] = useState<Page | null>(null);
@@ -126,13 +144,21 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [refresh, setRefresh] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [asset, setAsset] = useState<Asset | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [combined, setCombined] = useState<HistoryEvent[] | null>(null);
+  const [historyError, setHistoryError] = useState<unknown>(null);
   const [events, setEvents] = useState<Movement[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
-  const [modal, setModal] = useState<"asset" | "person" | null>(null);
+  const [modal, setModal] = useState<"asset" | "donation" | "person" | "custodian-edit" | null>(null);
+  const [custodianOpened, setCustodianOpened] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [purchaseDocument, setPurchaseDocument] = useState<AcquisitionDocument | null>(null);
+  const [donationDocument, setDonationDocument] = useState<AcquisitionDocument | null>(null);
+  const [donationOpened, setDonationOpened] = useState(false);
+  const [purchaseOpened, setPurchaseOpened] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -158,6 +184,14 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
       });
     return () => controller.abort();
   }, [query, pageNumber, refresh]);
+  useEffect(() => {
+    setCombined(null); setHistoryError(null); setEditing(false);
+    if (selected === null) return;
+    const controller = new AbortController();
+    request<HistoryEvent[]>("/assets/" + selected + "/history/", { signal: controller.signal })
+      .then(setCombined).catch(e => { if (!controller.signal.aborted) setHistoryError(e); });
+    return () => controller.abort();
+  }, [selected, refresh]);
   useEffect(() => {
     if (selected === null) {
       setAsset(null);
@@ -204,7 +238,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
     }
   }
   return (
-    <div className="workspace">
+    <><div hidden={adminOpen}><div className="workspace">
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-icon">TI</span>
@@ -271,8 +305,11 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
               >
                 Importar CSV
               </button>
+              {user.permissions.includes("faculties.manage") && <button onClick={() => setAdminOpen(true)}>Administrar facultades</button>}
               <button onClick={() => setModal("person")}>Nuevo custodio</button>
-              <button className="primary" onClick={() => setModal("asset")}>
+              <button onClick={() => { setCustodianOpened(true); setModal("custodian-edit"); }}>Editar custodios</button>
+              <button onClick={() => { setDonationOpened(true); setModal("donation"); }}>Registrar donación</button>
+              <button className="primary" onClick={() => { setPurchaseOpened(true); setModal("asset"); }}>
                 ＋ Registrar activo
               </button>
             </div>
@@ -289,43 +326,43 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
             </div>
           )}
           {error != null && <ErrorNotice error={error} />}
-          {modal && (
+          {purchaseOpened && (
+            <section className="panel registration purchase-panel" hidden={modal !== "asset"}>
+              <div className="section-heading"><h2>Registrar activo por compra</h2>
+                <button onClick={() => setModal(null)}>Cerrar</button></div>
+              <AcquisitionForm options={options} document={purchaseDocument} onDocument={setPurchaseDocument} onDocumentChanged={() => setRefresh(n => n + 1)}
+                onSelect={id => { setSelected(id); setError(null); }} onCreated={created => {
+                  setSelected(created.id);
+                  setRefresh(n => n + 1);
+                  setMessage("Activo registrado con código " + created.code + " · Factura " + created.acquisition.reference + ".");
+                }} />
+            </section>
+          )}
+          {donationOpened && <section className="panel registration purchase-panel" hidden={modal !== "donation"}>
+            <div className="section-heading"><h2>Registrar activo por donación</h2>
+              <button onClick={() => setModal(null)}>Cerrar</button></div>
+            <AcquisitionForm source="DONATION" options={options} document={donationDocument} onDocument={setDonationDocument} onDocumentChanged={() => setRefresh(n => n + 1)}
+              onSelect={id => { setSelected(id); setError(null); }} onCreated={created => {
+                setSelected(created.id); setRefresh(n => n + 1);
+                setMessage("Activo registrado con código " + created.code + " · Respaldo " + created.acquisition.reference + ".");
+              }} />
+          </section>}
+          {custodianOpened && <section className="panel registration purchase-panel" hidden={modal !== "custodian-edit"}>
+            <div className="section-heading"><h2>Editar custodios</h2><button onClick={() => setModal(null)}>Cerrar</button></div>
+            <CustodianEditor people={people} onReload={() => setRefresh(n => n + 1)} onSaved={person => {
+              setPeople(rows => rows.map(row => row.id === person.id ? person : row)); setRefresh(n => n + 1);
+              setMessage("Perfil de custodio actualizado.");
+            }} />
+          </section>}
+          {modal === "person" && (
             <section className="panel registration">
-              <div className="section-heading">
-                <h2>
-                  {modal === "asset"
-                    ? "Registrar activo"
-                    : "Registrar custodio"}
-                </h2>
-                <button onClick={() => setModal(null)}>Cerrar</button>
-              </div>
-              {modal === "asset" ? (
-                <AssetForm
-                  options={options}
-                  onSubmit={async (data) => {
-                    const created = await request<Asset>("/assets/", {
-                      body: data,
-                    });
-                    setSelected(created.id);
-                    setModal(null);
-                    setRefresh((n) => n + 1);
-                    setMessage(
-                      "Activo registrado con código " + created.code + ".",
-                    );
-                  }}
-                />
-              ) : (
-                <CustodianForm
-                  onSubmit={async (data) => {
-                    await request("/custodians/", { body: data });
-                    setModal(null);
-                    setRefresh((n) => n + 1);
-                    setMessage(
-                      "Custodio registrado. Ya puedes seleccionarlo al entregar un activo.",
-                    );
-                  }}
-                />
-              )}
+              <div className="section-heading"><h2>Registrar custodio</h2>
+                <button onClick={() => setModal(null)}>Cerrar</button></div>
+              <CustodianForm onSubmit={async data => {
+                await request("/custodians/", { body: data });
+                setModal(null); setRefresh(n => n + 1);
+                setMessage("Custodio registrado. Ya puedes seleccionarlo al entregar un activo.");
+              }} />
             </section>
           )}
           {importOpen ? (
@@ -395,6 +432,11 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
                     </div>
                   </div>
                   <AssetFacts asset={asset} />
+                <button onClick={() => setEditing(value => !value)}>Editar ficha</button>
+                <button onClick={() => setRefresh(n => n + 1)}>Recargar ficha</button>
+                {editing && <AssetEditForm key={asset.id + ":" + asset.revision} asset={asset} options={options} onSaved={updated => {
+                  setAsset(updated); setEditing(false); setRefresh(n => n + 1); setMessage("Ficha actualizada.");
+                }} />}
                   <Movements
                     key={`${asset.id}-${asset.revision}`}
                     asset={asset}
@@ -402,7 +444,8 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
                     options={options}
                     onSubmit={operation}
                   />
-                  <History events={events} />
+                  {historyError != null && <><p>No fue posible consultar los cambios de ficha; se muestran los movimientos disponibles.</p><ErrorNotice error={historyError} /></>}
+                <History events={events} combined={combined} />
                 </>
               ) : (
                 <p className="empty">
@@ -418,6 +461,8 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
           </footer>
         </main>
       </div>
-    </div>
+    </div></div>
+    {adminOpen && <FacultyManagement onExit={onExit} onBack={() => setAdminOpen(false)} />}
+    </>
   );
 }

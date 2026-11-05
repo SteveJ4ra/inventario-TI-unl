@@ -191,6 +191,19 @@ export function AssetFacts({ asset }: { asset: Asset }) {
         ],
         ["Correo del custodio", asset.current_custodian?.email || "—"],
         ["Registrado por", asset.created_by.username],
+        ...(asset.acquisition?.source === "PURCHASE" ? [
+          ["Factura de compra", asset.acquisition.reference],
+          ["Identificador del documento", String(asset.acquisition.document_id)],
+          ["Total compartido de factura", asset.acquisition.currency + " " + asset.acquisition.invoice_total],
+          ["Valor individual", asset.acquisition.currency + " " + asset.acquisition.item_value],
+          ["Fecha de adquisición", asset.acquisition.acquired_on || "Desconocida: " + asset.acquisition.date_unknown_reason],
+        ] : asset.acquisition?.source === "DONATION" ? [
+          ["Respaldo de donación", asset.acquisition.reference],
+          ["Tipo de respaldo", asset.acquisition.support_type],
+          ["Identificador del documento", String(asset.acquisition.document_id)],
+          ["Valor estimado individual", asset.acquisition.currency + " " + asset.acquisition.item_value],
+          ["Fecha de adquisición", asset.acquisition.acquired_on || "Desconocida: " + asset.acquisition.date_unknown_reason],
+        ] : []),
       ].map(([key, value]) => (
         <div key={key}>
           <dt>{key}</dt>
