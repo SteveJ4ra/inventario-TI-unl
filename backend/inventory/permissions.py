@@ -1,7 +1,11 @@
 from rest_framework.permissions import BasePermission
+from .retirement_permissions import reviewer_has_account
 
 
 def is_manager(user):
+    profile = getattr(user, "reviewer_profile", None)
+    if profile is not None and getattr(profile, "must_change_password", None) is not False:
+        return False
     return bool(
         user.is_authenticated
         and user.is_active
@@ -17,6 +21,8 @@ class IsManager(BasePermission):
 
 
 def is_operator(user):
+    if getattr(getattr(user, "reviewer_profile", None), "must_change_password", False):
+        return False
     return bool(user.is_authenticated and user.is_active and user.groups.filter(name="Operadores").exists())
 
 
@@ -40,5 +46,9 @@ def session_payload(user):
         permissions.append("inventory.manage")
     if is_operator(user):
         permissions.append("faculties.manage")
+    reviewer = reviewer_has_account(user)
+    temporary = reviewer and user.reviewer_profile.must_change_password
+    if reviewer and not temporary:
+        permissions.append("retirement.review")
     return {"id": user.pk, "username": user.username,
-            "permissions": permissions, "must_change_password": False}
+            "permissions": permissions, "must_change_password": temporary}

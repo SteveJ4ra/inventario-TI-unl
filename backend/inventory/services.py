@@ -79,12 +79,16 @@ def create_custodian(*, actor, data):
 
 
 def snapshot(asset):
-    return {
+    result = {
         "condition": asset.condition,
         "assignment": asset.assignment,
         "custodian_id": asset.current_custodian_id,
         "location": asset.location,
     }
+
+    if hasattr(asset, "lifecycle_status"):
+        result["lifecycle_status"] = asset.lifecycle_status
+    return result
 
 
 def custodian_snapshot(person):
@@ -127,7 +131,7 @@ def transition_snapshot(asset, event):
 
 
 def record_event_transition(
-    *, asset_id, actor, expected_revision, event_model, apply, event_id=None
+    *, asset_id, actor, expected_revision, event_model, apply, event_id=None, after_event_saved=None
 ):
     """Ejecuta una transición interna y registra evidencia en la misma transacción.
 
@@ -155,7 +159,9 @@ def record_event_transition(
         if event.asset_id != asset.pk:
             raise ValueError("La proyección debe permanecer asociada al activo bloqueado.")
         event.save()
-        asset.revision = expected_revision + 1
+        if after_event_saved is not None:
+            asset.revision = after_event_saved(asset, event)
+        asset.revision += 1
         asset.save(
             update_fields=[
                 "condition", "assignment", "current_custodian", "location",
@@ -237,8 +243,6 @@ def recover_asset(*, asset_id, actor, data):
         if incident is None:
             raise Conflict("El activo no tiene un reporte de pérdida o robo pendiente.")
 
-        # Punto de integración de 005: cancelar una solicitud pendiente aquí,
-        # con el activo bloqueado y dentro de la transacción de recuperación.
         recovery.incident = incident
         recovery.found_by = actor
         recovery.inspected_condition = data["inspected_condition"]
@@ -252,9 +256,24 @@ def recover_asset(*, asset_id, actor, data):
         asset.condition = recovery.inspected_condition
         asset.location = recovery.recovered_location
 
+    def cancel_pending(asset, recovery):
+        from .retirement_models import DecommissionRequest
+        from .retirement_store import DjangoRetirementStore
+        from .retirement_workflow import cancel_for_recovery
+
+        pending = asset.retirement_requests.filter(status=DecommissionRequest.Status.PENDING).first()
+        if pending is None:
+            return asset.revision
+        cancel_for_recovery(
+            DjangoRetirementStore(), asset_id=asset.pk, request_id=pending.pk,
+            actor_id=actor.pk, expected_revision=asset.revision,
+            recovery_event_id=recovery.pk,
+        )
+        return asset.revision + 1
+
     return record_event_transition(
         asset_id=asset_id, actor=actor, expected_revision=data["expected_revision"],
-        event_model=RecoveryEvent, apply=apply,
+        event_model=RecoveryEvent, apply=apply, after_event_saved=cancel_pending,
     )
 
 
@@ -368,7 +387,11 @@ def record_operation(*, asset_id, actor, operation, data):
     with locked_asset(
         asset_id=asset_id, actor=actor, expected_revision=data["expected_revision"]
     ) as asset:
-        if asset.lifecycle_status != LifecycleStatus.LOCATED:
+        rectifying_retirement = (
+            asset.lifecycle_status == LifecycleStatus.RETIRED
+            and operation == Movement.Type.RECTIFICATION
+        )
+        if asset.lifecycle_status != LifecycleStatus.LOCATED and not rectifying_retirement:
             raise Conflict("La operación requiere un activo localizado.", "asset_not_located")
         before = snapshot(asset)
         person = None
@@ -411,8 +434,8 @@ def record_operation(*, asset_id, actor, operation, data):
                 not target
                 or target.resulting_revision != asset.revision
                 or target.pk != data["movement_id"]
+                or (rectifying_retirement and target.type != Movement.Type.RETIREMENT)
                 or target.type == Movement.Type.RECTIFICATION
-                or target.resulting_revision != asset.revision
                 or Movement.objects.filter(rectifies=target).exists()
             ):
                 raise Conflict(
@@ -429,6 +452,9 @@ def record_operation(*, asset_id, actor, operation, data):
             asset.assignment = previous["assignment"]
             asset.current_custodian_id = previous["custodian_id"]
             asset.location = previous["location"]
+            if target.type == Movement.Type.RETIREMENT:
+                before["lifecycle_status"] = asset.lifecycle_status
+                asset.lifecycle_status = previous["lifecycle_status"]
             person = target.custodian
         else:
             raise ValueError("Operación no soportada")
@@ -440,6 +466,7 @@ def record_operation(*, asset_id, actor, operation, data):
                 "current_custodian",
                 "location",
                 "revision",
+                "lifecycle_status",
             ]
         )
         movement = Movement.objects.create(

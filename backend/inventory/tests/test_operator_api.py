@@ -59,17 +59,16 @@ class OperatorApiTests(AcquisitionFixtures, TestCase):
         self.assertNotIn(faculty.pk, [row["id"] for row in self.client.get("/api/faculties/").json()])
         self.assertEqual(self.client.delete(f"/api/operator/faculties/{faculty.pk}/", **headers).status_code, 405)
 
-    def test_missing_005_never_simulates_faculty_change(self):
+    def test_operator_changes_faculty_when_no_request_is_pending(self):
         asset, faculty, _doc = self.acquisition_asset(self.gestor)
         other = Faculty.objects.create(name="Otra facultad ficticia")
         headers = self.session(self.operator)
         response = self.client.patch(f"/api/operator/assets/{asset.pk}/faculty/",
             {"faculty_id": other.pk, "reason": "Cambio solicitado", "expected_revision": asset.revision}, format="json", **headers)
-        self.assertEqual(response.status_code, 503, response.content)
-        self.assertEqual(response.json()["code"], "dependency_unavailable")
+        self.assertEqual(response.status_code, 200, response.content)
         asset.refresh_from_db()
-        self.assertEqual((asset.faculty_id, asset.revision), (faculty.pk, 0))
-        self.assertEqual(AssetFacultyChange.objects.count(), 0)
+        self.assertEqual((asset.faculty_id, asset.revision), (other.pk, 1))
+        self.assertEqual(AssetFacultyChange.objects.count(), 1)
 
     def test_rejected_login_removes_previous_authorized_session(self):
         self.session(self.operator)

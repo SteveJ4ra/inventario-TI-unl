@@ -85,19 +85,6 @@ class MetadataEditTests(AcquisitionFixtures, InventoryCase):
         self.assertEqual((self.asset.revision, AssetChange.objects.count()), (0, 0))
         self.assertEqual(domain.acquisition_snapshot(self.asset), before)
 
-    def test_faculty_service_missing_provider_and_permissions_do_not_write(self):
-        operator = manager("operator-edit")
-        operator.groups.clear()
-        operator.groups.add(Group.objects.get_or_create(name="Operadores")[0])
-        target = Faculty.objects.create(name="Facultad destino ficticia")
-        from inventory.errors import DependencyUnavailable
-        with self.assertRaises(DependencyUnavailable):
-            faculty_services.change_asset_faculty(actor=operator, asset_id=self.asset.pk,
-                data={"faculty_id": target.pk, "reason": "Cambio verificado", "expected_revision": 0})
-        self.asset.refresh_from_db()
-        self.assertEqual((self.asset.faculty_id, self.asset.revision), (self.faculty.pk, 0))
-        self.assertEqual(AssetFacultyChange.objects.count(), 0)
-
     def test_faculty_guard_pending_allowed_stale_and_sql_rollback(self):
         operator = manager("operator-guard")
         operator.groups.clear()

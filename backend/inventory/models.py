@@ -156,6 +156,7 @@ class Asset(models.Model):
 
 class Movement(models.Model):
     class Type(models.TextChoices):
+        RETIREMENT = "baja", "Baja"
         DELIVERY = "entrega", "Entrega"
         RETURN = "devolucion", "Devolución"
         CONDITION = "cambio_condicion", "Cambio de condición"
@@ -196,6 +197,7 @@ class Movement(models.Model):
                         "devolucion",
                         "cambio_condicion",
                         "rectificacion",
+                        "baja",
                     ]
                 ),
                 name="movement_type_valid",
@@ -209,7 +211,7 @@ class Movement(models.Model):
             ),
             models.CheckConstraint(
                 condition=(
-                    ~Q(type__in=["rectificacion", "cambio_condicion"]) | ~Q(reason="")
+                    ~Q(type__in=["rectificacion", "cambio_condicion", "baja"]) | ~Q(reason="")
                 ),
                 name="movement_reason_required",
             ),
@@ -747,3 +749,9 @@ class LicenseLotAudit(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("El historial de licencias debe conservarse.")
+
+
+from .retirement_models import (
+    ApprovalDecision, DecommissionEvent, DecommissionRequest,
+    RetirementAudit, ReviewerAccountAudit, ReviewerProfile,
+)

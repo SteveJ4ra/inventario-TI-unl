@@ -3,9 +3,10 @@ from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .retirement_permissions import reviewer_has_account
 from .permissions import is_manager, is_operator, IsManagerOrOperator, session_payload
 
 
@@ -46,21 +47,26 @@ class LoginView(APIView):
             if inactive is not None and not inactive.is_active and inactive.check_password(request.data["password"]):
                 raise PermissionDenied("Se requiere una cuenta activa autorizada.")
             raise ValidationError("Usuario o contraseña incorrectos.")
-        if not (is_manager(user) or is_operator(user)):
+        if not (is_manager(user) or is_operator(user) or reviewer_has_account(user)):
             raise PermissionDenied("Se requiere acceso de gestor autorizado.")
         login(request, user)
         return Response(session_payload(user))
 
 
+class CanAccessSession(BasePermission):
+    def has_permission(self, request, view):
+        return IsManagerOrOperator().has_permission(request, view) or reviewer_has_account(request.user)
+
+
 class MeView(APIView):
-    permission_classes = [IsManagerOrOperator]
+    permission_classes = [CanAccessSession]
 
     def get(self, request):
         return Response(session_payload(request.user))
 
 
 class LogoutView(APIView):
-    permission_classes = [IsManagerOrOperator]
+    permission_classes = [CanAccessSession]
 
     def post(self, request):
         logout(request)

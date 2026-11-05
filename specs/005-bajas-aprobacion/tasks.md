@@ -43,3 +43,7 @@
 - FR-011–FR-013: T004, T014–T018
 - FR-014: T005, T018
 - FR-015–FR-017: T001, T003, T006, T008–T010, T013
+
+## Estado de revisión del avance actual
+
+Alcance solicitado por Steven: backend. T007, T011, T012, T016 y la parte de cliente web de T018 quedan pospuestos para una etapa de interfaz, sin marcarlos completados. El resto sigue pendiente o parcial según implementation.md y review.md; no confundir la existencia de reglas/validadores aislados con API o persistencia terminadas. No publicar un PR nuevo sin autorización expresa de Steven.
