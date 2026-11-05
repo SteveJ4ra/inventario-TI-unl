@@ -1,6 +1,6 @@
 # Backend · Inventario TI
 
-Python 3.13, Django 5.2.18, Django REST Framework 3.16.1 y PostgreSQL 17. Versiones exactas: requirements.txt. Implementa activos, custodios, operaciones transaccionales e historial; contratos: [API](../specs/002-registro-consulta-activos/contracts/api.md).
+Python 3.13, Django 5.2.18, Django REST Framework 3.18.2 y PostgreSQL 17. DRF se actualizó por seguridad con autorización de Anderson; las demás versiones se conservaron. Versiones exactas: requirements.txt. Implementa activos, custodios, operaciones transaccionales e historial; contratos: [API](../specs/002-registro-consulta-activos/contracts/api.md).
 
 ## Preparar una instalación nueva
 
@@ -62,6 +62,13 @@ Sesiones Django y CSRF en escrituras, incluido login. Orígenes de desarrollo po
 
 El runner busca initdb/pg_ctl en PostgreSQL 17 de Windows o PATH; PG_BIN permite indicar otra carpeta. Requiere soporte ICU. Crea clúster temporal privado, genera contraseña efímera, escucha solo loopback y detiene/elimina únicamente sus propios archivos. No toca .env ni privilegios del rol de desarrollo. En Linux ejecutarlo como usuario normal. Para un servidor de pruebas preparado por el equipo también puede usarse `python backend/manage.py test inventory`; configurar explícitamente las variables de ese servidor y su rol, no elevar el de la aplicación.
 
-Resultado comprobado: 28 pruebas backend correctas, incluidas carreras reales PostgreSQL, permisos, CSRF, restricciones Unicode, rollback, inmutabilidad y rectificación. Detalles: [validation.md](../specs/002-registro-consulta-activos/validation.md).
+Resultado original del incremento 002: 28 pruebas backend correctas, incluidas carreras reales PostgreSQL, permisos, CSRF, restricciones Unicode, rollback, inmutabilidad y rectificación. Detalles: [validation.md](../specs/002-registro-consulta-activos/validation.md).
 
 Este es un entorno de desarrollo académico. El despliegue público, TLS, copias de seguridad y plazos institucionales de conservación no se declararon implementados. El historial no se borra automáticamente. Credenciales y datos reales deben permanecer fuera del repositorio.
+
+
+## Extensión de licencias 006
+
+Incluye SoftwareLicenseLot, auditoría inmutable, endpoints /api/license-lots/ y proveedor real para lotes de 008. Migraciones 0004/0005, sin modificar tablas de activos. En Linux el runner necesita `export PG_BIN=/usr/lib/postgresql/17/bin`; su socket y credenciales quedan en carpeta temporal privada.
+
+Suite actual: 72 pruebas backend, más 16 puras de 008. Reproducción y avisos de seguridad de DRF en [validation.md](../specs/006-lotes-licencias/validation.md). [Quickstart](../specs/006-lotes-licencias/quickstart.md) incluye navegador real opcional sin instalar herramientas en el entorno de la aplicación. No recrear bases o gestores existentes.

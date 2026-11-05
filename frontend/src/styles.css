@@ -964,3 +964,47 @@ a.button:hover {
 .purchase-panel[hidden] { display: none; }
 
 .purchase-flow input[type="checkbox"] { width: auto; margin-right: .5rem; }
+/* 006: usa la estructura y paleta existentes del inventario. */
+.sidebar .workspace-nav {
+  text-align: left;
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.tag.CURRENT {
+  color: #24755d;
+  background: #ecf7f2;
+}
+.tag.NOT_STARTED {
+  color: #765b20;
+  background: #fff5d8;
+}
+.tag.EXPIRED {
+  color: #964d35;
+  background: #fff0eb;
+}
+.license-values {
+  margin: 16px 0;
+}
+.license-values > div {
+  margin: 8px 0;
+}
+.license-values dt {
+  color: #647681;
+  font-size: 12px;
+}
+.license-values dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .sidebar .workspace-nav,
+  .sidebar .workspace-nav.nav-active {
+    display: inline-flex !important;
+    width: auto;
+    margin: 8px 8px 0 0;
+    padding: 10px 12px;
+  }
+}

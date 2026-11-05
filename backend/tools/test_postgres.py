@@ -44,6 +44,7 @@ def postgres_environment():
     password = secrets.token_urlsafe(32)
     pwfile = directory / "password"
     pwfile.write_text(password, encoding="utf-8")
+    pwfile.chmod(0o600)
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -59,11 +60,13 @@ def postgres_environment():
                 creationflags=HIDDEN,
             )
         if result.returncode:
-            raise RuntimeError(
-                (directory / "launcher.log")
-                .read_text(encoding="utf-8", errors="replace")
-                .replace(password, "[redactado]")
+            logs = [directory / "launcher.log", directory / "postgres.log"]
+            detail = "\n".join(
+                log.read_text(encoding="utf-8", errors="replace")
+                for log in logs
+                if log.exists()
             )
+            raise RuntimeError(detail.replace(password, "[redactado]"))
 
     try:
         run(
@@ -81,6 +84,11 @@ def postgres_environment():
                 "--icu-locale=und",
             ]
         )
+        server_options = f"-h 127.0.0.1 -p {port}"
+        if os.name != "nt":
+            # El usuario normal no puede escribir sockets en /var/run/postgresql.
+            # Usamos su directorio temporal privado, nunca el clúster del sistema.
+            server_options += f' -k "{directory}"'
         run(
             [
                 pgctl,
@@ -89,7 +97,7 @@ def postgres_environment():
                 "-l",
                 str(directory / "postgres.log"),
                 "-o",
-                f"-h 127.0.0.1 -p {port}",
+                server_options,
                 "-w",
                 "start",
             ]

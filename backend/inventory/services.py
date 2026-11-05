@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from copy import deepcopy
+from datetime import date
 
 from django.db import IntegrityError, connection, transaction
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,7 @@ from .models import (
     MaintenanceEvent,
     Movement,
     RecoveryEvent,
+    SoftwareLicenseLot, LicenseLotAudit,
 )
 from .permissions import is_manager
 
@@ -455,3 +457,76 @@ def record_operation(*, asset_id, actor, operation, data):
             resulting_revision=asset.revision,
         )
         return asset, movement
+
+
+LICENSE_LOT_FIELDS = (
+    "product_name",
+    "vendor",
+    "license_model",
+    "purchased_quantity",
+    "in_use_quantity",
+    "starts_on",
+    "ends_on",
+)
+
+
+def license_lot_snapshot(lot):
+    values = {name: getattr(lot, name) for name in LICENSE_LOT_FIELDS}
+    return {
+        **{
+            name: value.isoformat() if isinstance(value, date) else value
+            for name, value in values.items()
+        },
+        "revision": lot.revision,
+    }
+
+
+def validate_license_lot(data, *, instance=None, patch=False):
+    """Contrato reutilizable: valida también fuera de una vista HTTP."""
+    from .serializers import LicenseLotInput, LicenseLotPatchInput
+
+    serializer = (LicenseLotPatchInput if patch else LicenseLotInput)(
+        instance=instance, data=data
+    )
+    serializer.is_valid(raise_exception=True)
+    return serializer.validated_data
+
+
+def _audit_license_lot(lot, actor, before):
+    return LicenseLotAudit.objects.create(
+        lot=lot,
+        actor=actor,
+        actor_label=actor.username,
+        before_json=before,
+        after_json=license_lot_snapshot(lot),
+        resulting_revision=lot.revision,
+    )
+
+
+@transaction.atomic
+def create_license_lot(*, actor, data):
+    require_manager(actor)
+    values = validate_license_lot(data)
+    lot = SoftwareLicenseLot.objects.create(created_by=actor, **values)
+    _audit_license_lot(lot, actor, {})
+    return lot
+
+
+@transaction.atomic
+def update_license_lot(*, lot_id, actor, data):
+    require_manager(actor)
+    lot = get_object_or_404(SoftwareLicenseLot.objects.select_for_update(), pk=lot_id)
+    values = validate_license_lot(data, instance=lot, patch=True)
+    if values.pop("expected_revision") != lot.revision:
+        raise Conflict(
+            "El lote cambió. Recárgalo y revisa antes de repetir.", "stale_revision"
+        )
+    before = license_lot_snapshot(lot)
+    for name, value in values.items():
+        setattr(lot, name, value)
+    if license_lot_snapshot(lot) == before:
+        raise ValidationError("No hay cambios para guardar.")
+    lot.revision += 1
+    lot.save(update_fields=[*values, "revision"])
+    _audit_license_lot(lot, actor, before)
+    return lot

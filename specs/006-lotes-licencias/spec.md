@@ -3,7 +3,7 @@
 **Rama propuesta:** feature/anderson-006-lotes-licencias
 **Identificador:** 006-lotes-licencias
 **Creado:** 1 de noviembre de 2026
-**Estado:** especificación preparada; no implementada.
+**Estado:** implementada localmente; evidencia en [validation.md](validation.md). DRF 3.18.2 aplicado y auditado; revisión humana pendiente.
 **Decisiones:** DBE-030 a DBE-032 y DBE-044.
 
 ## Descripción
