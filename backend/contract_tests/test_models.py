@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from inventory.models import Asset
 from inventory.retirement_models import ReviewerProfile, DecommissionRequest, ApprovalDecision
-from .providers import Faculty, Incident
+from inventory.models import Faculty, Incident
 
 
 class RetirementFixtures(TestCase):
@@ -15,7 +15,7 @@ class RetirementFixtures(TestCase):
         self.other = Faculty.objects.create(name="Facultad B")
         ReviewerProfile.objects.create(user=self.reviewer, faculty=self.other)
         self.asset = Asset.objects.create(code="TI-900001", name="Equipo", description="Prueba", category="monitor", brand="Marca", model="M", serial_number="S", location="A", condition="averiado", assignment=None, lifecycle_status="no_localizado", faculty=self.faculty, created_by=self.requester)
-        self.incident = Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot=None)
+        self.incident = Incident.objects.create(asset=self.asset,type="lost",reported_by=self.requester,last_custodian_snapshot=None)
     def create_request(self):
         return DecommissionRequest.objects.create(asset=self.asset, requester=self.requester, assigned_reviewer=self.reviewer, asset_faculty=self.faculty, reason="Pérdida")
 

@@ -79,12 +79,12 @@ class RetirementApiTests(RetirementFixtures):
         self.assertTrue(ReviewerProfile.objects.get(user=self.reviewer).must_change_password)
 
     def test_request_context_does_not_expose_later_incident_custodian(self):
-        from .providers import Incident
-        Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot={"full_name":"Custodio anterior"})
+        from inventory.models import Incident
+        Incident.objects.create(asset=self.asset,type="lost",reported_by=self.requester,last_custodian_snapshot={"full_name":"Custodio anterior"})
         self.client.force_login(self.requester)
         response=self.client.post(f"/api/assets/{self.asset.pk}/retirement-requests/",{"reason":"Pérdida","reviewer_id":self.reviewer.pk,"expected_revision":0},format="json")
         self.assertEqual(response.status_code,201,response.content)
-        Incident.objects.create(asset=self.asset,type="stolen",last_custodian_snapshot={"full_name":"Persona posterior"})
+        Incident.objects.create(asset=self.asset,type="stolen",reported_by=self.requester,last_custodian_snapshot={"full_name":"Persona posterior"})
         profile=self.reviewer.reviewer_profile;profile.must_change_password=False;profile.save()
         self.client.force_login(self.reviewer)
         response=self.client.get("/api/reviewer/retirement-requests/")

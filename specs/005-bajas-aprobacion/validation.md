@@ -20,3 +20,10 @@ No se ha probado contra las implementaciones reales de Alex/Yandri ni desplegado
 Se reprodujeron y corrigieron dos regresiones reales: el contexto mostraba el custodio de un reporte posterior y una cuenta Gestor+Revisor temporal podía leer el inventario antiguo. La suite de contrato final pasó 30 tests tras corregir ambos y agregar cobertura de: recuperaciones antiguas del mismo activo, FK de recuperación protegida, contexto congelado en solicitud/auditoría, creación sin reporte rechazada, historial con PK existente no sobrescribible y rollback de provisión sin disfrazar errores SQL como duplicados.
 
 La suite normal de 44 tests, los 21 aislados, makemigrations --check --dry-run y pip check pasaron en esta revisión. No se ejecutaron suites frontend: no hay cambios de interfaz. Las adiciones context_snapshot y FK recovery_event pertenecen al esquema 005 aún pendiente de migrar/registrar con proveedores reales; la comprobación de deriva normal no las cubre.
+
+
+## Pruebas de contrato con el esquema integrado
+
+La suite de contrato de 005 usa las rutas, modelos y migraciones del proyecto. Se conserva el alias de configuración anterior para que el comando histórico siga funcionando.
+
+Ejecutar ambas suites contra PostgreSQL temporal con `backend/tools/test_postgres.py inventory contract_tests --verbosity 1`.

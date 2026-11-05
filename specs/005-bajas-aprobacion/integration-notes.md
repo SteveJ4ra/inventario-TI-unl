@@ -1,6 +1,6 @@
 # Activación e integración 005
 
-Base de implementación: develop 161187c. No se han fusionado ramas de compañeros ni publicado PR nuevo.
+Notas históricas de la implementación inicial. Base: develop 161187c. No se han fusionado ramas de compañeros ni publicado PR nuevo.
 
 1. Integrar primero proveedores reales 003/004: Faculty, permisos/sesión Operador, Asset.faculty y lifecycle_status, assignment nullable fuera de localizado, MaintenanceEvent.status y RecoveryEvent.asset. El adaptador usa Incident.type lost/stolen y last_custodian_snapshot para contexto. Confirmar los nombres reales y traducir en el adaptador si difieren; no duplicar modelos productivos.
 2. Registrar retirement_models en inventory.models y generar migración contra el grafo real. Solo existe ahora 0003_retirement_movement_type: si otras ramas tienen otra 0003, resolver hojas con una migración merge sin alterar migraciones aplicadas. NO generar una migración productiva desde contract_tests.settings: incluiría proveedores falsos de tests.
@@ -20,7 +20,7 @@ La rama local integracion/005-validacion parte de ba709bf (PR #19). La configura
 
 La recuperación guarda su evento y cancela la solicitud pendiente dentro de la misma transacción y bajo el bloqueo del activo. La cancelación y la recuperación consumen revisiones sucesivas. El cambio de facultad consulta solicitudes pendientes bajo el mismo bloqueo. La sesión usa las capacidades de 003 y añade retirement.review para revisores habilitados.
 
-Las pruebas de inventario usan 003 y 004 reales. La configuración histórica contract_tests se conserva como antecedente del desarrollo aislado y no se usa para acreditar esta integración.
+Las pruebas de inventario usan 003 y 004 reales. El entorno aislado queda en el historial. La suite de contrato usa ahora la configuración normal y los modelos reales, con un alias para el comando histórico.
 
 ### Resultado con Django y PostgreSQL reales
 

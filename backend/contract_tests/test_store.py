@@ -6,7 +6,8 @@ from inventory.retirement_models import DecommissionRequest, ApprovalDecision, R
 from inventory.retirement_store import DjangoRetirementStore
 from inventory.retirement_workflow import retire_normal, request_retirement, decide_retirement, cancel_for_recovery
 from .test_models import RetirementFixtures
-from .providers import RecoveryEvent
+from inventory.models import RecoveryEvent
+from .providers import create_recovery
 
 
 class RetirementStoreTests(RetirementFixtures):
@@ -44,7 +45,7 @@ class RetirementStoreTests(RetirementFixtures):
         request=request_retirement(self.store,asset_id=self.asset.id,actor_id=self.requester.id,reviewer_id=self.reviewer.id,expected_revision=0,reason="Pérdida")
         with self.assertRaises(RuntimeError):
             with transaction.atomic():
-                recovery=RecoveryEvent.objects.create(asset=self.asset,incident=self.incident)
+                recovery=create_recovery(asset=self.asset,incident=self.incident)
                 cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=recovery.id)
                 raise RuntimeError("fallo recuperación")
         request.refresh_from_db();self.assertEqual(request.status,"pending")
@@ -85,23 +86,25 @@ class RetirementStoreTests(RetirementFixtures):
         audit.refresh_from_db();self.assertEqual(audit.after["reviewer_faculty_label"],previous)
 
     def test_active_maintenance_blocks_normal_retirement_in_database_service(self):
-        from .providers import MaintenanceEvent
+        from inventory.models import MaintenanceEvent
         self.asset.lifecycle_status="localizado";self.asset.assignment="disponible";self.asset.save()
-        MaintenanceEvent.objects.create(asset=self.asset,status="in_progress")
+        MaintenanceEvent.objects.create(asset=self.asset, started_by=self.requester, description="Inspección", workshop_location="Taller", previous_location=self.asset.location)
         with self.assertRaises(ValueError):
             retire_normal(self.store,asset_id=self.asset.id,actor_id=self.requester.id,expected_revision=0,reason="Daño")
         self.asset.refresh_from_db();self.assertEqual(self.asset.lifecycle_status,"localizado")
         self.assertEqual(Movement.objects.count(),0)
 
     def test_previous_recovery_cannot_cancel_new_incident_request(self):
-        from .providers import Incident
-        old=RecoveryEvent.objects.create(asset=self.asset,incident=self.incident)
-        new_loss=Incident.objects.create(asset=self.asset,type="lost",last_custodian_snapshot=None)
+        from inventory.models import Incident
+        old=create_recovery(asset=self.asset,incident=self.incident)
+        self.incident.status = Incident.Status.RECOVERED
+        self.incident.save(update_fields=["status"])
+        new_loss=Incident.objects.create(asset=self.asset,type="lost",reported_by=self.requester,last_custodian_snapshot=None)
         request=request_retirement(self.store,asset_id=self.asset.id,actor_id=self.requester.id,reviewer_id=self.reviewer.id,expected_revision=0,reason="Nueva pérdida")
         with self.assertRaises(ValueError):
             cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=old.pk)
         request.refresh_from_db();self.assertEqual(request.status,"pending")
-        event=RecoveryEvent.objects.create(asset=self.asset,incident=new_loss)
+        event=create_recovery(asset=self.asset,incident=new_loss)
         cancel_for_recovery(self.store,asset_id=self.asset.id,request_id=request.id,actor_id=self.requester.id,expected_revision=1,recovery_event_id=event.pk)
         from django.db.models.deletion import ProtectedError
         with self.assertRaises(ProtectedError): event.delete()

@@ -8,7 +8,8 @@ from inventory.retirement_models import DecommissionRequest, ApprovalDecision, D
 from inventory.retirement_store import DjangoRetirementStore
 from inventory.retirement_workflow import retire_normal, request_retirement, decide_retirement, cancel_for_recovery
 from .test_models import RetirementFixtures
-from .providers import RecoveryEvent
+from inventory.models import RecoveryEvent
+from .providers import create_recovery
 
 
 class RetirementRaceTests(TransactionTestCase):
@@ -44,7 +45,7 @@ class RetirementRaceTests(TransactionTestCase):
         def recover(store):
             with transaction.atomic():
                 asset=Asset.objects.select_for_update().get(pk=self.asset.id)
-                event=RecoveryEvent.objects.create(asset=asset,incident=self.incident)
+                event=create_recovery(asset=asset,incident=self.incident)
                 cancel_for_recovery(store,asset_id=asset.id,request_id=request.pk,actor_id=self.requester.id,expected_revision=1,recovery_event_id=event.pk)
                 asset.refresh_from_db();asset.lifecycle_status="localizado";asset.assignment="disponible";asset.revision+=1;asset.save()
         self.assertEqual(sorted(self.race([approve,recover])),["conflict","ok"])
