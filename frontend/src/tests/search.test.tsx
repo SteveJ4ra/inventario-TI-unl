@@ -9,12 +9,14 @@ test("combina búsqueda y filtros y permite limpiar", async () => {
   render(<Filters options={options} people={[person]} onApply={apply} />);
   await user.type(screen.getByLabelText("Buscar activos"), "LAB");
   await user.selectOptions(screen.getByLabelText("Categoría"), "portatil");
-  await user.selectOptions(screen.getByLabelText("Asignación"), "disponible");
+  await user.selectOptions(screen.getByLabelText("Situación"), "disponible");
+  await user.selectOptions(screen.getByLabelText("Condición"), "operativo");
   await user.click(screen.getByRole("button", { name: "Aplicar" }));
   expect(apply).toHaveBeenLastCalledWith({
     search: "LAB",
     category: "portatil",
-    assignment: "disponible",
+    condition: "operativo",
+    situation: "disponible",
   });
   await user.click(screen.getByRole("button", { name: "Limpiar" }));
   expect(apply).toHaveBeenLastCalledWith({});

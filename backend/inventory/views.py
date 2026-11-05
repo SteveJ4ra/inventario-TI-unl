@@ -116,6 +116,14 @@ class AssetsView(APIView):
                 result = result.filter(**{field: data[field]})
         if data.get("assignment") == Assignment.AVAILABLE:
             result = result.filter(active_maintenance_id__isnull=True)
+        if "situation" in data:
+            situation = data["situation"]
+            if situation in Assignment.values:
+                result = result.filter(lifecycle_status=LifecycleStatus.LOCATED, assignment=situation)
+                if situation == Assignment.AVAILABLE:
+                    result = result.filter(active_maintenance_id__isnull=True)
+            else:
+                result = result.filter(lifecycle_status=situation)
         if "custodian" in data:
             result = result.filter(current_custodian_id=data["custodian"])
         if data.get("search"):

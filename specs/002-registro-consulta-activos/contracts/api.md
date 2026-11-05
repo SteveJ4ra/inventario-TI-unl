@@ -45,6 +45,8 @@ GET `/assets/`: listado paginado de 50, orden id descendente; `page` entero posi
 | location | Valor exacto de ubicación actual seleccionado entre los valores presentes; sin catálogo administrable. |
 | custodian | ID de custodio actual. |
 
+El parámetro adicional situation admite disponible, asignado, no_localizado y baja. Disponible selecciona activos localizados con asignación disponible y sin mantenimiento en curso; asignado selecciona localizados con asignación asignada. Los otros valores filtran el ciclo de vida. Un valor inválido devuelve 400. Los parámetros anteriores se conservan y se combinan con situation mediante AND.
+
 Todos los filtros presentes se combinan con AND y se combinan con el resultado de search. Un valor enum, ID o page inválido devuelve 400; criterios válidos sin coincidencias devuelven lista vacía. No se busca el custodio anterior de activos Disponibles como si fuera el actual.
 
 GET `/assets/{id}/`: Asset o 404.
