@@ -13,6 +13,19 @@ def require_manager(actor):
 
 def create_asset(*, actor, data):
     require_manager(actor)
+    # Transición explícita: 002 sigue vigente hasta la activación API de T007.
+    acquisition_fields = {"faculty_id", "acquisition_document_id", "item_value", "acquired_on", "date_unknown_reason"}
+    if isinstance(data, dict) and acquisition_fields.intersection(data):
+        from .acquisition_services import create_asset_with_acquisition
+        return create_asset_with_acquisition(actor=actor, data=data)
+    from .serializers import AssetInput
+    serializer = AssetInput(data=data)
+    serializer.is_valid(raise_exception=True)
+    return _create_base_asset(actor=actor, data=serializer.validated_data)
+
+
+def _create_base_asset(*, actor, data):
+    require_manager(actor)
     try:
         with transaction.atomic():
             with connection.cursor() as cursor:
@@ -104,6 +117,7 @@ def record_operation(*, asset_id, actor, operation, data):
             target = asset.movements.order_by("-id").first()
             if (
                 not target
+                or target.resulting_revision != asset.revision
                 or target.pk != data["movement_id"]
                 or target.type == Movement.Type.RECTIFICATION
                 or Movement.objects.filter(rectifies=target).exists()

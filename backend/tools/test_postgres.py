@@ -119,9 +119,15 @@ def postgres_environment():
 
 def main():
     with postgres_environment() as env:
-        args = sys.argv[1:] or ["inventory", "--verbosity", "2"]
+        args = sys.argv[1:]
+        if args[:1] == ["--manage"]:
+            command = args[1:]
+            if not (command == ["check"] or command == ["makemigrations", "--check", "--dry-run"]):
+                raise ValueError("--manage admite solo check o makemigrations --check --dry-run.")
+        else:
+            command = ["test", *(args or ["inventory", "--verbosity", "2"])]
         result = subprocess.run(
-            [sys.executable, str(BACKEND / "manage.py"), "test", *args],
+            [sys.executable, str(BACKEND / "manage.py"), *command],
             cwd=BACKEND,
             env=env,
         )

@@ -161,3 +161,6 @@ CSRF_TRUSTED_ORIGINS = [
     if x
 ]
 SESSION_COOKIE_HTTPONLY = True
+
+# Moneda para nuevos documentos; cada documento conserva su código histórico.
+ASSET_CURRENCY_CODE = "USD"

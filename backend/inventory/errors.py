@@ -36,3 +36,9 @@ def csrf_failure(request, reason=""):
         {"code": "csrf_failed", "detail": "Actualiza la sesión y vuelve a intentarlo."},
         status=403,
     )
+
+
+class DependencyUnavailable(APIException):
+    status_code = 503
+    default_code = "dependency_unavailable"
+    error_code = "dependency_unavailable"

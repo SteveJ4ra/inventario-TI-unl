@@ -15,6 +15,8 @@ from .views import (
     MovementsView,
     OperationView,
     OptionsView,
+    FacultiesView, OperatorFacultiesView, OperatorFacultyView, OperatorAssetFacultyView,
+    AcquisitionsView, AcquisitionView, CustodianView, AssetHistoryView,
 )
 
 urlpatterns = [
@@ -27,6 +29,14 @@ urlpatterns = [
     path("assets/<int:asset_id>/movements/", MovementsView.as_view()),
     path("custodians/", CustodiansView.as_view()),
     path("options/", OptionsView.as_view()),
+    path("faculties/", FacultiesView.as_view()),
+    path("operator/faculties/", OperatorFacultiesView.as_view()),
+    path("operator/faculties/<int:faculty_id>/", OperatorFacultyView.as_view()),
+    path("operator/assets/<int:asset_id>/faculty/", OperatorAssetFacultyView.as_view()),
+    path("acquisitions/", AcquisitionsView.as_view()),
+    path("acquisitions/<int:document_id>/", AcquisitionView.as_view()),
+    path("custodians/<int:custodian_id>/", CustodianView.as_view()),
+    path("assets/<int:asset_id>/history/", AssetHistoryView.as_view()),
     path("imports/templates/<str:kind>/", TemplatesView.as_view()),
     path("imports/previews/", PreviewsView.as_view()),
     path("imports/<uuid:batch_id>/", BatchView.as_view()),
