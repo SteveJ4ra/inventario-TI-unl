@@ -35,7 +35,13 @@ export interface Asset {
   serial_number: string;
   location: string;
   condition: string;
-  assignment: string;
+  assignment: string | null;
+  lifecycle_status: "localizado" | "no_localizado" | "baja";
+  last_lifecycle_status: string | null;
+  last_assignment: string | null;
+  last_condition: string | null;
+  last_location: string | null;
+  last_custodian: Custodian | null;
   current_custodian: Custodian | null;
   revision: number;
   created_at: string;
@@ -43,6 +49,7 @@ export interface Asset {
   rectifiable_movement_id: number | null;
   faculty_id?: number | null;
   acquisition?: AcquisitionSnapshot | null;
+  active_maintenance_id: number | null;
 }
 export interface Movement {
   id: number;
@@ -59,6 +66,68 @@ export interface Movement {
   rectified_by_id: number | null;
   resulting_revision: number;
 }
+export interface Incident {
+  id: number;
+  asset_id: number;
+  type: "damage" | "observation" | "lost" | "stolen";
+  description: string;
+  status: "open" | "resolved" | "recovered";
+  reported_by: User;
+  reported_at: string;
+  resolution_note: string;
+  resolved_by: User | null;
+  resolved_at: string | null;
+}
+export interface Maintenance {
+  id: number;
+  asset_id: number;
+  status: "in_progress" | "completed" | "interrupted_unlocated";
+  description: string;
+  previous_location: string;
+  workshop_location: string;
+  receiving_location: string;
+  result: string;
+  revision: number;
+}
+export type HistoryEntry = {
+  event_id: number;
+  occurred_at: string;
+  actor: User;
+  resulting_revision: number;
+} & (
+  | { event_type: "movement"; data: Movement }
+  | { event_type: "asset_change" | "faculty_change"; data: { before: unknown; after: unknown; reason: string } }
+  | {
+      event_type: "incident";
+      data: {
+        projection_id: number;
+        after: {
+          event: Pick<Incident, "type" | "description" | "status" | "resolution_note"> & {
+            last_location?: string;
+            last_custodian_snapshot?: Custodian | null;
+          };
+        };
+      };
+    }
+  | {
+      event_type: "maintenance";
+      data: { projection_id: number; after: { event: Omit<Maintenance, "revision"> } };
+    }
+  | {
+      event_type: "recovery";
+      data: {
+        projection_id: number;
+        after: {
+          event: {
+            incident_id: number;
+            inspected_condition: string;
+            recovered_location: string;
+            note: string;
+          };
+        };
+      };
+    }
+);
 export interface Page {
   count: number;
   next: string | null;
@@ -110,10 +179,18 @@ export const labels: Record<string, string> = {
   en_reparacion: "En reparación",
   disponible: "Disponible",
   asignado: "Asignado",
+  in_progress: "En mantenimiento",
   entrega: "Entrega",
   devolucion: "Devolución",
   cambio_condicion: "Cambio de condición",
   rectificacion: "Rectificación",
+  damage: "Daño",
+  observation: "Observación",
+  lost: "Pérdida",
+  stolen: "Robo",
+  localizado: "Localizado",
+  no_localizado: "No localizado",
+  baja: "Baja",
   computadora_escritorio: "Computadora de escritorio",
   portatil: "Portátil",
   monitor: "Monitor",

@@ -37,6 +37,7 @@ export function Movements({
     <section className="actions">
       <div className="action-buttons">
         {asset.assignment === "disponible" &&
+          asset.active_maintenance_id == null &&
           asset.condition === "operativo" && (
             <button className="primary" onClick={() => setAction("deliver")}>
               Entregar

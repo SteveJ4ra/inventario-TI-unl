@@ -21,6 +21,14 @@ const names: Record<string, string> = {
   destination: "Destino",
   reception_location: "Lugar de recepción",
   reason: "Motivo",
+  resolution_note: "Nota de resolución",
+  workshop_location: "Ubicación del taller",
+  receiving_location: "Ubicación de recepción",
+  location_confirmed: "Confirmación de ubicación",
+  result: "Resultado",
+  inspected_condition: "Condición tras la inspección",
+  recovered_location: "Ubicación de recuperación",
+  inspection_confirmed: "Confirmación de inspección",
   custodian_id: "Custodio",
 };
 export function ErrorNotice({ error }: { error: unknown }) {

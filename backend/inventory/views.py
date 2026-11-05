@@ -1,23 +1,36 @@
-from . import custodian_services
-from django.db.models import Case, IntegerField, OuterRef, Q, Subquery, When
+from django.db.models import BigIntegerField, Case, JSONField, OuterRef, Q, Subquery, When
+from django.db.models.functions import JSONObject
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from . import services, acquisition_services, faculty_services
-from .errors import Conflict, DependencyUnavailable
+from . import services
+from .models import (
+    Asset, Assignment, Category, Condition, Custodian, Incident, LifecycleStatus,
+    MaintenanceEvent, Movement,
+)
+from . import acquisition_services, faculty_services, custodian_services
+from .errors import DependencyUnavailable
 from .permissions import IsOperator, IsManagerOrOperator
-from .models import (Asset, Assignment, Category, Condition, Custodian, Movement,
-                     Faculty, AcquisitionDocument, AssetChange, AssetFacultyChange)
+from .models import AcquisitionDocument, AssetChange, AssetFacultyChange, Faculty
 from .serializers import (
     AssetOutput,
     ConditionInput,
     CustodianInput,
     CustodianOutput,
     DeliveryInput,
+    HistoryEntry,
+    IncidentInput,
+    IncidentOutput,
+    IncidentResolutionInput,
+    MaintenanceDetail,
+    MaintenanceStartInput,
+    MaintenanceCloseInput,
     MovementOutput,
     QueryInput,
     RectificationInput,
+    RecoveryInput,
+    RecoveryOutput,
     ReturnInput,
     FacultyOutput,
     AcquisitionDocumentOutput,
@@ -25,20 +38,51 @@ from .serializers import (
 
 
 def assets():
+    last_known = (
+        Incident.objects.filter(
+            asset_id=OuterRef("pk"), type__in=Incident.LOSS_TYPES, status=Incident.Status.OPEN
+        )
+        .order_by("-reported_at", "-pk")
+        .annotate(
+            snapshot=JSONObject(
+                lifecycle_status="last_lifecycle_status",
+                assignment="last_assignment",
+                condition="last_condition",
+                location="last_location",
+                custodian="last_custodian_snapshot",
+            )
+        )
+        .values("snapshot")[:1]
+    )
+    active = MaintenanceEvent.objects.filter(
+        asset_id=OuterRef("pk"), status=MaintenanceEvent.Status.IN_PROGRESS
+    ).values("pk")[:1]
     latest = (
         Movement.objects.filter(asset_id=OuterRef("pk"), resulting_revision=OuterRef("revision"))
         .order_by("-id")
         .annotate(
             eligible=Case(
-                When(type=Movement.Type.RECTIFICATION, then=None),
-                default="id",
-                output_field=IntegerField(),
+                When(
+                    ~Q(type=Movement.Type.RECTIFICATION),
+                    resulting_revision=OuterRef("revision"),
+                    rectified_by__isnull=True,
+                    then="id",
+                ),
+                output_field=BigIntegerField(),
             )
         )
         .values("eligible")[:1]
     )
     return Asset.objects.select_related("current_custodian", "created_by").annotate(
-        latest_rectifiable_id=Subquery(latest)
+        active_maintenance_id=Subquery(active),
+        last_known=Case(
+            When(lifecycle_status=LifecycleStatus.UNLOCATED, then=Subquery(last_known)),
+            output_field=JSONField(),
+        ),
+        latest_rectifiable_id=Case(
+            When(lifecycle_status=LifecycleStatus.LOCATED, then=Subquery(latest)),
+            output_field=BigIntegerField(),
+        )
     )
 
 
@@ -55,6 +99,8 @@ class AssetsView(APIView):
         for field in ["category", "condition", "assignment", "location"]:
             if field in data:
                 result = result.filter(**{field: data[field]})
+        if data.get("assignment") == Assignment.AVAILABLE:
+            result = result.filter(active_maintenance_id__isnull=True)
         if "custodian" in data:
             result = result.filter(current_custodian_id=data["custodian"])
         if data.get("search"):
@@ -145,6 +191,71 @@ class MovementsView(APIView):
         )
 
 
+class IncidentsView(APIView):
+    def get(self, request, asset_id):
+        asset = get_object_or_404(Asset, pk=asset_id)
+        incidents = (
+            asset.incidents.select_related("reported_by", "resolved_by")
+            .order_by("-reported_at", "-id")
+        )
+        return Response(IncidentOutput(incidents, many=True).data)
+
+    def post(self, request, asset_id):
+        incident = services.report_incident(
+            asset_id=asset_id,
+            actor=request.user,
+            data=validated(IncidentInput, request.data),
+        )
+        return Response(IncidentOutput(incident).data, status=201)
+
+
+class IncidentResolutionView(APIView):
+    def post(self, request, incident_id):
+        incident = services.resolve_incident(
+            incident_id=incident_id,
+            actor=request.user,
+            data=validated(IncidentResolutionInput, request.data),
+        )
+        return Response(IncidentOutput(incident).data)
+
+
+class AssetRecoveryView(APIView):
+    def post(self, request, asset_id):
+        _, recovery = services.recover_asset(
+            asset_id=asset_id, actor=request.user,
+            data=validated(RecoveryInput, request.data),
+        )
+        return Response(RecoveryOutput(recovery).data, status=201)
+
+
+class MaintenanceStartView(APIView):
+    def post(self, request, asset_id):
+        asset, event = services.start_maintenance(
+            asset_id=asset_id, actor=request.user,
+            data=validated(MaintenanceStartInput, request.data),
+        )
+        event.asset = asset
+        return Response(MaintenanceDetail(event).data, status=201)
+
+
+class MaintenanceDetailView(APIView):
+    def get(self, request, maintenance_id):
+        maintenance = get_object_or_404(
+            MaintenanceEvent.objects.select_related("asset"), pk=maintenance_id
+        )
+        return Response(MaintenanceDetail(maintenance).data)
+
+
+class MaintenanceCloseView(APIView):
+    def post(self, request, maintenance_id):
+        asset, event = services.close_maintenance(
+            maintenance_id=maintenance_id, actor=request.user,
+            data=validated(MaintenanceCloseInput, request.data),
+        )
+        event.asset = asset
+        return Response(MaintenanceDetail(event).data)
+
+
 class OperationView(APIView):
     def post(self, request, asset_id, operation):
         options = {
@@ -226,12 +337,10 @@ class CustodianView(APIView):
 class AssetHistoryView(APIView):
     def get(self, request, asset_id):
         asset = get_object_or_404(Asset, pk=asset_id)
-        events = []
-        for movement in asset.movements.select_related("actor", "rectified_by"):
-            data = MovementOutput(movement).data
-            events.append({"event_type": "movement", "event_id": movement.pk,
-                "occurred_at": movement.occurred_at, "actor": data["actor"],
-                "resulting_revision": movement.resulting_revision, "data": data})
+        events = list(HistoryEntry([
+            *asset.movements.select_related("actor", "rectified_by"),
+            *asset.transitions.all(),
+        ], many=True).data)
         for model, event_type in [(AssetChange, "asset_change"), (AssetFacultyChange, "faculty_change")]:
             for event in model.objects.filter(asset=asset).select_related("actor"):
                 events.append({"event_type": event_type, "event_id": event.pk,

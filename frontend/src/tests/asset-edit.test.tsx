@@ -25,6 +25,7 @@ function server(operator = false) {
     if (path === "/api/custodians/") return response([person]);
     if (path === "/api/assets/1/") return response(asset);
     if (path === "/api/assets/1/movements/") return response([movement]);
+    if (path === "/api/assets/1/incidents/") return response([]);
     if (path === "/api/assets/1/history/") return response([
       { event_type: "asset_change", event_id: 4, occurred_at: movement.occurred_at, actor: movement.actor,
         resulting_revision: 2, data: { before: { name: "Anterior" }, after: { name: "Corregido" }, reason: "Verificación histórica" } },

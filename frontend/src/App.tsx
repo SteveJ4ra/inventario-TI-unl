@@ -9,18 +9,21 @@ import type {
   Body,
   Custodian,
   Fields,
-  Movement,
+  HistoryEntry,
+  Incident,
+  Maintenance,
   Options,
   Page,
   SessionUser,
   AcquisitionDocument,
-  HistoryEvent,
 } from "./types";
 import { Form, Field, ErrorNotice } from "./components/Form";
 import { CustodianForm } from "./components/Registration";
-import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
+import { AssetFacts, AssetStatusBadge, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
+import { IncidentPanel } from "./components/IncidentPanel";
+import { MaintenancePanel } from "./components/MaintenancePanel";
 import { ImportPanel } from "./components/Import";
 import { AcquisitionForm } from "./components/AcquisitionForm";
 const emptyOptions: Options = {
@@ -145,9 +148,9 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
   const [selected, setSelected] = useState<number | null>(null);
   const [asset, setAsset] = useState<Asset | null>(null);
   const [editing, setEditing] = useState(false);
-  const [combined, setCombined] = useState<HistoryEvent[] | null>(null);
-  const [historyError, setHistoryError] = useState<unknown>(null);
-  const [events, setEvents] = useState<Movement[]>([]);
+  const [events, setEvents] = useState<HistoryEntry[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -184,18 +187,13 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
       });
     return () => controller.abort();
   }, [query, pageNumber, refresh]);
-  useEffect(() => {
-    setCombined(null); setHistoryError(null); setEditing(false);
-    if (selected === null) return;
-    const controller = new AbortController();
-    request<HistoryEvent[]>("/assets/" + selected + "/history/", { signal: controller.signal })
-      .then(setCombined).catch(e => { if (!controller.signal.aborted) setHistoryError(e); });
-    return () => controller.abort();
-  }, [selected, refresh]);
+  useEffect(() => setEditing(false), [selected, refresh]);
   useEffect(() => {
     if (selected === null) {
       setAsset(null);
       setEvents([]);
+      setIncidents([]);
+      setMaintenance(null);
       setDetailLoading(false);
       return;
     }
@@ -204,13 +202,24 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
     setAsset(null);
     Promise.all([
       request<Asset>(`/assets/${selected}/`, { signal: controller.signal }),
-      request<Movement[]>(`/assets/${selected}/movements/`, {
+      request<HistoryEntry[]>(`/assets/${selected}/history/`, {
+        signal: controller.signal,
+      }),
+      request<Incident[]>(`/assets/${selected}/incidents/`, {
         signal: controller.signal,
       }),
     ])
-      .then(([value, history]) => {
+      .then(async ([value, history, reports]) => {
+        if (controller.signal.aborted) return;
+        const active = value.active_maintenance_id == null ? null
+          : await request<Maintenance>(`/maintenance/${value.active_maintenance_id}/`, {
+            signal: controller.signal,
+          });
+        if (controller.signal.aborted) return;
         setAsset(value);
         setEvents(history);
+        setIncidents(reports);
+        setMaintenance(active);
       })
       .catch((e) => {
         if (!aborted(e)) setError(e);
@@ -220,15 +229,12 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
       });
     return () => controller.abort();
   }, [selected, refresh]);
-  async function operation(action: Action, body: Body) {
-    if (!asset) return;
+  async function writeToAsset(path: string, body: Body, successMessage: string) {
     setError(null);
     setMessage("");
     try {
-      await request(`/assets/${asset.id}/${action}/`, { body });
-      setMessage(
-        "Movimiento registrado. La ficha y el historial están actualizados.",
-      );
+      await request(path, { body });
+      setMessage(successMessage);
       setRefresh((n) => n + 1);
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
@@ -236,6 +242,14 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
         setRefresh((n) => n + 1);
       } else throw e;
     }
+  }
+  async function operation(action: Action, body: Body) {
+    if (!asset) return;
+    await writeToAsset(
+      `/assets/${asset.id}/${action}/`,
+      body,
+      "Movimiento registrado. La ficha y el historial están actualizados.",
+    );
   }
   return (
     <><div hidden={adminOpen}><div className="workspace">
@@ -427,8 +441,8 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
                       <p>{asset.description}</p>
                     </div>
                     <div className="badges">
-                      <Badge value={asset.condition} />
-                      <Badge value={asset.assignment} />
+                      {asset.lifecycle_status === "localizado" && <Badge value={asset.condition} />}
+                      <AssetStatusBadge asset={asset} />
                     </div>
                   </div>
                   <AssetFacts asset={asset} />
@@ -437,15 +451,29 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
                 {editing && <AssetEditForm key={asset.id + ":" + asset.revision} asset={asset} options={options} onSaved={updated => {
                   setAsset(updated); setEditing(false); setRefresh(n => n + 1); setMessage("Ficha actualizada.");
                 }} />}
-                  <Movements
+                  <IncidentPanel
+                    key={`incidents-${asset.id}-${asset.revision}`}
+                    asset={asset}
+                    incidents={incidents}
+                    conditions={options.conditions}
+                    onWrite={writeToAsset}
+                  />
+                  <MaintenancePanel
+                    key={`maintenance-${asset.id}-${asset.revision}-${maintenance?.revision}`}
+                    asset={asset}
+                    active={maintenance}
+                    history={events}
+                    locations={options.locations}
+                    onWrite={writeToAsset}
+                  />
+                  {asset.lifecycle_status === "localizado" && <Movements
                     key={`${asset.id}-${asset.revision}`}
                     asset={asset}
                     people={people}
                     options={options}
                     onSubmit={operation}
-                  />
-                  {historyError != null && <><p>No fue posible consultar los cambios de ficha; se muestran los movimientos disponibles.</p><ErrorNotice error={historyError} /></>}
-                <History events={events} combined={combined} />
+                  />}
+                  <History events={events} />
                 </>
               ) : (
                 <p className="empty">

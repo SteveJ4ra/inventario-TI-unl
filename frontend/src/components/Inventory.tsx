@@ -3,6 +3,12 @@ import { labels } from "../types";
 export function Badge({ value }: { value: string }) {
   return <span className={"tag " + value}>{labels[value] || value}</span>;
 }
+export function AssetStatusBadge({ asset }: { asset: Asset }) {
+  const value = asset.lifecycle_status !== "localizado" ? asset.lifecycle_status
+    : asset.active_maintenance_id != null ? "in_progress"
+    : asset.assignment ?? "localizado";
+  return <Badge value={value} />;
+}
 export function Filters({
   options,
   people,
@@ -139,7 +145,7 @@ export function Inventory({
                     <Badge value={asset.condition} />
                   </td>
                   <td>
-                    <Badge value={asset.assignment} />
+                    <AssetStatusBadge asset={asset} />
                   </td>
                   <td>{asset.location}</td>
                   <td>
@@ -177,6 +183,19 @@ export function Inventory({
   );
 }
 export function AssetFacts({ asset }: { asset: Asset }) {
+  const custody = asset.lifecycle_status === "no_localizado"
+    ? [
+        ["Último estado conocido", labels[asset.last_lifecycle_status ?? ""] || "—"],
+        ["Última asignación conocida", labels[asset.last_assignment ?? ""] || "—"],
+        ["Última condición conocida", labels[asset.last_condition ?? ""] || "—"],
+        ["Última ubicación conocida", asset.last_location ?? "—"],
+        ["Último custodio conocido", asset.last_custodian?.full_name ?? "Sin custodio"],
+      ]
+    : [
+        ["Ubicación actual", asset.location],
+        ["Custodio actual", asset.current_custodian?.full_name || "Sin custodio"],
+        ["Correo del custodio", asset.current_custodian?.email || "—"],
+      ];
   return (
     <dl className="facts">
       {[
@@ -184,12 +203,7 @@ export function AssetFacts({ asset }: { asset: Asset }) {
         ["Marca", asset.brand],
         ["Modelo", asset.model],
         ["Número de serie", asset.serial_number],
-        ["Ubicación actual", asset.location],
-        [
-          "Custodio actual",
-          asset.current_custodian?.full_name || "Sin custodio",
-        ],
-        ["Correo del custodio", asset.current_custodian?.email || "—"],
+        ...custody,
         ["Registrado por", asset.created_by.username],
         ...(asset.acquisition?.source === "PURCHASE" ? [
           ["Factura de compra", asset.acquisition.reference],
