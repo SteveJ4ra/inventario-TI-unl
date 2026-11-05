@@ -281,6 +281,7 @@ class QueryInput(StrictSerializer):
     category = serializers.ChoiceField(choices=Category.choices, required=False)
     condition = serializers.ChoiceField(choices=Condition.choices, required=False)
     assignment = serializers.ChoiceField(choices=Assignment.choices, required=False)
+    situation = serializers.ChoiceField(choices=("disponible", "asignado", "no_localizado", "baja"), required=False)
     location = serializers.CharField(required=False, max_length=240)
     custodian = serializers.IntegerField(min_value=1, required=False)
 

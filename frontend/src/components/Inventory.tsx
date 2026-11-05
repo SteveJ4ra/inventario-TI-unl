@@ -11,7 +11,6 @@ export function AssetStatusBadge({ asset }: { asset: Asset }) {
 }
 export function Filters({
   options,
-  people,
   onApply,
 }: {
   options: Options;
@@ -44,7 +43,12 @@ export function Filters({
           [
             ["Categoría", "category", options.categories],
             ["Condición", "condition", options.conditions],
-            ["Asignación", "assignment", options.assignments],
+            ["Situación", "situation", [
+              { value: "disponible", label: "Disponible" },
+              { value: "asignado", label: "Asignado" },
+              { value: "no_localizado", label: "No localizado" },
+              { value: "baja", label: "Baja" },
+            ]],
           ] as const
         ).map(([label, name, choices]) => (
           <label key={name}>
@@ -59,28 +63,6 @@ export function Filters({
             </select>
           </label>
         ))}
-        <label>
-          Ubicación
-          <select name="location">
-            <option value="">Todas</option>
-            {options.locations.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Custodio
-          <select name="custodian">
-            <option value="">Todos</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
       <div className="filter-actions">
         <button className="primary">Aplicar</button>

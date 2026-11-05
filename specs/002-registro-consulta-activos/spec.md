@@ -36,6 +36,12 @@
 - Q: ¿Restringimos el correo del custodio a @unl.edu.ec? → A: Validar el formato de correo sin restringir el dominio por ahora; conservar nombre y correo obligatorios y correo único según la comparación acordada.
 - Q: ¿Cómo conservamos el historial en esta entrega? → A: Conservar todo el historial sin borrado automático; definir los plazos institucionales de conservación en una etapa posterior.
 
+## Clarificación posterior sobre filtros
+
+Tras la observación docente sobre la cantidad de controles, la búsqueda visual presenta tres filtros: categoría, situación y condición, junto con la búsqueda general existente. La situación incluye Disponible, Asignado, No localizado y Baja. Disponible exige activo localizado, asignación disponible y ausencia de mantenimiento en curso. Asignado exige activo localizado y asignación asignada. No localizado y Baja corresponden al ciclo de vida. La condición física se mantiene independiente.
+
+El parámetro HTTP adicional situation aplica estos criterios y se combina con los demás filtros. Los parámetros previos assignment, location y custodian siguen admitiéndose para clientes existentes. Una situación inválida se rechaza con HTTP 400. Esta clarificación actualiza la presentación de FR-009 sin alterar la definición histórica de DEC-028.
+
 ## Escenarios de usuario y comprobación
 
 El orden presenta primero el registro, después las entregas y devoluciones y finalmente las consultas. La gestión puede ser realizada por distintos gestores autorizados; cada movimiento conserva su autor. Solo los gestores acceden a la aplicación en este incremento; los custodios se registran como personas sin cuenta. Todos los gestores autorizados tienen los mismos permisos sobre el inventario completo, incluidos los movimientos registrados por otros gestores.
