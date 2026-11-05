@@ -1,0 +1,34 @@
+# PLANTILLA DE REVISIÓN, NO MIGRACIÓN ACTIVA NI AUTORIZACIÓN DE DESPLIEGUE.
+# Promover a backend/inventory/migrations solo tras mapeo verificado, preflight
+# sin pendientes y revisión de todos los escritores (incluidos consumidores 002).
+from django.db import migrations, models
+import django.db.models.deletion
+
+CHECKS = {
+    "inventory_asset": ["asset_code_required", "asset_name_required", "asset_description_required",
+        "asset_brand_required", "asset_model_required", "asset_serial_number_required", "asset_location_required"],
+    "inventory_custodian": ["custodian_name_required", "custodian_email_required"],
+}
+
+
+def verified_data_only(apps, schema_editor):
+    Asset = apps.get_model("inventory", "Asset")
+    if Asset.objects.using(schema_editor.connection.alias).filter(faculty_id__isnull=True).exists():
+        raise RuntimeError("Falta mapeo de facultad verificado. No se asignan valores automáticamente.")
+    # VALIDATE comprueba legado y aborta la transacción ante cualquier incompatibilidad.
+    for table, constraints in CHECKS.items():
+        for name in constraints:
+            schema_editor.execute(
+                "ALTER TABLE %s VALIDATE CONSTRAINT %s" %
+                (schema_editor.quote_name(table), schema_editor.quote_name(name)))
+
+
+class Migration(migrations.Migration):
+    atomic = True
+    dependencies = [("inventory", "0004_acquisition_expansion")]
+    operations = [
+        migrations.RunPython(verified_data_only, migrations.RunPython.noop),
+        migrations.AlterField(model_name="asset", name="faculty",
+            field=models.ForeignKey(to="inventory.faculty", on_delete=django.db.models.deletion.PROTECT,
+                                    related_name="assets")),
+    ]

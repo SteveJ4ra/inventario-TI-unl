@@ -37,12 +37,28 @@ class DjangoProviderGateway:
             ) from exc
 
     def _require_models(self, names):
-        return [self._model(name) for name in names]
+        models = [self._model(name) for name in names]
+        # 003 puede preparar modelos antes de revisar/aplicar su migración.
+        # Conservar la indisponibilidad explícita también durante esa etapa.
+        from django.db import connection
+
+        tables = set(connection.introspection.table_names())
+        missing = [model._meta.db_table for model in models if model._meta.db_table not in tables]
+        if missing:
+            raise ProviderUnavailable(
+                "El esquema proveedor no está integrado: faltan tablas " + ", ".join(missing) + "."
+            )
+        return models
 
     def _service(self, module_name, function_name):
         try:
             module = import_module(module_name)
         except ModuleNotFoundError as exc:
+            # Un import interno roto es un error del proveedor, no su ausencia.
+            if not exc.name or not (
+                exc.name == module_name or module_name.startswith(exc.name + ".")
+            ):
+                raise
             raise ProviderUnavailable(
                 "El paquete proveedor no está integrado: falta "
                 f"{module_name}.{function_name}."
@@ -53,6 +69,8 @@ class DjangoProviderGateway:
                 "El paquete proveedor no publica "
                 f"{module_name}.{function_name}."
             )
+        if not callable(function):
+            raise TypeError(f"{module_name}.{function_name} debe ser invocable.")
         return function
 
     def validate_assets(self, rows):

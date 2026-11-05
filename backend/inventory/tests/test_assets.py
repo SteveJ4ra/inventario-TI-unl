@@ -22,7 +22,7 @@ class AssetTests(InventoryCase):
         self.new_asset()
         response = self.client.post(
             "/api/assets/",
-            asset_data(brand=" ejemplo ", model=" a1 ", serial_number=" lab-001 "),
+            self.api_asset_data(brand=" ejemplo ", model=" a1 ", serial_number=" lab-001 "),
             format="json",
         )
         self.assertEqual(response.status_code, 409)
@@ -32,7 +32,7 @@ class AssetTests(InventoryCase):
     def test_required_lengths_choices_and_reserved_fields(self):
         for field in asset_data():
             with self.subTest(field=field):
-                data = asset_data()
+                data = self.api_asset_data()
                 data[field] = "   "
                 self.assertEqual(
                     self.client.post("/api/assets/", data, format="json").status_code,
@@ -49,7 +49,7 @@ class AssetTests(InventoryCase):
             self.assertEqual(
                 self.client.post(
                     "/api/assets/",
-                    asset_data(**{field: "X" * (limit + 1)}),
+                    self.api_asset_data(**{field: "X" * (limit + 1)}),
                     format="json",
                 ).status_code,
                 400,
@@ -65,7 +65,7 @@ class AssetTests(InventoryCase):
         ]:
             self.assertEqual(
                 self.client.post(
-                    "/api/assets/", {**asset_data(), field: value}, format="json"
+                    "/api/assets/", {**self.api_asset_data(), field: value}, format="json"
                 ).status_code,
                 400,
             )
@@ -97,12 +97,12 @@ class AssetTests(InventoryCase):
         client = APIClient(enforce_csrf_checks=True)
         client.force_login(self.actor)
         self.assertEqual(
-            client.post("/api/assets/", asset_data(), format="json").status_code, 403
+            client.post("/api/assets/", self.api_asset_data(), format="json").status_code, 403
         )
         token = client.get("/api/auth/csrf/").json()["csrfToken"]
         self.assertEqual(
             client.post(
-                "/api/assets/", asset_data(), format="json", HTTP_X_CSRFTOKEN=token
+                "/api/assets/", self.api_asset_data(), format="json", HTTP_X_CSRFTOKEN=token
             ).status_code,
             201,
         )
@@ -110,7 +110,7 @@ class AssetTests(InventoryCase):
     def test_only_six_categories_and_no_edit_delete(self):
         asset = self.new_asset(condition="averiado")
         self.assertEqual(len(self.client.get("/api/options/").json()["categories"]), 6)
-        for method in ["put", "patch", "delete"]:
+        for method in ["put", "delete"]:
             self.assertEqual(
                 getattr(self.client, method)(
                     f"/api/assets/{asset['id']}/", {}, format="json"
@@ -118,10 +118,17 @@ class AssetTests(InventoryCase):
                 405,
             )
 
+        # 003 habilita PATCH auditado; una entrada vacía sigue rechazada sin escribir.
+        response = self.client.patch(f"/api/assets/{asset['id']}/", {}, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("reason", response.json()["fields"])
+        self.assertIn("expected_revision", response.json()["fields"])
+        self.assertEqual(self.client.get(f"/api/assets/{asset['id']}/").json()["revision"], asset["revision"])
+
     def test_data_endpoints_require_manager_and_unicode_identity(self):
         asset = self.new_asset(brand="ÁRBOL")
         response = self.client.post(
-            "/api/assets/", asset_data(brand=" árbol "), format="json"
+            "/api/assets/", self.api_asset_data(brand=" árbol "), format="json"
         )
         self.assertEqual(response.status_code, 409)
         self.client.force_authenticate(user=None)
