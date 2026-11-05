@@ -238,3 +238,37 @@ export interface DonationDocumentInput { reference: string; support_type: string
 export interface HistoryEvent { event_type: string; event_id: number; occurred_at: string; actor: User; resulting_revision: number | null; data: unknown }
 
 export type DocumentSnapshot = Pick<AcquisitionDocument, "source" | "reference" | "document_date" | "supplier" | "invoice_total" | "support_type" | "currency">;
+export type LicenseModel = "USER_SEAT" | "DEVICE_SEAT";
+export type LicenseStatus = "NOT_STARTED" | "CURRENT" | "EXPIRED";
+export interface LicenseLotValues {
+  product_name: string;
+  vendor: string;
+  license_model: LicenseModel;
+  purchased_quantity: number;
+  in_use_quantity: number;
+  starts_on: string;
+  ends_on: string | null;
+}
+export interface LicenseLot extends LicenseLotValues {
+  id: number;
+  remaining_quantity: number;
+  temporal_status: LicenseStatus;
+  revision: number;
+  created_at: string;
+  created_by: User;
+}
+export interface LicenseLotAudit {
+  id: number;
+  lot_id: number;
+  actor: User & { recorded_label: string };
+  timestamp: string;
+  before_json: Partial<LicenseLotValues> & { revision?: number };
+  after_json: LicenseLotValues & { revision: number };
+  resulting_revision: number;
+}
+export interface LicensePage<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}

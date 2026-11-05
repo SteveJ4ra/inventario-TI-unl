@@ -24,6 +24,7 @@ import { Movements } from "./components/Movements";
 import { History } from "./components/History";
 import { IncidentPanel } from "./components/IncidentPanel";
 import { MaintenancePanel } from "./components/MaintenancePanel";
+import { LicenseLots } from "./components/LicenseLots";
 import { ImportPanel } from "./components/Import";
 import { AcquisitionForm } from "./components/AcquisitionForm";
 const emptyOptions: Options = {
@@ -139,6 +140,7 @@ export default function App() {
 
 function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) {
   const [adminOpen, setAdminOpen] = useState(false);
+  const [section, setSection] = useState<"assets" | "licenses">("assets");
   const [options, setOptions] = useState(emptyOptions);
   const [people, setPeople] = useState<Custodian[]>([]);
   const [page, setPage] = useState<Page | null>(null);
@@ -164,6 +166,7 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
   const [purchaseOpened, setPurchaseOpened] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
+    if (section !== "assets") return;
     setLoading(true);
     const params = new URLSearchParams({ ...query, page: String(pageNumber) });
     Promise.all([
@@ -186,7 +189,7 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [query, pageNumber, refresh]);
+  }, [query, pageNumber, refresh, section]);
   useEffect(() => setEditing(false), [selected, refresh]);
   useEffect(() => {
     if (selected === null) {
@@ -262,14 +265,36 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
         </div>
         <span className="nav-label">ESPACIO DE TRABAJO</span>
         <button
-          className="nav-active"
+          className={
+            section === "assets" ? "workspace-nav nav-active" : "workspace-nav"
+          }
+          aria-pressed={section === "assets"}
           onClick={() => {
+            setSection("assets");
             setSelected(null);
             setModal(null);
             setImportOpen(false);
           }}
         >
           ▦ <span>Inventario</span>
+        </button>
+        <button
+          className={
+            section === "licenses"
+              ? "workspace-nav nav-active"
+              : "workspace-nav"
+          }
+          aria-pressed={section === "licenses"}
+          onClick={() => {
+            setSection("licenses");
+            setSelected(null);
+            setModal(null);
+            setImportOpen(false);
+            setError(null);
+            setMessage("");
+          }}
+        >
+          ▤ <span>Licencias</span>
         </button>
         <div className="sidebar-bottom">
           <span className="avatar">
@@ -284,8 +309,10 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
       <div className="main-area">
         <header className="topbar">
           <span>
-            Gestión de activos <span className="separator">/</span> Inventario
-            TI
+            {section === "licenses"
+              ? "Gestión de licencias"
+              : "Gestión de activos"}{" "}
+            <span className="separator">/</span> Inventario TI
           </span>
           <button
             onClick={async () => {
@@ -301,6 +328,7 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
           </button>
         </header>
         <main className="content">
+          {section === "licenses" ? <LicenseLots /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">INVENTARIO TI</span>
@@ -475,14 +503,10 @@ function Workspace({ user, onExit }: { user: SessionUser; onExit: () => void }) 
                   />}
                   <History events={events} />
                 </>
-              ) : (
-                <p className="empty">
-                  No fue posible cargar la ficha. Revisa el mensaje o vuelve al
-                  listado.
-                </p>
-              )}
+              ) : <p className="empty">No fue posible cargar la ficha.</p>}
             </section>
           )}
+          </>}
           <footer>
             Universidad Nacional de Loja{" "}
             <span>Inventario de tecnologías de información · Grupo 5</span>

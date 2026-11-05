@@ -8,4 +8,6 @@
 - [x] Edición auditada.
 - [x] Sin claves ni asignaciones individuales.
 - [x] Importación por lote se define en 008.
-- [x] Especificación aún no implementada.
+- [x] Implementación local contrastada con los requisitos; evidencia y límites en [validation.md](../validation.md).
+
+Este checklist registra cobertura documental; no sustituye pruebas ni aprobación humana.

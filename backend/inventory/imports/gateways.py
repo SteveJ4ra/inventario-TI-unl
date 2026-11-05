@@ -10,6 +10,7 @@ from importlib import import_module
 
 from django.conf import settings
 from django.utils.module_loading import import_string
+from rest_framework.exceptions import ValidationError
 
 
 class ProviderUnavailable(Exception):
@@ -140,7 +141,21 @@ class DjangoProviderGateway:
 
     def validate_license_lots(self, rows):
         self._require_models(self.LICENSE_MODELS)
-        return []
+        validate = self._service("inventory.license_services", "validate_license_lot")
+        errors = []
+        for row in rows:
+            try:
+                validate(row["values"])
+            except ValidationError as exc:
+                for field, messages in exc.detail.items():
+                    errors.append(
+                        {
+                            "row": row["row"],
+                            "field": field,
+                            "message": " ".join(str(message) for message in messages),
+                        }
+                    )
+        return errors
 
     def apply_assets(self, rows, actor):
         function = self._service(

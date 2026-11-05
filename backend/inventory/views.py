@@ -1,5 +1,9 @@
 from django.db.models import BigIntegerField, Case, JSONField, OuterRef, Q, Subquery, When
 from django.db.models.functions import JSONObject
+from io import BytesIO
+from django.utils import timezone
+from rest_framework.parsers import JSONParser
+from rest_framework.exceptions import ParseError
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -7,13 +11,18 @@ from rest_framework.views import APIView
 from . import services
 from .models import (
     Asset, Assignment, Category, Condition, Custodian, Incident, LifecycleStatus,
-    MaintenanceEvent, Movement,
+    MaintenanceEvent, Movement, SoftwareLicenseLot,
 )
 from . import acquisition_services, faculty_services, custodian_services
 from .errors import DependencyUnavailable
 from .permissions import IsOperator, IsManagerOrOperator
 from .models import AcquisitionDocument, AssetChange, AssetFacultyChange, Faculty
 from .serializers import (
+    LicenseLotOutput,
+    LicenseLotQuery,
+    LicenseHistoryQuery,
+    LicenseLotAuditOutput,
+    AssetInput,
     AssetOutput,
     ConditionInput,
     CustodianInput,
@@ -350,3 +359,111 @@ class AssetHistoryView(APIView):
                     "data": {"before": event.before_json, "after": event.after_json, "reason": event.reason}})
         events.sort(key=lambda event: (event["resulting_revision"], event["occurred_at"], event["event_type"], event["event_id"]), reverse=True)
         return Response(events)
+def license_page(request, queryset, page, output, *, context=None):
+    """Paginación acotada, con el mismo tamaño y envoltura que 002."""
+    count = queryset.count()
+    if page > 1 and (page - 1) * 50 >= count:
+        raise ValidationError({"page": ["La página no existe."]})
+
+    def url(number):
+        query = request.query_params.copy()
+        query["page"] = str(number)
+        return request.build_absolute_uri("?" + query.urlencode())
+
+    return Response(
+        {
+            "count": count,
+            "next": url(page + 1) if page * 50 < count else None,
+            "previous": url(page - 1) if page > 1 else None,
+            "results": output(
+                queryset[(page - 1) * 50 : page * 50], many=True, context=context or {}
+            ).data,
+        }
+    )
+
+
+class LicenseLotJSONParser(JSONParser):
+    # Los siete campos de un lote caben holgadamente en 16 KiB.
+    # Se limita la lectura real, incluso sin Content-Length fiable.
+    def parse(self, stream, media_type=None, parser_context=None):
+        encoding = (parser_context or {}).get("encoding", "utf-8")
+        if encoding.lower().replace("_", "-") not in {"utf-8", "utf8"}:
+            raise ParseError("La API de licencias requiere JSON UTF-8.")
+        raw = stream.read(16385)
+        if len(raw) > 16384:
+            raise ParseError("El cuerpo JSON del lote supera el límite de 16 KiB.")
+        try:
+            return super().parse(
+                BytesIO(raw), media_type=media_type, parser_context=parser_context
+            )
+        except RecursionError as exc:
+            raise ParseError("El JSON contiene demasiados niveles de anidación.") from exc
+
+
+class LicenseBaseView(APIView):
+    parser_classes = [LicenseLotJSONParser]
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response["Cache-Control"] = "no-store"
+        return response
+
+
+class LicenseLotsView(LicenseBaseView):
+    def get(self, request):
+
+        data = validated(LicenseLotQuery, request.query_params.dict())
+        today = timezone.localdate()
+        result = SoftwareLicenseLot.objects.select_related("created_by")
+        if data.get("search"):
+            result = result.filter(
+                Q(product_name__icontains=data["search"])
+                | Q(vendor__icontains=data["search"])
+            )
+        if "license_model" in data:
+            result = result.filter(license_model=data["license_model"])
+        if data.get("temporal_status") == "NOT_STARTED":
+            result = result.filter(starts_on__gt=today)
+        elif data.get("temporal_status") == "EXPIRED":
+            result = result.filter(ends_on__lt=today)
+        elif data.get("temporal_status") == "CURRENT":
+            result = result.filter(starts_on__lte=today).filter(
+                Q(ends_on__isnull=True) | Q(ends_on__gte=today)
+            )
+        return license_page(
+            request, result, data["page"], LicenseLotOutput, context={"today": today}
+        )
+
+    def post(self, request):
+
+        lot = services.create_license_lot(actor=request.user, data=request.data)
+        return Response(LicenseLotOutput(lot).data, status=201)
+
+
+class LicenseLotView(LicenseBaseView):
+    def get(self, request, lot_id):
+
+        lot = get_object_or_404(
+            SoftwareLicenseLot.objects.select_related("created_by"), pk=lot_id
+        )
+        return Response(LicenseLotOutput(lot).data)
+
+    def patch(self, request, lot_id):
+
+        lot = services.update_license_lot(
+            lot_id=lot_id, actor=request.user, data=request.data
+        )
+        return Response(LicenseLotOutput(lot).data)
+
+
+class LicenseLotHistoryView(LicenseBaseView):
+    def get(self, request, lot_id):
+
+        data = validated(LicenseHistoryQuery, request.query_params.dict())
+        lot = get_object_or_404(SoftwareLicenseLot, pk=lot_id)
+        return license_page(
+            request,
+            lot.audits.select_related("actor"),
+            data["page"],
+            LicenseLotAuditOutput,
+        )

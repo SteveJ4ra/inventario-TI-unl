@@ -9,6 +9,9 @@ from .imports.views import (
     TemplatesView,
 )
 from .views import (
+    LicenseLotsView,
+    LicenseLotView,
+    LicenseLotHistoryView,
     AssetsView,
     AssetRecoveryView,
     AssetView,
@@ -30,6 +33,9 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view()),
     path("auth/me/", MeView.as_view()),
     path("auth/logout/", LogoutView.as_view()),
+    path("license-lots/", LicenseLotsView.as_view()),
+    path("license-lots/<int:lot_id>/", LicenseLotView.as_view()),
+    path("license-lots/<int:lot_id>/history/", LicenseLotHistoryView.as_view()),
     path("assets/", AssetsView.as_view()),
     path("assets/<int:asset_id>/", AssetView.as_view()),
     path("assets/<int:asset_id>/movements/", MovementsView.as_view()),

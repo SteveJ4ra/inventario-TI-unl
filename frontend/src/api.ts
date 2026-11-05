@@ -16,12 +16,13 @@ async function send<T>(
   path: string,
   options: {
     body?: Body;
-    method?: "PATCH";
+    method?: "POST" | "PATCH";
     form?: FormData;
     signal?: AbortSignal;
   } = {},
 ): Promise<T> {
-  const write = Boolean(options.body || options.form);
+  const write =
+    options.method === "PATCH" || Boolean(options.body || options.form);
   const headers: Record<string, string> = {};
   if (write) {
     let csrf: Response;
@@ -43,7 +44,7 @@ async function send<T>(
   let response: Response;
   try {
     response = await fetch("/api" + path, {
-      method: options.method || (write ? "POST" : "GET"),
+      method: options.method ?? (write ? "POST" : "GET"),
       credentials: "same-origin",
       headers,
       signal: options.signal,
@@ -83,7 +84,11 @@ async function send<T>(
 }
 export async function request<T>(
   path: string,
-  options: { body?: Body; method?: "PATCH"; signal?: AbortSignal } = {},
+  options: {
+    body?: Body;
+    method?: "POST" | "PATCH";
+    signal?: AbortSignal;
+  } = {},
 ): Promise<T> {
   return send<T>(path, options);
 }
