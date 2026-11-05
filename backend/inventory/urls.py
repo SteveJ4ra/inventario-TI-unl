@@ -31,7 +31,21 @@ from .views import (
     AcquisitionsView, AcquisitionView, CustodianView, AssetHistoryView,
 )
 
+from .retirement_api import (
+    ReviewerPasswordView, RetireView, RetirementRequestsView, AssignedRequestsView,
+    DecisionView, ReassignView, ReviewersView, ReviewerView,
+)
+
 urlpatterns = [
+    path("auth/change-password/",ReviewerPasswordView.as_view()),
+    path("assets/<int:asset_id>/retire/",RetireView.as_view()),
+    path("assets/<int:asset_id>/retirement-requests/",RetirementRequestsView.as_view()),
+    path("reviewer/retirement-requests/",AssignedRequestsView.as_view()),
+    path("retirement-requests/<int:request_id>/decision/",DecisionView.as_view()),
+    path("retirement-requests/<int:request_id>/reassign/",ReassignView.as_view()),
+    path("operator/reviewers/",ReviewersView.as_view()),
+    path("operator/reviewers/<int:user_id>/",ReviewerView.as_view()),
+
     path("auth/csrf/", CsrfView.as_view()),
     path("auth/login/", LoginView.as_view()),
     path("auth/me/", MeView.as_view()),

@@ -95,7 +95,7 @@ def assets():
             output_field=JSONField(),
         ),
         latest_rectifiable_id=Case(
-            When(lifecycle_status=LifecycleStatus.LOCATED, then=Subquery(latest)),
+            When(lifecycle_status__in=[LifecycleStatus.LOCATED, LifecycleStatus.RETIRED], then=Subquery(latest)),
             output_field=BigIntegerField(),
         )
     )

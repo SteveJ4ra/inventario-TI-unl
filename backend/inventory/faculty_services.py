@@ -30,13 +30,8 @@ def save_faculty(*, actor, data, faculty_id=None):
 
 
 def ensure_no_pending_decommission(*, asset):
-    """Frontera 005: conectar su guardia real bajo el mismo lock del activo.
-
-    Debe lanzar Conflict si hay solicitud pendiente y propagar fallos reales.
-    No hay proveedor publicado de 005: se impide escribir, nunca se asume False.
-    """
-    from .errors import DependencyUnavailable
-    raise DependencyUnavailable("Falta integrar la protección real de solicitudes pendientes de 005.")
+    from .retirement_store import assert_faculty_change_allowed
+    assert_faculty_change_allowed(asset.pk)
 
 
 def change_asset_faculty(*, actor, asset_id, data):
