@@ -1,4 +1,4 @@
-from django.db import connection
+from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.test import TransactionTestCase
 
@@ -10,9 +10,16 @@ class LifecycleMigrationTests(TransactionTestCase):
     target = ("inventory", "0004_asset_lifecycle_events")
 
     def test_existing_assets_and_movement_history_survive_upgrade(self):
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("CREATE SCHEMA lifecycle_upgrade")
+                cursor.execute("SET LOCAL search_path TO lifecycle_upgrade")
+            self.check_upgrade()
+            transaction.set_rollback(True)
+
+    def check_upgrade(self):
         executor = MigrationExecutor(connection)
-        self.addCleanup(self.restore_schema)
-        executor.migrate([self.previous])
+        executor.migrate([("auth", "0012_alter_user_first_name_max_length"), self.previous])
         old = executor.loader.project_state([self.previous]).apps
         actor = old.get_model("auth", "User").objects.create(username="gestor-anterior")
         custodian = old.get_model("inventory", "Custodian").objects.create(
@@ -41,6 +48,8 @@ class LifecycleMigrationTests(TransactionTestCase):
             resulting_revision=1,
         )
 
+        with connection.cursor() as cursor:
+            cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
         executor = MigrationExecutor(connection)
         executor.migrate([self.target])
         new = executor.loader.project_state([self.target]).apps
@@ -60,7 +69,3 @@ class LifecycleMigrationTests(TransactionTestCase):
         original = new.get_model("inventory", "Movement").objects.get(pk=movement.pk)
         self.assertEqual(original.before, before)
         self.assertEqual(original.after, after)
-
-    def restore_schema(self):
-        executor = MigrationExecutor(connection)
-        executor.migrate(executor.loader.graph.leaf_nodes())

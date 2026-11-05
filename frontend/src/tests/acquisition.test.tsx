@@ -303,7 +303,7 @@ test("App registra la compra, muestra la ficha y mantiene la factura para otro a
     if (path === "/api/assets/1/") return response({ ...asset, faculty_id: 3, acquisition: { document_id: 17,
       source: "PURCHASE", reference: invoice.reference, invoice_total: invoice.invoice_total, currency: "USD",
       item_value: "300.00", acquired_on: "2026-01-15", date_unknown_reason: "" } });
-    if (path === "/api/assets/1/movements/") return response([]);
+    if (path === "/api/assets/1/history/" || path === "/api/assets/1/incidents/") return response([]);
     return baseFetch(input, init);
   });
   const user = userEvent.setup();

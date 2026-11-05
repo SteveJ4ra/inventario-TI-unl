@@ -37,7 +37,7 @@ function mockWorkspace(conflict = false) {
   const api = vi.mocked(request);
   api.mockReset();
   api.mockImplementation(async (path, opts) => {
-    if (path === "/auth/me/") return actor;
+    if (path === "/auth/me/") return { ...actor, permissions: ["inventory.manage"], must_change_password: false };
     if (path.startsWith("/assets/?")) return { count: 1, results: [assigned] };
     if (path === "/options/") return options;
     if (path === "/custodians/") return [person];

@@ -389,7 +389,7 @@ test("distingue error de red de listado vacío y permite consultar otra vez", as
 
 test("403 desmonta la vista privada de licencias", async () => {
   server((path) => {
-    if (path === "/api/auth/me/") return reply({ id: 1, username: "gestor" });
+    if (path === "/api/auth/me/") return reply({ id: 1, username: "gestor", permissions: ["inventory.manage"], must_change_password: false });
     if (path.startsWith("/api/assets/")) return reply(page([]));
     if (path === "/api/options/")
       return reply({
@@ -410,7 +410,7 @@ test("403 desmonta la vista privada de licencias", async () => {
 
 test("cerrar sesión limpia la pantalla privada y vuelve a login", async () => {
   server((path) => {
-    if (path === "/api/auth/me/") return reply({ id: 1, username: "gestor" });
+    if (path === "/api/auth/me/") return reply({ id: 1, username: "gestor", permissions: ["inventory.manage"], must_change_password: false });
     if (path === "/api/auth/logout/")
       return reply({ detail: "Sesión cerrada" });
     if (path.startsWith("/api/assets/")) return reply(page([]));

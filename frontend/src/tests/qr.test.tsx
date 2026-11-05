@@ -13,7 +13,7 @@ vi.mock("../api", async (importOriginal) => {
   return { ...actual, request: requestMock };
 });
 
-const gestor = { id: 1, username: "gestor" };
+const gestor = { id: 1, username: "gestor", permissions: ["inventory.manage"], must_change_password: false };
 
 // Respuestas simuladas del backend 002 + endpoints QR del paquete 007.
 function simulateApi({ authenticated = true, missing = false, denied = false } = {}) {
@@ -33,7 +33,7 @@ function simulateApi({ authenticated = true, missing = false, denied = false } =
       return asset;
     }
     if (path === "/assets/1/") return asset;
-    if (path === "/assets/1/movements/") return [];
+    if (path === "/assets/1/history/" || path === "/assets/1/incidents/") return [];
     if (path.startsWith("/assets/?")) {
       return { count: 1, next: null, previous: null, results: [asset] };
     }

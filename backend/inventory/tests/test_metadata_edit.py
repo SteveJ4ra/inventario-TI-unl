@@ -38,6 +38,23 @@ class MetadataEditTests(AcquisitionFixtures, InventoryCase):
         self.assertEqual(rejected.status_code, 409)
         self.assertEqual(AssetChange.objects.count(), 1)
 
+    def test_history_combines_metadata_and_incidents(self):
+        path = f"/api/assets/{self.asset.pk}/"
+        updated = self.client.patch(path, {
+            "expected_revision": 0, "reason": "Corrección", "name": "Etiqueta nueva",
+        }, format="json")
+        self.assertEqual(updated.status_code, 200, updated.content)
+        incident = self.client.post(path + "incidents/", {
+            "expected_revision": 1, "type": "damage", "description": "Bisagra suelta",
+        }, format="json")
+        self.assertEqual(incident.status_code, 201, incident.content)
+
+        history = self.client.get(path + "history/").json()
+        self.assertEqual(
+            [(entry["event_type"], entry["resulting_revision"]) for entry in history],
+            [("incident", 2), ("asset_change", 1)],
+        )
+
     def test_duplicate_identity_and_reserved_fields_do_not_write(self):
         other = create_asset(actor=self.actor, data=asset_data(serial_number="OTHER-EDIT"))
         before = Asset.objects.filter(pk=self.asset.pk).values().get()
