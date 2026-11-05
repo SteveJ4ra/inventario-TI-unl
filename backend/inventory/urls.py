@@ -12,6 +12,9 @@ from .views import (
     LicenseLotsView,
     LicenseLotView,
     LicenseLotHistoryView,
+
+    AssetQrView,
+    AssetByCodeView,
     AssetsView,
     AssetRecoveryView,
     AssetView,
@@ -39,6 +42,14 @@ urlpatterns = [
     path("license-lots/<int:lot_id>/history/", LicenseLotHistoryView.as_view()),
     path("assets/", AssetsView.as_view()),
     path("assets/<int:asset_id>/", AssetView.as_view()),
+path(
+    "assets/by-code/<str:code>/",
+    AssetByCodeView.as_view(),
+),
+path(
+    "assets/<int:asset_id>/qr.svg",
+    AssetQrView.as_view(),
+),
     path("assets/<int:asset_id>/movements/", MovementsView.as_view()),
     path("assets/<int:asset_id>/history/", HistoryView.as_view()),
     path("assets/<int:asset_id>/incidents/", IncidentsView.as_view()),

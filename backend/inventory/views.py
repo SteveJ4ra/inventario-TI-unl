@@ -4,6 +4,12 @@ from io import BytesIO
 from django.utils import timezone
 from rest_framework.parsers import JSONParser
 from rest_framework.exceptions import ParseError
+
+import segno
+from django.http import HttpResponse
+
+from .permissions import IsManager
+from .qr_urls import build_asset_qr_url
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -486,3 +492,43 @@ class LicenseLotHistoryView(LicenseBaseView):
             data["page"],
             LicenseLotAuditOutput,
         )
+class AssetQrView(APIView):
+    """Genera y descarga el QR SVG de un activo."""
+
+    permission_classes = [IsManager]
+
+    def get(self, request, asset_id):
+        asset = get_object_or_404(assets(), pk=asset_id)
+
+        # Construir enlace a partir del código TI.
+        url = build_asset_qr_url(asset.code)
+
+        # Generar QR bajo demanda.
+        qr = segno.make_qr(url, error="M")
+
+        buffer = BytesIO()
+        qr.save(buffer, kind="svg", scale=5)
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="image/svg+xml",
+        )
+
+        response["Content-Disposition"] = (
+            f'attachment; filename="activo-{asset.pk}.svg"'
+        )
+        response["Cache-Control"] = "no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+
+        return response
+
+
+class AssetByCodeView(APIView):
+    """Busca un activo mediante su código TI exacto."""
+
+    permission_classes = [IsManager]
+
+    def get(self, request, code):
+        asset = get_object_or_404(assets(), code=code)
+
+        return Response(AssetOutput(asset).data)
