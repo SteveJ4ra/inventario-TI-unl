@@ -1,9 +1,9 @@
 # Especificación: administración de fichas y adquisición
 
-**Rama propuesta:** feature/alex-003-fichas-adquisiciones
+**Rama autorizada de trabajo:** Alex_Sigcho_Feature (integración final hacia develop)
 **Identificador:** 003-fichas-adquisiciones
 **Creado:** 1 de noviembre de 2026
-**Estado:** especificación preparada; no implementada.
+**Estado:** implementación parcial verificada; estado por tarea y dependencias pendientes en tasks.md, validation.md e integration-notes.md. No se declara ratificación grupal ni migración local.
 **Base:** incremento 002 y decisiones DBE-001 a DBE-011 y DBE-048, DBE-050 en ../../docs/sdd/decisiones-alcance-backend.md.
 
 ## Descripción

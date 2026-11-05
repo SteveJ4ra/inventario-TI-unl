@@ -84,3 +84,9 @@ Esto conserva la rama Git feature/registro-consulta-activos; el identificador l�
 ## Colaboración
 
 Ramas main/develop/feature; contribuciones y revisión antes de integrar según [CONTRIBUTING.md](CONTRIBUTING.md). No publicar .env, contraseñas, datos institucionales o archivos temporales. Mantener la revisión de este incremento en su rama feature sin atribuir aprobación al equipo antes de obtenerla.
+
+## Paquete 003 — estado de entrega
+
+Fichas, facultades y adquisiciones se desarrollan en Alex_Sigcho_Feature para integración hacia develop. El alcance implementado incorpora compras/donaciones compartidas, Operador, edición auditada e importación real de adquisiciones mediante 008. La entrega sigue parcial por transición histórica, decisiones funcionales y proveedor 005 ausente; no se declara lista para merge integral.
+
+Consultar [estado por tarea](specs/003-fichas-adquisiciones/tasks.md), [validación](specs/003-fichas-adquisiciones/validation.md), [integraciones pendientes](specs/003-fichas-adquisiciones/integration-notes.md) y [quickstart aislado](specs/003-fichas-adquisiciones/quickstart.md). La migración 0004 solo se ha probado en PostgreSQL temporal; no se aplicó a la base local. El cuerpo del PR Draft está preparado en [pr-description.md](specs/003-fichas-adquisiciones/pr-description.md), sin publicación.

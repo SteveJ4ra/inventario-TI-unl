@@ -1,6 +1,6 @@
 # Plan: administración de fichas y adquisición
 
-**Rama propuesta:** feature/alex-003-fichas-adquisiciones
+**Rama autorizada de trabajo:** Alex_Sigcho_Feature; destino develop
 **Fecha:** 2026-11-01
 **Spec:** spec.md
 
@@ -69,3 +69,51 @@ Primero se registra el documento compartido de adquisición (metadatos; sin exig
 Preparar el mapeo verificado de facultad antes de migrar; crear tabla/columnas, cargar facultades y aplicar el mapeo antes de exigir NOT NULL. La adquisición histórica no se inventa: agregar esquema compatible y no activar restricciones obligatorias sobre datos legados hasta completar los datos verificados; para nuevas altas exigirlos desde la activación del flujo 003. No sustituir datos reales por fixtures en una migración de despliegue.
 
 Importes Decimal y código de moneda se guardan en el documento y en snapshots. La configuración central define moneda de nuevos registros; cambiarla en el futuro no reetiqueta importes históricos. No se incorpora conversión monetaria ni selector visual.
+
+## Preparación T001–T003 — 2026-11-04
+
+Alex confirmó fecha/motivo en AcquisitionLine, support_type + reference para donación y evento documental más un AssetChange por activo afectado en cada corrección compartida. No se supone equivalencia con support_description de CSV 008.
+
+Los modelos se preparan sin migración: T004 incorporará Asset.faculty en fases y protección SQL de auditorías. Precisión monetaria técnica Decimal(12,2), compatible con MAX_MONEY de 008; no se agrega una regla funcional sobre suma, cero o negativos sin aclararla. Las validaciones clean no sustituyen serializadores ni servicios, y save no llama automáticamente full_clean.
+
+
+## Corrección técnica autorizada tras auditoría — 2026-11-04
+
+Preparar CHECK de textos no blancos (regex \S) para obligatorios de 002 y entidades nuevas, guardas ORM de conservación y evidencia solo insertable. Declarar revisión positiva y unicidad por activo/revisión en cada auditoría de activo/facultad. La exclusión entre tablas y coherencia con Asset.revision se garantizarán mediante servicios transaccionales T006, no mediante un CHECK que consulte otra tabla.
+
+Diseño SQL pendiente, sin migraciones generadas: protección UPDATE/DELETE de evidencia y DELETE de dominio; revisar TRUNCATE/privilegios. Antes de instalar constraints de textos sobre legado, preflight y resolución humana de incompatibilidades; no sanear datos por suposición. Revisar integration-notes.md para el diseño y sus límites.
+
+No se consideran aprobadas políticas de cero/negativos, adaptación de support_description, fecha de donación, cambio de origen con líneas ni protocolo completo de concurrencia de documentos. Las tres confirmaciones previas de Alex conservan su alcance; el modelo permisivo no añade aprobación. No activar NOT NULL de facultad antes de adaptar la escritura T005–T007.
+
+
+## Primera expansión T004 autorizada — 2026-11-04
+
+0004_acquisition_expansion depende de 0003_importbatch, añade siete entidades y Asset.faculty nullable sin default. No realiza backfill. Nueve CHECK ya definidos de textos sobre Asset/Custodian se instalan NOT VALID: no inspeccionan/reparan legado, pero sí rechazan nuevas escrituras inválidas. Una fase posterior requiere completado verificado y VALIDATE CONSTRAINT antes de afirmar saneamiento. Nuevas tablas usan constraints aprobados; sin política de signo monetario ni restricciones sobre fecha de donación/cambio de origen pendientes.
+
+La migración instala triggers UPDATE/DELETE para evidencia nueva y DELETE para activos/documentos/líneas, mantiene Movement/ImportBatch y bloquea su reversión automática por Django. No protege operaciones administrativas TRUNCATE/DROP; revisión de privilegios pendiente. Pruebas en PostgreSQL temporal: 10 expansión y selección de regresión 75/75. No aplicada localmente; T004 continúa parcial.
+
+
+## Inicio T005/T006 — implementación parcial 2026-11-04
+
+Primitivas de adquisición se concentran en acquisition_services.py; services.create_asset conserva 002 durante la transición y deriva a alta completa 003 cuando recibe sus campos. La validación compartida vive en serializers.py. Código/secuencia de activo se reutilizan, y documento/facultad se comprueban bajo transacción antes de activo+línea. No hay adaptador CSV con reglas duplicadas.
+
+Base de actualización auditada: snapshot previo/nuevo (incluyendo adquisición y currency persistida), expected_revision bajo lock, incremento y AssetChange en una transacción. Asociar un activo existente exige revisión/motivo y no reasigna una adquisición vigente. Orden documento→facultad (alta)→activo/línea; no se considera resuelto el protocolo pendiente para editar metadatos compartidos. La rectificación de servicios y la consulta assets exigen igualdad de revisión global.
+
+Sin implementación de T007–T018: no se exponen endpoints ni UI. Cero/negativos y fecha documental explícita en donación devuelven pending_decision antes de escribir; no son políticas funcionales decididas por el agente. Edición documental/cambio de origen/import_assets siguen pendientes. Regresión seleccionada 92/92; aceptación API aún roja. T005/T006 permanecen parciales.
+
+
+## Compras web T008–T010 — 2026-11-04
+
+AcquisitionForm compone el formulario base de Registration en dos pasos: documento nuevo/cargado, después cada activo+línea. App conserva el componente y su bloqueo al ocultarlo y lo descarta al salir de la sesión. Tipos/cliente usan el transporte existente; importes string e ids numéricos, moneda de respuesta. La ficha readonly diferencia total compartido y valor individual. get_document en acquisition_services centraliza lectura y prefetch; no hay nueva lógica de creación ni un lote ficticio.
+
+Errores preservan datos y factura; solo respuestas confirmadas añaden códigos/líneas. Éxitos previos se conservan cuando falla un activo posterior. No se fusiona por referencia, se copia fecha documental al activo ni se promete idempotencia tras una respuesta perdida. API de items iniciales existentes sigue pendiente, al igual que los asuntos de T001–T007; no se avanza a T011–T018. Evidencia: 124 backend, 34 frontend, build PASS, sin DB local.
+
+## Cierre técnico vigente — 2026-11-04
+
+PATCH documental confirmado por Alex: reason, expected_document completo y mapa expected_revisions por activo; lock documento → activos por id, comparación de metadatos/pertenencia/revisiones y evento documental + AssetChange por activo en una transacción. Documento sin activos usa snapshot y evento documental. No se cambia source ni moneda.
+
+Proveedor import_assets 003/008 implementado en acquisition_imports.py y expuesto por acquisition_services.py. Reutiliza serializadores y altas reales, agrupa exclusivamente por document_key del lote, respeta documento existente y se integra en la transacción e idempotencia de ImportBatch. Donaciones nuevas por CSV permanecen explícitamente bloqueadas por Alex; las que referencian documento existente funcionan. No se alteró el parser ni funcionalidades de licencias de otros compañeros.
+
+T004: legacy_preflight y comando acquisition_preflight solo leen. faculty_contract.py.txt es plantilla NO activa, probada en PostgreSQL temporal para aborto sin mapeo, VALIDATE y NOT NULL con datos verificados. No promoverla antes de revisar escritores legados 002; Asset.faculty sigue nullable en el modelo/grafo activos.
+
+Los estados de secciones anteriores son históricos; la tabla final de tasks.md es el estado vigente.
