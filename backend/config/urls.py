@@ -17,8 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from inventory.openapi_v1 import schema, swagger_ui, live_script
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/openapi.json", schema),
+    path("api/docs/", swagger_ui),
+    path("api/docs/live.js", live_script),
+    path("api/v1/", include("inventory.urls_v1")),
     path("api/", include("inventory.urls")),
 ]
