@@ -118,6 +118,15 @@ for path, method, allowed in [
         if code not in allowed:
             responses.pop(code, None)
 
+SCHEMA['paths']['/auth/login/']['post']['responses']['429'] = {
+    'description': 'Se agotaron cinco fallos por combinación de cuenta e IP en una ventana de quince minutos. Esperar el plazo indicado.',
+    'headers': {'Retry-After': {'description': 'Segundos restantes de la ventana.', 'schema': {'type':'integer','minimum':1}}},
+    'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Envelope'}}},
+}
+SCHEMA['info']['description'] += ' Seguridad de semana 4: sesión con vencimiento absoluto de treinta minutos, sin renovación por consultas; cinco fallos de acceso por cuenta e IP en quince minutos y rechazo posterior con 429.'
+
+SCHEMA['paths']['/auth/login/']['post']['requestBody']['content']['application/json']['schema']['properties']['username'] = {'type':'string','maxLength':150,'pattern':r'^[^\u0000]*$'}
+
 @require_GET
 def schema(request):
     return JsonResponse(SCHEMA)
