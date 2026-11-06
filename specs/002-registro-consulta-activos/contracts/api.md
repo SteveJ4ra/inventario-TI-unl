@@ -4,6 +4,10 @@
 
 ## Acceso y errores comunes
 
+Actualización de seguridad de semana 4: el inicio de sesión admite cinco fallos por combinación de cuenta e IP durante quince minutos, compartidos con la ruta v1. El intento posterior se rechaza con HTTP 429, código `throttled` y cabecera `Retry-After` con los segundos restantes. El bloqueo no es permanente. Las respuestas API sensibles incluyen `Cache-Control: no-store`; las claves operativas del contador no contienen cuenta o IP en texto.
+
+El login establece una fecha de vencimiento absoluta de treinta minutos. Las consultas y el refresco de la página de API no renuevan el plazo. Una sesión caducada se rechaza y requiere autenticación nueva. Al desplegar esta política se ejecuta `expire_legacy_sessions` para caducar las sesiones anteriores que no incluían vencimiento absoluto.
+
 Sesión Django con cookie HttpOnly; peticiones de escritura incluyen cookie CSRF y cabecera `X-CSRFToken`. El login exige CSRF también como anónimo. Todos los endpoints de datos, opciones e historial requieren usuario activo del grupo Gestores, incluidos superusuarios administrativos que operen en inventario. No hay registro público de cuentas ni acceso del custodio.
 
 Formato de error de la API: `{"code":"invalid","detail":"Revisa los datos indicados.","fields":{"name":["Este campo es obligatorio."]}}`. fields es opcional. El middleware CSRF también debe devolver JSON legible para estas rutas, con code csrf_failed. No exponer excepciones SQL ni credenciales.

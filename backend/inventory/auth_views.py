@@ -1,5 +1,8 @@
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import login, logout, get_user_model
 from django.middleware.csrf import get_token
+from datetime import timedelta
+from django.conf import settings
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -8,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .retirement_permissions import reviewer_has_account
 from .permissions import is_manager, is_operator, IsManagerOrOperator, session_payload
+from .login_security import authenticate_limited
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -31,9 +35,11 @@ class LoginView(APIView):
             not isinstance(request.data, dict)
             or set(request.data) != {"username", "password"}
             or not all(isinstance(value, str) for value in request.data.values())
+            or '\x00' in request.data['username']
+            or len(request.data['username']) > get_user_model()._meta.get_field(get_user_model().USERNAME_FIELD).max_length
         ):
             raise ValidationError("Indica usuario y contraseña.")
-        user = authenticate(
+        user = authenticate_limited(
             request,
             username=request.data["username"],
             password=request.data["password"],
@@ -50,6 +56,7 @@ class LoginView(APIView):
         if not (is_manager(user) or is_operator(user) or reviewer_has_account(user)):
             raise PermissionDenied("Se requiere acceso de gestor autorizado.")
         login(request, user)
+        request.session.set_expiry(timezone.now() + timedelta(seconds=settings.INVENTORY_SESSION_LIFETIME_SECONDS))
         return Response(session_payload(user))
 
 

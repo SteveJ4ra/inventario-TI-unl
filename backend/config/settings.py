@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "inventory.privacy.ApiPrivacyMiddleware",
     "inventory.api_v1.EnvelopeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -164,6 +165,11 @@ CSRF_TRUSTED_ORIGINS = [
     if x
 ]
 SESSION_COOKIE_HTTPONLY = True
+LOGIN_FAILURE_LIMIT = 5
+LOGIN_FAILURE_WINDOW_SECONDS = 15 * 60
+INVENTORY_SESSION_LIFETIME_SECONDS = 30 * 60
+SESSION_COOKIE_AGE = INVENTORY_SESSION_LIFETIME_SECONDS
+SESSION_SAVE_EVERY_REQUEST = False
 
 # Moneda para nuevos documentos; cada documento conserva su código histórico.
 ASSET_CURRENCY_CODE = "USD"

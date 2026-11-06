@@ -751,6 +751,13 @@ class LicenseLotAudit(models.Model):
         raise ValidationError("El historial de licencias debe conservarse.")
 
 
+class LoginAttempt(models.Model):
+    """Contador temporal por clave HMAC; no almacena cuentas ni IP en texto."""
+    key = models.CharField(max_length=64, primary_key=True)
+    failures = models.PositiveSmallIntegerField(default=0)
+    window_started = models.DateTimeField(db_index=True)
+
+
 from .retirement_models import (
     ApprovalDecision, DecommissionEvent, DecommissionRequest,
     RetirementAudit, ReviewerAccountAudit, ReviewerProfile,
