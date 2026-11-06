@@ -1,0 +1,19 @@
+@startuml
+title Seguridad - Fronteras de confianza
+top to bottom direction
+actor "Cliente / navegador" as client
+rectangle "Entrada no confiable\nURL, JSON, cookies y cabeceras" as input
+rectangle "Django / DRF\nSesión, CSRF, permisos y contador de acceso" as api
+rectangle "Servicios del inventario\nValidaciones, revisiones y transacciones" as services
+database "PostgreSQL\nSesiones, contadores, activos e historial" as db
+client --> input : Realizar solicitud
+input --> api : Cruzar frontera de confianza
+api --> services : Operación autorizada
+services --> db : Leer y escribir con restricciones
+api --> db : Validar sesión y límite de acceso
+note right of api
+No confiar en identificadores,
+autores o IP reenviada del cliente.
+Las respuestas API incluyen no-store.
+end note
+@enduml
