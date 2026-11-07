@@ -1,0 +1,28 @@
+@startuml
+title UML - Elementos del flujo de custodia
+class AssetsView {
+  +get(request)
+  +post(request)
+}
+class AssetView {
+  +get(request, asset_id)
+  +patch(request, asset_id)
+}
+class OperationView {
+  +post(request, asset_id, operation)
+}
+class "Servicios de inventario" as Services <<module>>
+class "Servicios de adquisición" as Acquisitions <<module>>
+class Asset
+class Custodian
+class Movement
+AssetsView ..> Acquisitions : registrar
+AssetView ..> Asset : consultar
+OperationView ..> Services : entregar / devolver
+Acquisitions ..> Asset : crear
+Services ..> Asset : actualizar situación
+Services ..> Custodian : consultar
+Services ..> Movement : registrar antecedente
+Movement --> Asset
+Movement --> Custodian : custodio relacionado
+@enduml

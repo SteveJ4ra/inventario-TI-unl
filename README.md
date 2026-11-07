@@ -1,6 +1,6 @@
 # Inventario de Tecnologías de Información - UNL
 
-Backend académico del Grupo 5, desarrollado por incrementos con Spec-Driven Development (SDD) y GitHub Spec Kit. La base integrada 435b0e0 contiene 002-008 y los controles de seguridad de semana 4; esta rama añade el despliegue local reproducible de semana 5.
+Backend académico del Grupo 5, desarrollado por incrementos con Spec-Driven Development (SDD) y GitHub Spec Kit. La consolidación de Unidad 1 parte de develop b60f52f, integra los módulos 002-008 y completa contrato v1/OpenAPI, observabilidad, BPMN y portal Quarto mediante el incremento técnico 009.
 
 ## Alcance del backend
 
@@ -20,7 +20,7 @@ Gestores con acceso global acordado; operador con facultades/cuentas revisoras; 
 
 ```powershell
 python deploy/prepare_secrets.py
-docker compose build web
+docker compose build web tests
 docker compose up -d --wait --no-build web
 docker compose exec web python manage.py create_gestor
 ```
@@ -30,11 +30,11 @@ Abrir http://localhost:8005/api/docs/ . La API y documentación se sirven con Gu
 [Guía de despliegue, pruebas y operación](deploy/README.md). El HTTP se limita a loopback; no se declara un servidor público con TLS. El frontend React existente se ejecuta aparte y PUBLIC_APP_URL debe apuntar a su dirección para navegar desde el QR.
 
 ```powershell
-docker compose --profile test run --rm tests
+docker compose --profile test run --rm tests --pytest -q
 docker compose --profile test run --rm tests makemigrations --check --dry-run
 ```
 
-Resultado comprobado en Docker: 333 pruebas Django/API/contrato, 21 pruebas aisladas de políticas y 16 de importación; 30 respuestas HTTP del recorrido protegido y persistencia después de recrear servicios. [Evidencia y límites](docs/semana-5/validacion.md). Estas pruebas usan testdb separado; no elevan privilegios del usuario operativo. Las instrucciones de las dos suites aisladas están en la guía de despliegue.
+Resultado local de consolidación: 378 pruebas con pytest-django y 284 subcasos, incluidas 37 pruebas aisladas; 66 comprobaciones HTTP sobre Gunicorn. Contrato completo: 46 rutas y 56 operaciones, con 43 respuestas JSON reales validadas. Respaldo restaurado en base temporal: 34 tablas/212 filas idénticas en conteo y SHA-256. [Evidencia actual](docs/producto-final/evidencia-validacion.json). testdb permanece separado de la base operativa.
 
 ## Ejecutar sin contenedores
 
@@ -42,15 +42,23 @@ Python 3.13 y PostgreSQL 17 con ICU. Preparar entorno y .env según [backend/REA
 
 ## API y documentación SDD
 
-- [Catálogo de rutas y contratos](docs/semana-5/catalogo-api.md): la API completa conserva rutas /api/; /api/v1/ y su OpenAPI cubren el recorrido base. No se promete un único formato para todos los módulos.
+- [OpenAPI completo vigente](docs/producto-final/openapi.json): /api/v1/ cubre todos los módulos y normaliza JSON con success/message/data/errors/meta. /api/ conserva su contrato histórico. CSV/SVG y HEAD/204/304 respetan su semántica de archivo/HTTP.
 - [Dossier técnico](docs/semana-5/dossier-backend.md), [104 requisitos trazados](docs/semana-5/matriz-trazabilidad.md), [bitácora](docs/semana-5/bitacora-integracion.md) y [estándares](docs/semana-5/estandares.md).
 - [Arquitectura de semana 3](docs/semana-3/c4-contenedores.puml), [seguridad de semana 4](docs/semana-4/modelo-amenazas.md) y [ADR de despliegue](docs/semana-5/ADR-0501-despliegue-local.md).
 - [.specify/memory/constitution.md](.specify/memory/constitution.md) conserva su estado de propuesta; las decisiones funcionales confirmadas están en docs/sdd/. No se atribuyen políticas institucionales a esta entrega académica.
 
 Para seleccionar un incremento en Spec Kit, definir SPECIFY_FEATURE_DIRECTORY con su directorio specs/00X-... en la sesión correspondiente. No reinicializar Spec Kit ni sobrescribir las integraciones Copilot/Codex. El flujo es specify, clarify, plan, tasks, analyze, implement y validate con evidencia.
 
+## Portal Quarto y producto final
+
+Instalar Quarto 1.11.9, ejecutar `quarto render portal` y `quarto preview portal --no-browser`. [Guía operativa](portal/operacion.qmd), [matriz de entrega](docs/producto-final/matriz-entrega.md), [proceso BPMN](docs/producto-final/custodia.bpmn) y [ADR-0901](docs/producto-final/ADR-0901-contrato-y-operacion.md). El portal queda preparado para Pages; la publicación es manual desde develop hacia gh-pages, después de revisión; ver docs/producto-final/publicacion.md. Pages sirve documentación estática, no el backend.
+
+La evidencia de semanas anteriores se conserva como historia del incremento. La referencia actual es docs/producto-final y specs/009-consolidacion-final. CI valida backend, migraciones, OpenAPI/BPMN y render de Quarto al incorporarse a GitHub.
+
 ## Colaboración y cuidado de datos
 
 Ramas propias y PR hacia develop según [CONTRIBUTING.md](CONTRIBUTING.md); main permanece fuera de esta integración. No publicar .env, deploy/.secrets, respaldos, credenciales o datos institucionales. No borrar el volumen de Docker para resolver un problema con datos existentes. Las validaciones históricas por módulo se conservan en specs/; el dossier integrado distingue esos registros de la evidencia actual.
 
 El alcance backend no certifica todas las pantallas o navegación móvil. La documentación indica límites del QR/cliente, donaciones e importes y del despliegue público para evitar asumir funcionalidades no confirmadas.
+
+En anfitrión Linux, después de prepare_secrets.py: instalar el paquete acl y ejecutar `bash deploy/prepare_linux_secret_access.sh`. Compose monta archivos y conserva permisos del anfitrión; la ACL permite solo los UID lectores necesarios, sin hacer públicos los secretos. En Docker Desktop/Windows no se aplica este script.
