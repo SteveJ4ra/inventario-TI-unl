@@ -28,4 +28,4 @@ Mostramos vistas, módulos de servicio y entidades participantes, no solo tablas
 
 ## Decisión de consolidación
 
-{{< include recursos/docs/producto-final/ADR-0901-contrato-y-operacion.md >}}
+{{< include ../docs/producto-final/ADR-0901-contrato-y-operacion.md >}}

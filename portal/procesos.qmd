@@ -2,7 +2,7 @@
 title: Proceso BPMN de custodia
 ---
 
-{{< include recursos/docs/producto-final/proceso-custodia.md >}}
+{{< include ../docs/producto-final/proceso-custodia.md >}}
 
 ## Vista operativa
 
