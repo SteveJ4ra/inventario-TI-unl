@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Especificación y trazabilidad – Inventario TI · Grupo 5</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-2289fa2d9a7051e02daaa2d94390e863.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No se han encontrado resultados",
+    "search-matching-documents-text": "documentos encontrados",
+    "search-copy-link-title": "Copiar el enlace en la búsqueda",
+    "search-hide-matches-text": "Ocultar resultados adicionales",
+    "search-more-match-text": "resultado adicional en este documento",
+    "search-more-matches-text": "resultados adicionales en este documento",
+    "search-clear-button-title": "Borrar",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar",
+    "search-label": "Buscar"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+
+<body class="nav-fixed quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Saltar al contenido principal</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark" aria-label="Sitio web">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Inventario TI · Grupo 5</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Navegación de palanca" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Proyecto</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./sdd.html" aria-current="page"> 
+<span class="menu-text">Especificación</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./procesos.html"> 
+<span class="menu-text">BPMN</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./arquitectura.html"> 
+<span class="menu-text">Arquitectura</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./api.html"> 
+<span class="menu-text">API</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./seguridad.html"> 
+<span class="menu-text">Seguridad</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./validacion.html"> 
+<span class="menu-text">Validación</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./operacion.html"> 
+<span class="menu-text">Operación</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./equipo.html"> 
+<span class="menu-text">Evolución</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+            <div id="quarto-search" class="" title="Buscar"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">En esta página</h2>
+   
+  <ul>
+  <li><a href="#enfoque-sdd" id="toc-enfoque-sdd" class="nav-link active" data-scroll-target="#enfoque-sdd">Enfoque SDD</a></li>
+  <li><a href="#especificaciones-canónicas" id="toc-especificaciones-canónicas" class="nav-link" data-scroll-target="#especificaciones-canónicas">Especificaciones canónicas</a></li>
+  <li><a href="#historias-y-aceptación-del-backend" id="toc-historias-y-aceptación-del-backend" class="nav-link" data-scroll-target="#historias-y-aceptación-del-backend">Historias y aceptación del backend</a></li>
+  <li><a href="#trazabilidad-completa-de-002-008" id="toc-trazabilidad-completa-de-002-008" class="nav-link" data-scroll-target="#trazabilidad-completa-de-002-008">Trazabilidad completa de 002-008</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Especificación y trazabilidad</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="enfoque-sdd" class="level2">
+<h2 class="anchored" data-anchor-id="enfoque-sdd">Enfoque SDD</h2>
+<p>Partimos del problema y de decisiones confirmadas, describimos comportamientos/aceptación, planificamos componentes, descomponemos tareas, implementamos y validamos. Clarificar resuelve ambigüedades antes de convertirlas en reglas; analizar contrasta especificación, plan, tareas y código. Implementar es trabajo verificable, no solo crear un archivo. La validación registra resultados reales.</p>
+<p>La <a href="recursos/constitution.md">constitución</a> conserva el estado PROPOSAL de su fuente; no atribuimos una ratificación humana que no consta. Las decisiones funcionales confirmadas y los contratos por módulo son las referencias del incremento. No se reconstruyen las semanas previas.</p>
+</section>
+<section id="especificaciones-canónicas" class="level2">
+<h2 class="anchored" data-anchor-id="especificaciones-canónicas">Especificaciones canónicas</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Alcance</th>
+<th>Fuentes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>002</td>
+<td>Activos y custodia</td>
+<td><a href="recursos/specs/002-registro-consulta-activos/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/002-registro-consulta-activos/plan.md">Plan</a>, <a href="recursos/specs/002-registro-consulta-activos/tasks.md">Tareas</a>, <a href="recursos/specs/002-registro-consulta-activos/validation.md">Validación</a></td>
+</tr>
+<tr class="even">
+<td>003</td>
+<td>Fichas/adquisiciones</td>
+<td><a href="recursos/specs/003-fichas-adquisiciones/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/003-fichas-adquisiciones/plan.md">Plan</a>, <a href="recursos/specs/003-fichas-adquisiciones/tasks.md">Tareas</a>, <a href="recursos/specs/003-fichas-adquisiciones/implementation.md">Implementación</a>, <a href="recursos/specs/003-fichas-adquisiciones/validation.md">Validación</a></td>
+</tr>
+<tr class="odd">
+<td>004</td>
+<td>Novedades/mantenimiento</td>
+<td><a href="recursos/specs/004-novedades-mantenimiento/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/004-novedades-mantenimiento/plan.md">Plan</a>, <a href="recursos/specs/004-novedades-mantenimiento/tasks.md">Tareas</a>, <a href="recursos/specs/004-novedades-mantenimiento/implementation.md">Implementación</a>, <a href="recursos/specs/004-novedades-mantenimiento/validation.md">Validación</a></td>
+</tr>
+<tr class="even">
+<td>005</td>
+<td>Bajas/aprobación</td>
+<td><a href="recursos/specs/005-bajas-aprobacion/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/005-bajas-aprobacion/plan.md">Plan</a>, <a href="recursos/specs/005-bajas-aprobacion/tasks.md">Tareas</a>, <a href="recursos/specs/005-bajas-aprobacion/implementation.md">Implementación</a>, <a href="recursos/specs/005-bajas-aprobacion/validation.md">Validación</a></td>
+</tr>
+<tr class="odd">
+<td>006</td>
+<td>Lotes de licencias</td>
+<td><a href="recursos/specs/006-lotes-licencias/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/006-lotes-licencias/plan.md">Plan</a>, <a href="recursos/specs/006-lotes-licencias/tasks.md">Tareas</a>, <a href="recursos/specs/006-lotes-licencias/implementation.md">Implementación</a>, <a href="recursos/specs/006-lotes-licencias/validation.md">Validación</a></td>
+</tr>
+<tr class="even">
+<td>007</td>
+<td>QR</td>
+<td><a href="recursos/specs/007-qr-activos/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/007-qr-activos/plan.md">Plan</a>, <a href="recursos/specs/007-qr-activos/tasks.md">Tareas</a>, <a href="recursos/specs/007-qr-activos/implementation.md">Implementación</a>, <a href="recursos/specs/007-qr-activos/validation.md">Validación</a></td>
+</tr>
+<tr class="odd">
+<td>008</td>
+<td>Importación CSV</td>
+<td><a href="recursos/specs/008-importacion-csv/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/008-importacion-csv/plan.md">Plan</a>, <a href="recursos/specs/008-importacion-csv/tasks.md">Tareas</a>, <a href="recursos/specs/008-importacion-csv/implementation.md">Implementación</a>, <a href="recursos/specs/008-importacion-csv/validation.md">Validación</a></td>
+</tr>
+<tr class="even">
+<td>009</td>
+<td>Consolidación técnica</td>
+<td><a href="recursos/specs/009-consolidacion-final/spec.md">Especificar/clarificar</a>, <a href="recursos/specs/009-consolidacion-final/plan.md">Plan</a>, <a href="recursos/specs/009-consolidacion-final/tasks.md">Tareas</a>, <a href="recursos/specs/009-consolidacion-final/implementation.md">Implementación</a>, <a href="recursos/specs/009-consolidacion-final/validation.md">Validación</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="historias-y-aceptación-del-backend" class="level2">
+<h2 class="anchored" data-anchor-id="historias-y-aceptación-del-backend">Historias y aceptación del backend</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Referencia</th>
+<th>Historia de usuario</th>
+<th>Criterio representativo: Dado / Cuando / Entonces</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>002 / Historia 1 (P1)</td>
+<td>Como gestor autorizado, quiero registrar los datos de un equipo y recibir su código para distinguirlo individualmente.</td>
+<td>Dada facultad/adquisición válidas y campos obligatorios, cuando registro el activo, entonces recibe código TI estable y queda Disponible/sin custodio.</td>
+</tr>
+<tr class="even">
+<td>002 / Historia 2 (P1)</td>
+<td>Como gestor, quiero registrar entrega y devolución para conocer la custodia y conservar trazabilidad.</td>
+<td>Dado un activo Operativo/Disponible sin mantenimiento, cuando lo entrego con revisión vigente, entonces conserva custodio/destino/autor; al devolverlo con condición/recepción queda sin custodio.</td>
+</tr>
+<tr class="odd">
+<td>002 / Historia 3 (P2)</td>
+<td>Como gestor, quiero rectificar el último error elegible para conservar el antecedente y corregir la situación actual.</td>
+<td>Dado el último movimiento rectificable, cuando indico motivo/revisión, entonces restaura el estado previo y vincula la rectificación sin borrar el original.</td>
+</tr>
+<tr class="even">
+<td>003 / US1-US2 (P1)</td>
+<td>Como gestor, quiero asociar factura o respaldo compartido a equipos para conservar documento común y valor individual.</td>
+<td>Dada una compra con factura o donación con respaldo válidos, cuando registro sus líneas, entonces cada activo conserva su valor y el vínculo documental común.</td>
+</tr>
+<tr class="odd">
+<td>003 / US3 (P1)</td>
+<td>Como gestor, quiero corregir datos descriptivos para conservar información exacta y quién cambió qué.</td>
+<td>Dada la revisión/instantánea vigente, cuando corrijo con motivo, entonces guarda antes/después y autor sin alterar movimientos antiguos.</td>
+</tr>
+<tr class="even">
+<td>004 / US1 (P1)</td>
+<td>Como gestor, quiero registrar una novedad para señalar un daño u observación pendiente de atención.</td>
+<td>Dado un daño, cuando registro la novedad, entonces conserva condición y alerta; al resolver con nota conserva fecha/gestor/historial.</td>
+</tr>
+<tr class="odd">
+<td>004 / US2 (P1)</td>
+<td>Como gestor, quiero registrar envío al taller y resultado para controlar la intervención real del equipo.</td>
+<td>Dado un activo disponible, cuando inicio mantenimiento, entonces bloquea entrega; al cerrar exige resultado y ubicación confirmada.</td>
+</tr>
+<tr class="even">
+<td>004 / US3 (P1)</td>
+<td>Como gestor, quiero reportar pérdida/robo y recuperación para conservar referencias del último estado conocido.</td>
+<td>Dado un activo localizado, cuando reporto pérdida/robo, entonces pasa a No localizado sin devolución ficticia; recuperar exige inspección.</td>
+</tr>
+<tr class="odd">
+<td>005 / US1-US2 (P1)</td>
+<td>Como gestor, quiero registrar una baja justificada y separar la decisión de otra facultad cuando el activo no está localizado.</td>
+<td>Dado Disponible y sin mantenimiento, la baja normal conserva motivo/autor; dado No localizado, solo el revisor asignado de otra facultad decide.</td>
+</tr>
+<tr class="even">
+<td>005 / US3 (P1)</td>
+<td>Como operador, quiero administrar revisores y su facultad para mantener revisión individual e independiente.</td>
+<td>Dado un revisor con solicitudes pendientes, cuando intento desactivarlo, entonces lo impide hasta reasignarlas; conserva auditoría y exige cambio de contraseña inicial.</td>
+</tr>
+<tr class="odd">
+<td>006 / US1-US2 (P1)</td>
+<td>Como gestor, quiero registrar lotes y ajustar uso agregado para conocer cantidades y conservar su evolución.</td>
+<td>Dado un lote de diez puestos con cuatro en uso, cuando vence, entonces muestra seis remanentes y Vencido; rechaza uso mayor que lo comprado.</td>
+</tr>
+<tr class="even">
+<td>007 / US1-US2 (P1)</td>
+<td>Como gestor, quiero descargar/escanear el QR para identificar el equipo y abrir su ficha protegida.</td>
+<td>Dado un activo, cuando descargo el SVG, entonces contiene enlace sin datos personales; la consulta de ficha exige sesión de gestor.</td>
+</tr>
+<tr class="odd">
+<td>008 / US1-US3 (P1)</td>
+<td>Como gestor, quiero importar activos/licencias con vista previa para evitar carga parcial o accidental.</td>
+<td>Dado un lote con una fila inválida, no crea registros; dado uno válido, solo el creador confirma dos veces su hash y se revalida antes de aplicar todo atómicamente.</td>
+</tr>
+</tbody>
+</table>
+<p>Las historias anteriores resumen las especificaciones enlazadas; no sustituyen sus escenarios detallados ni asignan nuevas funcionalidades.</p>
+</section>
+<section id="trazabilidad-completa-de-002-008" class="level2">
+<h2 class="anchored" data-anchor-id="trazabilidad-completa-de-002-008">Trazabilidad completa de 002-008</h2>
+<p>La matriz conserva 104 requisitos funcionales, su fuente, componentes y prueba. Las menciones históricas a interacción de cliente se distinguen del alcance backend de esta entrega; un resultado de backend no se presenta como prueba de toda una interfaz.</p>
+<p><a href="recursos/docs/semana-5/matriz-trazabilidad.json">Descargar matriz JSON</a> y <a href="recursos/docs/semana-2/dossier-requisitos.md">dossier de requisitos</a>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requisito</th>
+<th>Comportamiento</th>
+<th>Prueba vinculada</th>
+<th>Alcance de evidencia</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>002/FR-001</td>
+<td>permitir registrar y consultar activos físicos, registrar entregas y devoluciones, rectificar movimientos, cambiar la condición de activos Disponibles y consultar su historial mediante pantalla web y API. La entrega incluirá pruebas de las funcionalidades acordadas.</td>
+<td>backend/inventory/tests/test_assets.py :: test_creation_code_fields_and_stability</td>
+<td>Backend/API; interacción de cliente fuera del despliegue S5</td>
+</tr>
+<tr class="even">
+<td>002/FR-002</td>
+<td>generar automáticamente un código de inventario único y estable con prefijo <code>TI-</code> y numeración creciente, presentada como <code>TI-000001</code>, <code>TI-000002</code>, etc. La numeración no se reinicia por año ni categoría y no se reutilizan códigos.</td>
+<td>backend/inventory/tests/test_assets.py :: test_creation_code_fields_and_stability</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-003</td>
+<td>conservar nombre y descripción como campos separados, además de categoría, marca, modelo, número de serie, ubicación y custodio.</td>
+<td>backend/inventory/tests/test_assets.py :: test_required_lengths_choices_and_reserved_fields</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-004</td>
+<td>exigir nombre, descripción, categoría, marca, modelo, número de serie y ubicación al registrar el activo. El custodio representa a la persona que tiene la custodia temporal; no se exige ni se asigna custodio temporal al dar de alta el activo o después de una devolución.</td>
+<td>backend/inventory/tests/test_assets.py :: test_required_lengths_choices_and_reserved_fields</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-005</td>
+<td>exigir los dos campos separados: condición (<code>Operativo</code>, <code>Averiado</code> o <code>En reparación</code>) y asignación (<code>Disponible</code> o <code>Asignado</code>). Al dar de alta se establece Disponible; esto no implica que su condición sea Operativo.</td>
+<td>backend/inventory/tests/test_assets.py :: test_required_lengths_choices_and_reserved_fields</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-006</td>
+<td>utilizar las categorías confirmadas: computadora de escritorio, portátil, monitor, impresora, equipo de red y periférico.</td>
+<td>backend/inventory/tests/test_assets.py :: test_only_six_categories_and_no_edit_delete</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-007</td>
+<td>rechazar un activo duplicado por la combinación marca + modelo + serie, comparando los tres campos sin distinguir mayúsculas y eliminando espacios al principio y al final. Conservar los caracteres internos de la serie: ABC-123 y ABC123 son distintos. La serie por sí sola no se establece como identificador único global.</td>
+<td>backend/inventory/tests/test_assets.py :: test_duplicates_normalized_but_internal_characters_preserved</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-008</td>
+<td>permitir ver el listado de activos y la ficha individual de cada equipo registrado.</td>
+<td>backend/inventory/tests/test_queries.py :: test_empty_missing_and_pagination</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-009</td>
+<td>permitir buscar por coincidencia parcial sin distinguir mayúsculas en al menos uno de estos campos: código, nombre del activo, marca, modelo, serie y nombre/correo del custodio actual. Permitir filtrar por categoría, condición, asignación, ubicación y custodio actual; cada resultado debe satisfacer la búsqueda y todos los filtros seleccionados.</td>
+<td>backend/inventory/tests/test_search.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-010</td>
+<td>restringir el acceso a la aplicación y sus operaciones a gestores identificados y autorizados. Los custodios se registran como personas sin cuenta de acceso en este incremento. Todos los gestores autorizados tienen los mismos permisos sobre el inventario completo: registrar activos y custodios, consultar, entregar, devolver, cambiar condición y rectificar movimientos elegibles, incluso si los registró otro gestor.</td>
+<td>backend/inventory/tests/test_permissions.py :: test_anonymous_and_non_manager_denied</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-011</td>
+<td>distinguir al gestor que registra operaciones del custodio temporal del activo. Distintos gestores autorizados pueden gestionar los activos; no se fija un gestor responsable único por activo.</td>
+<td>backend/inventory/tests/test_custody.py :: test_cycle_authors_locations_and_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-012</td>
+<td>permitir una entrega únicamente si el activo está Disponible y Operativo; la entrega lo deja Asignado a un custodio temporal identificado y conserva el gestor autor del movimiento.</td>
+<td>backend/inventory/tests/test_custody.py :: test_invalid_states_stale_revision_and_forged_author</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-013</td>
+<td>rechazar devoluciones sin entrega activa. Al registrar una devolución válida, exigir que el gestor indique la condición de recepción entre Operativo, Averiado y En reparación; dejar el activo Disponible y sin custodio temporal; conservar el antecedente, el autor y las condiciones anterior y recibida en el historial.</td>
+<td>backend/inventory/tests/test_custody.py :: test_cycle_authors_locations_and_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-014</td>
+<td>conservar y consultar en cada movimiento el activo, tipo de operación, fecha y hora de registro generadas automáticamente, gestor autor, custodio relacionado y condiciones anterior y posterior, además de una observación opcional escrita por el gestor. El autor corresponde al gestor que realiza la operación; no es una persona elegida para sustituir a quien la registra.</td>
+<td>backend/inventory/tests/test_custody.py :: test_cycle_authors_locations_and_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-015</td>
+<td>dar de alta todos los activos como Disponible y sin custodio temporal. Cualquier custodia temporal posterior se inicia mediante una entrega registrada; no se permite un alta directamente Asignada en este incremento.</td>
+<td>backend/inventory/tests/test_assets.py :: test_creation_code_fields_and_stability</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-016</td>
+<td>conservar sin reescritura ni borrado el movimiento original cuando se corrija un error; añadir una rectificación vinculada con motivo obligatorio, gestor autor y fecha/hora que anule su efecto y restaure la situación anterior. La operación correcta se registra después como una nueva operación separada; la rectificación no edita directamente los datos originales.</td>
+<td>backend/inventory/tests/test_rectification.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-017</td>
+<td>permitir rectificar únicamente la última entrega, devolución o cambio de condición vigente de cada activo, sin operaciones posteriores. Rechazar movimientos con operaciones posteriores, ya rectificados y las propias rectificaciones. Anular el último movimiento no habilita la rectificación de movimientos anteriores.</td>
+<td>backend/inventory/tests/test_rectification.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-018</td>
+<td>permitir Cambiar condición únicamente sobre activos Disponibles, eligiendo otra de las condiciones admitidas y exigiendo motivo. Conservar el cambio, su autor, fecha/hora y condiciones anterior/posterior en el historial. Esta operación representa un cambio real y no sustituye la rectificación de un registro erróneo.</td>
+<td>backend/inventory/tests/test_condition.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-019</td>
+<td>identificar a cada custodio con nombre completo y correo institucional obligatorios y dependencia opcional. El correo es único entre custodios comparándolo sin distinguir mayúsculas y eliminando espacios exteriores; la persona no recibe una cuenta de acceso. Validar el formato del correo sin restringir el dominio en este incremento.</td>
+<td>backend/inventory/tests/test_assets.py :: test_custodian_email_unique_without_domain_restriction_no_user</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-020</td>
+<td>conservar la ubicación actual informada del activo; exigir y registrar la ubicación de destino en la entrega y el lugar de recepción en la devolución, actualizando la ficha y conservando esos lugares en los movimientos correspondientes. La rectificación restaura también la ubicación anterior si el movimiento anulado la cambió.</td>
+<td>backend/inventory/tests/test_custody.py :: test_cycle_authors_locations_and_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-021</td>
+<td>permitir introducir marca, modelo y ubicación como texto; no incorporar catálogos administrables para esos tres datos en este incremento. Se mantienen las categorías y los valores de condición/asignación ya confirmados.</td>
+<td>backend/inventory/tests/test_assets.py :: test_required_lengths_choices_and_reserved_fields</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>002/FR-022</td>
+<td>conservar todo el historial de este incremento sin borrado automático. Los plazos institucionales de conservación se definirán en una etapa posterior, sin inventar una política institucional en este trabajo.</td>
+<td>backend/inventory/tests/test_custody.py :: test_original_immutable_in_model_and_database</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>002/FR-023</td>
+<td>mantener las reglas de identidad y estado también ante solicitudes simultáneas: no crear duplicados, repetir códigos ni aceptar doble entrega, devolución o rectificación incompatible. Una operación rechazada no deja cambios parciales ni un movimiento válido.</td>
+<td>backend/inventory/tests/test_concurrency.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-001</td>
+<td>El sistema MUST conservar los datos base de activo y custodio definidos en 002 y permitir editar los campos descriptivos acordados.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_asset_edit_audit_history_and_rectification_guard</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-002</td>
+<td>Toda edición de datos de activo MUST exigir motivo y conservar antes/después, actor y fecha/hora.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_asset_edit_audit_history_and_rectification_guard</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-003</td>
+<td>El sistema MUST preservar la representación histórica del custodio en movimientos previos después de corregir su ficha.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_audited_correction_preserves_movement_snapshot_and_asset_revision</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-004</td>
+<td>Una edición general MUST rechazar cambios de ubicación, condición, asignación, custodio actual y situación de baja/no localizado.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_duplicate_identity_and_reserved_fields_do_not_write</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-005</td>
+<td>El operador técnico MUST crear, consultar y actualizar la lista manual de facultades sin sincronización institucional.</td>
+<td>backend/inventory/tests/test_operator_api.py :: test_catalog_normalized_unique_and_references_preserved</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-006</td>
+<td>Cada activo MUST referenciar una facultad responsable existente.</td>
+<td>backend/inventory/tests/test_acquisitions.py :: test_purchase_required_fields_and_no_partial_document</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-007</td>
+<td>El sistema MUST representar adquisición de activos como compra o donación.</td>
+<td>backend/inventory/tests/test_acquisitions.py :: test_donation_metadata_without_invoice</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-008</td>
+<td>Una compra MUST registrar referencia, fecha y proveedor de factura, total en USD, y líneas de activo con importe individual.</td>
+<td>backend/inventory/tests/test_acquisitions.py :: test_several_assets_reuse_invoice_and_keep_exact_individual_values</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-009</td>
+<td>Una donación MUST registrar referencia textual de respaldo y valor estimado individual por activo; un documento podrá enlazarse a varios activos.</td>
+<td>backend/inventory/tests/test_donations.py :: test_shared_support_one_and_several_assets_preserve_individual_estimates</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-010</td>
+<td>La fecha de adquisición MUST registrarse o marcarse desconocida con motivo obligatorio.</td>
+<td>backend/inventory/tests/test_acquisitions.py :: test_unknown_acquisition_date_requires_reason_and_rejects_both</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-011</td>
+<td>Los documentos de adquisición MUST admitir asociación con varios activos y conservar total común e importes individuales donde correspondan.</td>
+<td>backend/inventory/tests/test_acquisitions.py :: test_several_assets_reuse_invoice_and_keep_exact_individual_values</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-012</td>
+<td>El importe monetario MUST usar USD mediante una constante/configuración única del backend; no habrá selector de moneda en interfaz.</td>
+<td>backend/inventory/tests/test_acquisition_models.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-013</td>
+<td>La edición de custodio MUST preservar historia de movimientos y registrar autor, fecha/hora y antes/después del perfil.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_audited_correction_preserves_movement_snapshot_and_asset_revision</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-014</td>
+<td>El sistema MUST rechazar una edición que cree una duplicidad de identidad de activo según la regla marca+modelo+serie de 002.</td>
+<td>backend/inventory/tests/test_metadata_edit.py :: test_duplicate_identity_and_reserved_fields_do_not_write</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>003/FR-015</td>
+<td>El sistema MUST evitar borrado físico de documentos, activos, facultades referenciadas y auditoría.</td>
+<td>backend/inventory/tests/test_operator_api.py :: test_catalog_normalized_unique_and_references_preserved</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>003/FR-016</td>
+<td>Solo el operador MUST cambiar la facultad responsable; cada cambio exige motivo y auditoría antes/después. Si hay solicitud de baja pendiente, debe rechazarse (integración con 005).</td>
+<td>backend/inventory/tests/test_retirement_integration.py :: test_pending_request_blocks_faculty_change_and_cancels_on_recovery</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-001</td>
+<td>Registrar novedad por daño/observación con descripción, tipo, fecha/hora y gestor autor.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_damage_and_observation_can_be_stored_without_changing_assignment</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-002</td>
+<td>Permitir novedad de daño/observación en activo Disponible o Asignado y mostrar alerta hasta su resolución.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_assigned_asset_report_and_resolution_preserve_custody_and_history</td>
+<td>Backend/API; interacción de cliente fuera del despliegue S5</td>
+</tr>
+<tr class="even">
+<td>004/FR-003</td>
+<td>Resolver novedad con nota obligatoria, gestor y fecha/hora; conservarla en el historial.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_resolution_requires_note_and_is_reserved_for_damage_or_observation</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-004</td>
+<td>No cambiar condición automáticamente por una novedad; usar el flujo de condición existente para cambios reales.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_damage_and_observation_can_be_stored_without_changing_assignment</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-005</td>
+<td>Iniciar mantenimiento para activo localizado, Disponible, sin custodia actual y sin otro mantenimiento En curso.</td>
+<td>backend/inventory/tests/test_maintenance.py :: test_ineligible_duplicate_and_stale_start_leave_no_partial_writes</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-006</td>
+<td>Guardar al inicio descripción, ubicación/taller, autor, fecha/hora y ubicación previa.</td>
+<td>backend/inventory/tests/test_maintenance.py :: test_preventive_maintenance_blocks_delivery_and_closes_without_changing_condition</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-007</td>
+<td>Bloquear entregas mientras exista mantenimiento En curso, aunque la condición sea Operativo.</td>
+<td>backend/inventory/tests/test_maintenance.py :: test_preventive_maintenance_blocks_delivery_and_closes_without_changing_condition</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-008</td>
+<td>Cerrar mantenimiento exigiendo resultado y ubicación de recepción; proponer ubicación previa y solicitar confirmación explícita antes de guardar.</td>
+<td>backend/inventory/tests/test_maintenance.py :: test_completed_maintenance_requires_result_and_confirmed_location</td>
+<td>Backend/API; interacción de cliente fuera del despliegue S5</td>
+</tr>
+<tr class="even">
+<td>004/FR-009</td>
+<td>Mantener separado el evento de mantenimiento del cambio de condición.</td>
+<td>backend/inventory/tests/test_maintenance.py :: test_condition_is_a_separate_operation_and_old_movements_cannot_be_rectified</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-010</td>
+<td>Registrar pérdida/robo con tipo, descripción, autor, fecha/hora y snapshots de ubicación, condición, asignación, custodio y mantenimiento previo.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_loss_from_assigned_snapshots_custodian_and_preserves_movements</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-011</td>
+<td>Cambiar situación del activo a No localizado; bloquear entrega, devolución como si estuviera físicamente presente y cierre normal de mantenimiento.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_loss_from_available_blocks_incompatible_actions</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-012</td>
+<td>Al reportar No localizado durante mantenimiento, marcar dicho evento Interrumpido por No localizado, sin resultado. Al recuperar, cualquier continuación usa un evento nuevo.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_loss_during_maintenance_and_recovery_preserve_original_evidence</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-013</td>
+<td>Registrar recuperación con condición y ubicación nuevas, conservar código e historial y dejar Disponible/sin custodio vigente.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_recovery_validates_inspection_condition_location_and_revision</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-014</td>
+<td>No dar de baja automáticamente un activo No localizado.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_loss_from_available_blocks_incompatible_actions</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>004/FR-015</td>
+<td>Preservar eventos originales y resolver conflictos concurrentes sin cambios parciales.</td>
+<td>backend/inventory/tests/test_incidents.py :: test_failed_interruption_rolls_back_report_and_asset</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>004/FR-016</td>
+<td>Conservar toda novedad, mantenimiento, reporte y recuperación sin borrado automático.</td>
+<td>backend/inventory/tests/test_asset_transitions.py :: test_event_blocks_rectification_and_preserves_legacy_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-001</td>
+<td>Permitir baja normal solo para activo localizado, Disponible, sin custodio vigente y sin mantenimiento En Curso.</td>
+<td>backend/inventory/tests/test_retirement_integration.py :: test_active_maintenance_blocks_normal_retirement</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-002</td>
+<td>Permitir baja normal bajo cualquier condición; exigir motivo y guardar autor/fecha.</td>
+<td>backend/contract_tests/test_store.py :: test_normal_retirement_records_state_movement_and_audit</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-003</td>
+<td>Antes de la baja normal de un activo en mantenimiento, exigir cierre del mantenimiento con resultado.</td>
+<td>backend/inventory/tests/test_retirement_integration.py :: test_active_maintenance_blocks_normal_retirement</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-004</td>
+<td>Conservar ficha, historial y código; no borrar activo ni reutilizar su identificador.</td>
+<td>backend/inventory/tests/test_retirement_integration.py :: test_normal_retirement_preserves_acquisition</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-005</td>
+<td>Permitir solicitar baja solo a activo No localizado, con motivo, usuario Gestor, fecha y revisor asignado.</td>
+<td>backend/contract_tests/test_api.py :: test_manager_requests_and_assigned_reviewer_decides</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-006</td>
+<td>Rechazar autoaprobación y revisores cuya facultad sea igual a la responsable del activo.</td>
+<td>backend/contract_tests/test_models.py :: test_one_pending_and_no_self_review</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-007</td>
+<td>Limitar cada revisor a solicitudes asignadas y datos del activo necesarios para decidir; no conceder acceso de edición/inventario.</td>
+<td>backend/contract_tests/test_api.py :: test_other_reviewer_cannot_read_or_decide_request</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-008</td>
+<td>Aprobar baja No localizado mediante decisión inmutable con autor/fecha; al aprobar el activo pasa a Baja.</td>
+<td>backend/contract_tests/test_store.py :: test_request_approval_persists_and_is_not_repeatable</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-009</td>
+<td>Rechazar solicitud con motivo obligatorio; el activo continúa No localizado y admite nueva solicitud con motivo actualizado.</td>
+<td>backend/contract_tests/test_models.py :: test_decision_requires_reason_and_is_immutable</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-010</td>
+<td>Cancelar automáticamente solicitud pendiente si el activo se recupera; guardar motivo, autor del evento automático, fecha y vínculo a recuperación.</td>
+<td>backend/contract_tests/test_store.py :: test_recovery_cancellation_has_link_and_rolls_back_with_recovery</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-011</td>
+<td>Solo el operador puede reasignar una solicitud pendiente a otro revisor elegible; impedir desactivar revisor hasta que el operador reasigne todas las pendientes.</td>
+<td>backend/contract_tests/test_api.py :: test_operator_can_create_reviewer_but_cannot_deactivate_pending</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-012</td>
+<td>Operador técnico autorizado puede crear/desactivar revisores desde la interfaz y asignar facultad.</td>
+<td>backend/contract_tests/test_api.py :: test_operator_can_create_reviewer_but_cannot_deactivate_pending</td>
+<td>Backend/API; interacción de cliente fuera del despliegue S5</td>
+</tr>
+<tr class="even">
+<td>005/FR-013</td>
+<td>El primer inicio de sesión del revisor exige cambiar la contraseña temporal.</td>
+<td>backend/contract_tests/test_api.py :: test_temporary_reviewer_denied_until_password_change</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-014</td>
+<td>Alta/baja de gestores permanece por comandos locales; usuario inactivo no accede y la autoría histórica se conserva.</td>
+<td>backend/inventory/tests/test_deactivate_gestor.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-015</td>
+<td>Permitir rectificar una baja errónea solo si es el error más reciente, con motivo y vínculo, preservando baja original.</td>
+<td>backend/contract_tests/test_store.py :: test_rectify_latest_retirement_restores_snapshot_without_erasing_event</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>005/FR-016</td>
+<td>Mantener los datos e historial sin borrado automático.</td>
+<td>backend/contract_tests/test_models.py :: test_direct_sql_cannot_rewrite_decision</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>005/FR-017</td>
+<td>Rechazar el cambio de facultad responsable mientras exista solicitud de baja pendiente; la autorización y auditoría del cambio corresponden a 003.</td>
+<td>backend/inventory/tests/test_retirement_integration.py :: test_pending_request_blocks_faculty_change_and_cancels_on_recovery</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-001</td>
+<td>Registrar y consultar lotes de licencia de software sin asociarlos individualmente a activos/personas.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_create_read_edit_and_history</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-002</td>
+<td>Registrar producto, proveedor y modalidad de puestos finitos por usuario o dispositivo.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_strict_types_unknown_fields_and_service_permissions</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-003</td>
+<td>Registrar cantidad comprada y cantidad en uso como enteros no negativos.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_zero_quantities_and_optional_end_date</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-004</td>
+<td>Calcular remanentes = compradas − en uso; rechazar cantidad en uso &gt; compradas.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_database_rejects_invalid_values_even_without_api</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-005</td>
+<td>Exigir fecha de inicio de vigencia; fecha de fin opcional.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_zero_quantities_and_optional_end_date</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-006</td>
+<td>Derivar estado Por iniciar/Vigente/Vencido a partir de fechas, sin borrar el lote.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_zero_remaining_and_temporal_boundaries</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-007</td>
+<td>Mostrar remanentes aun si está vencido y distinguirlos de disponibilidad vigente.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_zero_remaining_and_temporal_boundaries</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-008</td>
+<td>Permitir edición auditada de los campos de lote y cantidades; preservar autor, fecha/hora y antes/después.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_create_edit_all_fields_and_preserve_author_snapshot</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-009</td>
+<td>No guardar claves de activación, licencias ilimitadas/de campus o asignaciones individuales.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_reserved_fields_are_rejected_on_create_and_patch</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-010</td>
+<td>Gestores autorizados tienen mismos permisos; operaciones sujetas a sesión, CSRF y validación del servidor.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_other_managers_have_equal_access</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>006/FR-011</td>
+<td>El listado permite buscar producto/proveedor y filtrar tipo/estado para localizar el lote.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_search_combined_filters_injection_and_query_validation</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>006/FR-012</td>
+<td>No relacionar una licencia con el registro de adquisición de activos físicos en este alcance.</td>
+<td>backend/inventory/tests/test_license_lots.py :: test_reserved_fields_are_rejected_on_create_and_patch</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>007/FR-001</td>
+<td>generar enlace interno con código TI y sin datos personales.</td>
+<td>backend/inventory/test_qr_assets.py :: test_qr_contiene_url_canonica_sin_datos_privados</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>007/FR-002</td>
+<td>descargar QR SVG imprimible para un activo físico.</td>
+<td>backend/inventory/test_qr_assets.py :: test_gestor_descarga_svg_bajo_demanda</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>007/FR-003</td>
+<td>preservar destino interno tras login y rechazar redirecciones externas arbitrarias.</td>
+<td>backend/inventory/test_qr_assets.py :: test_resolucion_exacta_por_codigo</td>
+<td>Backend/API; interacción de cliente fuera del despliegue S5</td>
+</tr>
+<tr class="even">
+<td>007/FR-004</td>
+<td>requerir autenticación y permiso Gestor antes de mostrar la ficha.</td>
+<td>backend/inventory/test_qr_assets.py :: test_sin_sesion_no_puede_descargar_ni_consultar</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>007/FR-005</td>
+<td>responder sin revelar datos cuando el código no existe.</td>
+<td>backend/inventory/test_qr_assets.py :: test_codigo_inexistente_o_parcial_no_coincide</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>007/FR-006</td>
+<td>construir URL desde <code>PUBLIC_APP_URL</code> configurada, no desde Host no confiable.</td>
+<td>backend/inventory/test_qr_assets.py :: test_host_alternativo_no_define_destino_qr</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>007/FR-007</td>
+<td>regenerar QR bajo demanda sin persistir imagen; no crear QR para licencias.</td>
+<td>backend/inventory/test_qr_assets.py :: test_gestor_descarga_svg_bajo_demanda</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>007/FR-008</td>
+<td>mantener acceso protegido en cualquier estado del activo.</td>
+<td>backend/inventory/test_qr_assets.py :: test_gestor_descarga_svg_bajo_demanda</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-001</td>
+<td>aceptar CSV de activos físicos y lotes de licencias mediante plantillas separadas y versionadas.</td>
+<td>backend/inventory/tests/test_imports.py :: test_plantilla_descargable</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-002</td>
+<td>validar el archivo completo y mostrar todos los errores por fila/campo antes de escribir datos.</td>
+<td>backend/inventory/tests/test_imports.py :: test_preview_invalido_lista_errores_y_no_habilita_confirmacion</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-003</td>
+<td>ante cualquier error, rechazar el lote entero y crear cero registros de dominio.</td>
+<td>backend/inventory/tests/test_imports.py :: test_revalidacion_al_aplicar_rechaza_todo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-004</td>
+<td>presentar una vista previa completa y resumen de los registros válidos.</td>
+<td>backend/inventory/tests/test_imports.py :: test_get_pagina_todas_las_filas</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-005</td>
+<td>exigir dos confirmaciones explícitas del mismo Gestor que inició el lote.</td>
+<td>backend/inventory/tests/test_imports.py :: test_otro_gestor_no_consulta_ni_confirma</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-006</td>
+<td>vincular confirmaciones a una vista previa inmutable identificada por lote/hash.</td>
+<td>backend/inventory/tests/test_imports.py :: test_apply_requiere_confirmacion_y_hash_vigente</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-007</td>
+<td>aplicar activos o lotes en una transacción atómica, sin resultados parciales.</td>
+<td>backend/inventory/tests/test_imports.py :: test_fallo_del_proveedor_revierte_y_permite_reintentar</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-008</td>
+<td>generar código TI en servidor y crear activos importados como Disponibles/sin custodio.</td>
+<td>backend/inventory/tests/test_import_acquisitions.py :: suite del archivo</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-009</td>
+<td>respetar reglas de adquisición de compra/donación y documentos compartidos de 003.</td>
+<td>backend/inventory/tests/test_imports.py :: test_documentos_compartidos_y_referencias</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-010</td>
+<td>tratar cada fila de licencias como un lote, aplicando reglas de fecha y cantidad de 006.</td>
+<td>backend/inventory/tests/test_imports.py :: test_licencias_validas_e_invalidas</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="odd">
+<td>008/FR-011</td>
+<td>hacer idempotente el reintento de aplicación del mismo lote ya aplicado.</td>
+<td>backend/inventory/tests/test_imports.py :: test_ciclo_doble_confirmacion_y_reintento_idempotente</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+<tr class="even">
+<td>008/FR-012</td>
+<td>rechazar archivo que exceda límites técnicos configurados; nunca truncar ni importar parcialmente.</td>
+<td>backend/inventory/tests/test_imports.py :: test_limite_de_bytes</td>
+<td>Backend; evidencia asociada</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiado");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiado");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/stevej4ra\.github\.io\/inventario-TI-unl\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Código desplazable","output":"Salida desplazable"};
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Desarrollo Basado en Plataformas · UNL · Unidad 1</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

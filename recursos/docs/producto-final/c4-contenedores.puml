@@ -1,0 +1,14 @@
+@startuml
+title C2 - Contenedores del Inventario TI
+top to bottom direction
+actor "Gestor / revisor / operador" as usuario
+rectangle "Aplicación web\nReact + Vite" as web
+rectangle "Backend API\nDjango + DRF" as api
+database "Persistencia\nPostgreSQL" as db
+usuario --> web : Usa interfaz existente
+usuario --> api : Explora Swagger y opera API
+web --> api : HTTPS/HTTP, JSON, sesión y CSRF
+api --> db : ORM y transacciones
+rectangle "Portal técnico\nQuarto / GitHub Pages" as portal
+portal ..> api : Documenta contrato y operación
+@enduml
