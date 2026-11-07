@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="InventarioDefinitions" targetNamespace="https://github.com/SteveJ4ra/inventario-TI-unl/bpmn" exporter="Grupo 5" exporterVersion="1.0">
+  <bpmn:process id="Custodia" name="Gestionar entrega y devolución de activo" isExecutable="false">
+    <bpmn:documentation>Modelo de negocio documental BPMN 2.0.2, no motor ejecutable. Inicio: activo registrado; fin: devolución guardada o entrega rechazada. El gestor registra acciones; el custodio no accede al sistema.</bpmn:documentation>
+    <bpmn:laneSet id="Lanes">
+      <bpmn:lane id="GestorLane" name="Gestor autorizado">
+        <bpmn:flowNodeRef>start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>consult</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>delivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>receive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>return</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="SistemaLane" name="Backend de inventario">
+        <bpmn:flowNodeRef>validate_delivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>eligible</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>rejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>commit_delivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>validate_return</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>valid_return</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>commit_return</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="start" name="Activo registrado">
+      <bpmn:outgoing>Flow0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="consult" name="Consultar ficha del activo">
+      <bpmn:incoming>Flow0</bpmn:incoming>
+      <bpmn:outgoing>Flow1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="delivery" name="Registrar entrega y destino">
+      <bpmn:incoming>Flow1</bpmn:incoming>
+      <bpmn:outgoing>Flow2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="validate_delivery" name="Validar permisos, revisión y disponibilidad">
+      <bpmn:incoming>Flow2</bpmn:incoming>
+      <bpmn:outgoing>Flow3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="eligible" name="¿Entrega válida?">
+      <bpmn:incoming>Flow3</bpmn:incoming>
+      <bpmn:outgoing>Flow4</bpmn:outgoing>
+      <bpmn:outgoing>Flow5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="rejected" name="Entrega rechazada sin cambios">
+      <bpmn:incoming>Flow4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="commit_delivery" name="Guardar entrega, custodio e historial">
+      <bpmn:incoming>Flow5</bpmn:incoming>
+      <bpmn:outgoing>Flow6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="receive" name="Recibir activo del custodio">
+      <bpmn:incoming>Flow6</bpmn:incoming>
+      <bpmn:outgoing>Flow7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="return" name="Registrar devolución, condición y ubicación">
+      <bpmn:incoming>Flow7</bpmn:incoming>
+      <bpmn:incoming>Flow11</bpmn:incoming>
+      <bpmn:outgoing>Flow8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="validate_return" name="Validar custodia activa y revisión">
+      <bpmn:incoming>Flow8</bpmn:incoming>
+      <bpmn:outgoing>Flow9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="valid_return" name="¿Devolución válida?">
+      <bpmn:incoming>Flow9</bpmn:incoming>
+      <bpmn:outgoing>Flow10</bpmn:outgoing>
+      <bpmn:outgoing>Flow11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="commit_return" name="Guardar devolución e historial">
+      <bpmn:incoming>Flow10</bpmn:incoming>
+      <bpmn:outgoing>Flow12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="end" name="Disponible y sin custodio">
+      <bpmn:incoming>Flow12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow0" sourceRef="start" targetRef="consult" name="" />
+    <bpmn:sequenceFlow id="Flow1" sourceRef="consult" targetRef="delivery" name="" />
+    <bpmn:sequenceFlow id="Flow2" sourceRef="delivery" targetRef="validate_delivery" name="" />
+    <bpmn:sequenceFlow id="Flow3" sourceRef="validate_delivery" targetRef="eligible" name="" />
+    <bpmn:sequenceFlow id="Flow4" sourceRef="eligible" targetRef="rejected" name="No: 400/403/404/409" />
+    <bpmn:sequenceFlow id="Flow5" sourceRef="eligible" targetRef="commit_delivery" name="Sí" />
+    <bpmn:sequenceFlow id="Flow6" sourceRef="commit_delivery" targetRef="receive" name="" />
+    <bpmn:sequenceFlow id="Flow7" sourceRef="receive" targetRef="return" name="" />
+    <bpmn:sequenceFlow id="Flow8" sourceRef="return" targetRef="validate_return" name="" />
+    <bpmn:sequenceFlow id="Flow9" sourceRef="validate_return" targetRef="valid_return" name="" />
+    <bpmn:sequenceFlow id="Flow10" sourceRef="valid_return" targetRef="commit_return" name="Sí" />
+    <bpmn:sequenceFlow id="Flow11" sourceRef="valid_return" targetRef="return" name="No: actualizar ficha y corregir" />
+    <bpmn:sequenceFlow id="Flow12" sourceRef="commit_return" targetRef="end" name="" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="Custodia">
+      <bpmndi:BPMNShape id="GestorLane_di" bpmnElement="GestorLane" isHorizontal="true">
+        <dc:Bounds x="35" y="55" width="1410" height="195" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SistemaLane_di" bpmnElement="SistemaLane" isHorizontal="true">
+        <dc:Bounds x="35" y="250" width="1410" height="285" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="start_di" bpmnElement="start">
+        <dc:Bounds x="80" y="120" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="consult_di" bpmnElement="consult">
+        <dc:Bounds x="155" y="100" width="150" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="delivery_di" bpmnElement="delivery">
+        <dc:Bounds x="350" y="100" width="150" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="validate_delivery_di" bpmnElement="validate_delivery">
+        <dc:Bounds x="350" y="300" width="150" height="84" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="eligible_di" bpmnElement="eligible">
+        <dc:Bounds x="555" y="317" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="rejected_di" bpmnElement="rejected">
+        <dc:Bounds x="562" y="445" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="commit_delivery_di" bpmnElement="commit_delivery">
+        <dc:Bounds x="670" y="300" width="150" height="84" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="receive_di" bpmnElement="receive">
+        <dc:Bounds x="670" y="100" width="150" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="return_di" bpmnElement="return">
+        <dc:Bounds x="865" y="100" width="150" height="76" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="validate_return_di" bpmnElement="validate_return">
+        <dc:Bounds x="865" y="300" width="150" height="84" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="valid_return_di" bpmnElement="valid_return">
+        <dc:Bounds x="1070" y="317" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="commit_return_di" bpmnElement="commit_return">
+        <dc:Bounds x="1170" y="300" width="150" height="84" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_di" bpmnElement="end">
+        <dc:Bounds x="1370" y="324" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow0_di" bpmnElement="Flow0">
+        <di:waypoint x="116" y="138" />
+        <di:waypoint x="155" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow1_di" bpmnElement="Flow1">
+        <di:waypoint x="305" y="138" />
+        <di:waypoint x="350" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow2_di" bpmnElement="Flow2">
+        <di:waypoint x="425" y="176" />
+        <di:waypoint x="425" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow3_di" bpmnElement="Flow3">
+        <di:waypoint x="500" y="342" />
+        <di:waypoint x="555" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow4_di" bpmnElement="Flow4">
+        <di:waypoint x="580" y="367" />
+        <di:waypoint x="580" y="445" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow5_di" bpmnElement="Flow5">
+        <di:waypoint x="605" y="342" />
+        <di:waypoint x="670" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow6_di" bpmnElement="Flow6">
+        <di:waypoint x="745" y="300" />
+        <di:waypoint x="745" y="176" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow7_di" bpmnElement="Flow7">
+        <di:waypoint x="820" y="138" />
+        <di:waypoint x="865" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow8_di" bpmnElement="Flow8">
+        <di:waypoint x="940" y="176" />
+        <di:waypoint x="940" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow9_di" bpmnElement="Flow9">
+        <di:waypoint x="1015" y="342" />
+        <di:waypoint x="1070" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow10_di" bpmnElement="Flow10">
+        <di:waypoint x="1120" y="342" />
+        <di:waypoint x="1170" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow11_di" bpmnElement="Flow11">
+        <di:waypoint x="1095" y="317" />
+        <di:waypoint x="1095" y="215" />
+        <di:waypoint x="940" y="215" />
+        <di:waypoint x="940" y="176" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow12_di" bpmnElement="Flow12">
+        <di:waypoint x="1320" y="342" />
+        <di:waypoint x="1370" y="342" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
