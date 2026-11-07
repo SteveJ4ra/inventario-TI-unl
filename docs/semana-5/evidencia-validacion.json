@@ -1,0 +1,264 @@
+{
+  "base_develop": "435b0e08b9336f4e053ebab53367bbfd8f686e7a",
+  "rama_preparacion": "feature/semana-5-integracion",
+  "fecha_academica": "2026-11-06",
+  "ambito": "Despliegue local autorizado; datos ficticios; sin frontend contenedorizado",
+  "suite": {
+    "pruebas": 333,
+    "segundos": 28.139,
+    "resultado": "OK",
+    "entorno": "Docker Linux, inventory + contract_tests, testdb separado"
+  },
+  "migraciones": "No changes detected",
+  "http": {
+    "resultado": "OK",
+    "verificaciones_http": 30,
+    "uid": 10001,
+    "rol_db": {
+      "nombre": "inventario_app",
+      "superusuario": false,
+      "crea_bases": false,
+      "crea_roles": false
+    },
+    "fecha_utc": "2026-11-07T00:02:04.642342+00:00",
+    "casos": [
+      {
+        "endpoint": "/api/docs/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/openapi.json",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/docs/live.js",
+        "estado": 200
+      },
+      {
+        "endpoint": "/static/admin/css/base.css",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/assets/",
+        "estado": 403
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/custodians/",
+        "estado": 201
+      },
+      {
+        "endpoint": "/api/v1/assets/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/assets/",
+        "estado": 201
+      },
+      {
+        "endpoint": "/api/v1/assets/2/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/assets/2/return/",
+        "estado": 409
+      },
+      {
+        "endpoint": "/api/v1/assets/2/deliver/",
+        "estado": 201
+      },
+      {
+        "endpoint": "/api/v1/assets/2/return/",
+        "estado": 201
+      },
+      {
+        "endpoint": "/api/v1/assets/2/movements/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/assets/2/qr.svg",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/assets/",
+        "estado": 403
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 400
+      },
+      {
+        "endpoint": "/api/v1/auth/csrf/",
+        "estado": 200
+      },
+      {
+        "endpoint": "/api/v1/auth/login/",
+        "estado": 429
+      }
+    ]
+  },
+  "versiones": {
+    "python": "3.13.18",
+    "django": "5.2.18",
+    "gunicorn": "26.2.0",
+    "whitenoise": "6.12.0",
+    "uid": 10001
+  },
+  "persistencia": {
+    "resultado": "OK",
+    "antes": {
+      "activos": 2
+    },
+    "despues": {
+      "activos": 2
+    },
+    "operacion": "down sin --volumes; up --wait web",
+    "proyecto": "inventario-ti-u1-validacion"
+  },
+  "check_deploy": {
+    "resultado": "Cuatro advertencias esperadas del perfil HTTP local",
+    "codigos": [
+      "security.W004",
+      "security.W008",
+      "security.W012",
+      "security.W016"
+    ],
+    "produccion_publica_verificada": false
+  },
+  "aisladas": {
+    "politicas": {
+      "pruebas": 21,
+      "segundos": 0.004,
+      "resultado": "OK"
+    },
+    "importacion": {
+      "pruebas": 16,
+      "segundos": 0.01,
+      "resultado": "OK"
+    }
+  },
+  "total_ejecuciones_prueba": 370,
+  "inspeccion_final": {
+    "codigo_en_imagen_coincide": true,
+    "archivos_codigo_sha256": {
+      "config/settings_deploy.py": "188b6bd8471ec71088af55a3f4d8aafd69328e1c5cf4fff4715e888390d289d1",
+      "config/runtime_secrets.py": "6f4c5b7f5131db4865e45b59fd6465326b91a60eae346a006262dca2f4d0ceb2",
+      "inventory/qr_urls.py": "414b7cb5d6c6505e4176716d5ae6745d4d0f5a12a77e5f02dc9b10746f367622",
+      "inventory/tests/test_deployment_profile.py": "793fc5244e1a7742fbb7bc31b1a5c2dea591d203b1620ed301b52623248090a5",
+      "deploy/healthcheck.py": "75c8d2eeb6b39ce59962b9e8de66493acd0d1dde53cfddbbe54ffa36b708c0ab",
+      "deploy/initialize.py": "af6b84b77f22bd098edd908f23403f8451e38a3e2de43934f13291282e2c22e4",
+      "deploy/prepare_secrets.py": "13a254068d33f5df01d53d5050cf2f09fec815a71105d58742c4d10f425e1fc8",
+      "deploy/smoke.py": "940312ca67ea12698a46e6c680cc62517e308fedb67dc54ff8a4bac5897e82dd",
+      "deploy/start.py": "eead2abc499602fc2db2dc4cb4cd0922e313306d1a6ef0f3dd84d57ccf76c4ef",
+      "deploy/test_runner.py": "069c34e7c088d4ec3cf90e33a3dc985eb30380bc3ecd10e79adf9ed4d87d7c9c"
+    },
+    "imagen": {
+      "uid": 10001,
+      "secretos_en_imagen": false,
+      "env_privado_en_imagen": false
+    },
+    "url_local": [
+      {
+        "ruta": "/api/docs/",
+        "estado": 200,
+        "content_type": "text/html; charset=utf-8",
+        "bytes": 1754
+      },
+      {
+        "ruta": "/api/openapi.json",
+        "estado": 200,
+        "content_type": "application/json",
+        "bytes": 15456
+      },
+      {
+        "ruta": "/api/docs/live.js",
+        "estado": 200,
+        "content_type": "application/javascript; charset=utf-8",
+        "bytes": 2811
+      },
+      {
+        "ruta": "/static/admin/css/base.css",
+        "estado": 200,
+        "content_type": "text/css; charset=\"utf-8\"",
+        "bytes": 22120
+      }
+    ],
+    "servicios": [
+      {
+        "Service": "db",
+        "State": "running",
+        "Health": "healthy",
+        "ExitCode": 0,
+        "Ports": "5432/tcp"
+      },
+      {
+        "Service": "initialize",
+        "State": "exited",
+        "Health": "",
+        "ExitCode": 0,
+        "Ports": ""
+      },
+      {
+        "Service": "testdb",
+        "State": "running",
+        "Health": "healthy",
+        "ExitCode": 0,
+        "Ports": "5432/tcp"
+      },
+      {
+        "Service": "web",
+        "State": "running",
+        "Health": "healthy",
+        "ExitCode": 0,
+        "Ports": "127.0.0.1:8005->8000/tcp"
+      }
+    ]
+  }
+}

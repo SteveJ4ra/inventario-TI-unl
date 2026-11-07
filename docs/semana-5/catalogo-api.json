@@ -1,0 +1,609 @@
+{
+  "rutas": [
+    {
+      "ruta": "/api/openapi.json",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "schema",
+      "permisos": [
+        "Función de documentación pública"
+      ]
+    },
+    {
+      "ruta": "/api/docs/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "swagger_ui",
+      "permisos": [
+        "Función de documentación pública"
+      ]
+    },
+    {
+      "ruta": "/api/docs/live.js",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "live_script",
+      "permisos": [
+        "Función de documentación pública"
+      ]
+    },
+    {
+      "ruta": "/api/v1/auth/csrf/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "CsrfView",
+      "permisos": [
+        "AllowAny"
+      ]
+    },
+    {
+      "ruta": "/api/v1/auth/login/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "LoginView",
+      "permisos": [
+        "AllowAny"
+      ]
+    },
+    {
+      "ruta": "/api/v1/auth/me/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "MeView",
+      "permisos": [
+        "CanAccessSession"
+      ]
+    },
+    {
+      "ruta": "/api/v1/auth/logout/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "LogoutView",
+      "permisos": [
+        "CanAccessSession"
+      ]
+    },
+    {
+      "ruta": "/api/v1/assets/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "AssetsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/v1/assets/<int:asset_id>/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "AssetView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/v1/assets/<int:asset_id>/movements/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "MovementsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/v1/assets/<int:asset_id>/deliver/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/v1/assets/<int:asset_id>/return/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/v1/custodians/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "CustodiansView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/auth/change-password/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "ReviewerPasswordView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/retire/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "RetireView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/retirement-requests/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "RetirementRequestsView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/reviewer/retirement-requests/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "AssignedRequestsView",
+      "permisos": [
+        "IsAssignedReviewer"
+      ]
+    },
+    {
+      "ruta": "/api/retirement-requests/<int:request_id>/decision/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "DecisionView",
+      "permisos": [
+        "IsAssignedReviewer"
+      ]
+    },
+    {
+      "ruta": "/api/retirement-requests/<int:request_id>/reassign/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "ReassignView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/operator/reviewers/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "ReviewersView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/operator/reviewers/<int:user_id>/",
+      "metodos": [
+        "PATCH"
+      ],
+      "vista": "ReviewerView",
+      "permisos": [
+        "IsAuthenticated"
+      ]
+    },
+    {
+      "ruta": "/api/auth/csrf/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "CsrfView",
+      "permisos": [
+        "AllowAny"
+      ]
+    },
+    {
+      "ruta": "/api/auth/login/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "LoginView",
+      "permisos": [
+        "AllowAny"
+      ]
+    },
+    {
+      "ruta": "/api/auth/me/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "MeView",
+      "permisos": [
+        "CanAccessSession"
+      ]
+    },
+    {
+      "ruta": "/api/auth/logout/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "LogoutView",
+      "permisos": [
+        "CanAccessSession"
+      ]
+    },
+    {
+      "ruta": "/api/license-lots/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "LicenseLotsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/license-lots/<int:lot_id>/",
+      "metodos": [
+        "GET",
+        "PATCH"
+      ],
+      "vista": "LicenseLotView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/license-lots/<int:lot_id>/history/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "LicenseLotHistoryView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "AssetsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/",
+      "metodos": [
+        "GET",
+        "PATCH"
+      ],
+      "vista": "AssetView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/by-code/<str:code>/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "AssetByCodeView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/qr.svg",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "AssetQrView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/movements/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "MovementsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/incidents/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "IncidentsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/recover/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "AssetRecoveryView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/incidents/<int:incident_id>/resolve/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "IncidentResolutionView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/maintenance/<int:maintenance_id>/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "MaintenanceDetailView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/maintenance/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "MaintenanceStartView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/maintenance/<int:maintenance_id>/close/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "MaintenanceCloseView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/custodians/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "CustodiansView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/options/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "OptionsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/faculties/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "FacultiesView",
+      "permisos": [
+        "IsManagerOrOperator"
+      ]
+    },
+    {
+      "ruta": "/api/operator/faculties/",
+      "metodos": [
+        "GET",
+        "POST"
+      ],
+      "vista": "OperatorFacultiesView",
+      "permisos": [
+        "IsOperator"
+      ]
+    },
+    {
+      "ruta": "/api/operator/faculties/<int:faculty_id>/",
+      "metodos": [
+        "PATCH"
+      ],
+      "vista": "OperatorFacultyView",
+      "permisos": [
+        "IsOperator"
+      ]
+    },
+    {
+      "ruta": "/api/operator/assets/<int:asset_id>/faculty/",
+      "metodos": [
+        "PATCH"
+      ],
+      "vista": "OperatorAssetFacultyView",
+      "permisos": [
+        "IsOperator"
+      ]
+    },
+    {
+      "ruta": "/api/acquisitions/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "AcquisitionsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/acquisitions/<int:document_id>/",
+      "metodos": [
+        "GET",
+        "PATCH"
+      ],
+      "vista": "AcquisitionView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/custodians/<int:custodian_id>/",
+      "metodos": [
+        "PATCH"
+      ],
+      "vista": "CustodianView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/history/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "AssetHistoryView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/templates/<str:kind>/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "TemplatesView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/previews/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "PreviewsView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/<uuid:batch_id>/",
+      "metodos": [
+        "GET"
+      ],
+      "vista": "BatchView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/<uuid:batch_id>/confirm/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "ConfirmView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/<uuid:batch_id>/apply/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "ApplyView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/imports/<uuid:batch_id>/cancel/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "CancelView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/deliver/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/return/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/condition/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    },
+    {
+      "ruta": "/api/assets/<int:asset_id>/rectify/",
+      "metodos": [
+        "POST"
+      ],
+      "vista": "OperationView",
+      "permisos": [
+        "IsManager"
+      ]
+    }
+  ],
+  "openapi": "3.1.0",
+  "servidor": "/api/v1",
+  "paths_openapi": 10
+}
