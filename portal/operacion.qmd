@@ -64,7 +64,7 @@ quarto render portal
 quarto preview portal --no-browser
 ```
 
-El pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. La publicación es manual desde fuentes integradas en develop: ejecutar `quarto publish gh-pages portal --no-prompt` y configurar Pages con la rama gh-pages, carpeta raíz. main no se modifica. URL configurada: https://stevej4ra.github.io/inventario-TI-unl/. Se comunica como activa después de verificar el despliegue.
+El pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. La publicación es manual desde fuentes integradas en develop: ejecutar `quarto publish gh-pages portal --no-prompt` y configurar Pages con la rama gh-pages, carpeta raíz. main no se modifica. [Portal HTTPS verificado](https://stevej4ra.github.io/inventario-TI-unl/).
 
 ## Detener
 

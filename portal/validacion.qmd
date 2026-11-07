@@ -22,7 +22,7 @@ El [resumen verificable](recursos/docs/producto-final/evidencia-validacion.json)
 | Respaldo | 34 tablas y 212 filas idénticas en cantidad y SHA-256 después de restaurar en una base temporal propia. |
 | Migraciones | Comprobación de cambios de modelo/migración ejecutada sobre testdb. |
 
-Los conteos corresponden a comprobaciones locales del código preparado. CI/Pages están configurados para ejecutarse tras revisión e incorporación, y no se presentan como ejecuciones remotas ya realizadas.
+Integramos los PR [#33](https://github.com/SteveJ4ra/inventario-TI-unl/pull/33), [#34](https://github.com/SteveJ4ra/inventario-TI-unl/pull/34) y [#35](https://github.com/SteveJ4ra/inventario-TI-unl/pull/35) en develop. El [CI posterior al merge](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951) completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.
 
 ## Hallazgos y correcciones
 
@@ -47,4 +47,4 @@ La ACL del perfil Linux permite lectura solo a los UID de aplicación/PostgreSQL
 
 ## Límites de la evidencia
 
-Las pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. El portal se revisa localmente antes de publicar.
+Las pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. Revisamos el portal localmente y comprobamos su acceso HTTPS después de publicar.

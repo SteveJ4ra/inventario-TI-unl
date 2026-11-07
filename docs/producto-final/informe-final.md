@@ -36,7 +36,7 @@ Gestores y operador se provisionan por comando local; revisores desde administra
 
 
 
-[Repositorio](https://github.com/SteveJ4ra/inventario-TI-unl/tree/develop). Quarto queda preparado para Pages; la dirección configurada se activa tras revisión/publicación, y no es un backend público.
+[Repositorio](https://github.com/SteveJ4ra/inventario-TI-unl/tree/develop). [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.
 
 # 2. Especificación y trazabilidad
 
@@ -193,8 +193,8 @@ El backend integra 002-008. La API v1 de semana 3 cubría diez patrones del fluj
 4. Registrar request_id aleatorio, plantilla de ruta, método, estado y duración; excluir cuerpos, query strings, cookies y credenciales. Mantener auditoría de negocio en PostgreSQL.
 5. Añadir /health/ready/ público con SELECT 1 y fallo 503 genérico. Docker lo usa sin publicar configuración ni datos.
 6. Ejecutar pruebas con pytest/pytest-django en etapa Docker separada; conservar manage.py test y excluir dependencias de pruebas del runtime.
-7. Generar Quarto estático y preparar Pages manual limitado a develop; publicar después de revisar. Pages no aloja Django/PostgreSQL.
-8. Preparar CI de pruebas, migraciones, artefactos y portal; comprobar su ejecución remota después de subir, sin presentar pruebas locales como Actions ejecutado.
+7. Generar, revisar y publicar Quarto en gh-pages desde fuentes integradas en develop; main se conserva. Pages no aloja Django/PostgreSQL.
+8. Ejecutar CI de pruebas, migraciones, artefactos y portal, conservando el resultado remoto verificado.
 
 ## Consecuencias y alternativas
 
@@ -372,7 +372,7 @@ El [resumen verificable](evidencia-validacion.json) conserva conteos, comandos y
 | Respaldo | 34 tablas y 212 filas idénticas en cantidad y SHA-256 después de restaurar en una base temporal propia. |
 | Migraciones | Comprobación de cambios de modelo/migración ejecutada sobre testdb. |
 
-Los conteos corresponden a comprobaciones locales del código preparado. CI/Pages están configurados para ejecutarse tras revisión e incorporación, y no se presentan como ejecuciones remotas ya realizadas.
+Integramos los PR [#33](https://github.com/SteveJ4ra/inventario-TI-unl/pull/33), [#34](https://github.com/SteveJ4ra/inventario-TI-unl/pull/34) y [#35](https://github.com/SteveJ4ra/inventario-TI-unl/pull/35) en develop. El [CI posterior al merge](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951) completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.
 
 ## Hallazgos y correcciones
 
@@ -397,7 +397,7 @@ La ACL del perfil Linux permite lectura solo a los UID de aplicación/PostgreSQL
 
 ## Límites de la evidencia
 
-Las pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. El portal se revisa localmente antes de publicar.
+Las pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. Revisamos el portal localmente y comprobamos su acceso HTTPS después de publicar.
 
 # 9. Ejecución, observabilidad y respaldo
 
@@ -416,7 +416,7 @@ docker compose -p inventario-ti-u1-final build web tests
 docker compose -p inventario-ti-u1-final up -d --wait web
 ```
 
-Linux: `export COMPOSE_HTTP_PORT=8007`. Tras preparar secretos, instalar el paquete acl y ejecutar `bash deploy/prepare_linux_secret_access.sh` antes de iniciar contenedores. La ACL limita lectura a sus UID; no publica los secretos. En copia existente, revisar git status y conservar cambios antes de actualizar con avance rápido. Estos pasos reproducen la consolidación una vez integrados sus PR revisados.
+Linux: `export COMPOSE_HTTP_PORT=8007`. Tras preparar secretos, instalar el paquete acl y ejecutar `bash deploy/prepare_linux_secret_access.sh` antes de iniciar contenedores. La ACL limita lectura a sus UID; no publica los secretos. En copia existente, revisar git status y conservar cambios antes de actualizar con avance rápido. Estos pasos reproducen la consolidación integrada en develop.
 
 ## Configuración
 
@@ -463,7 +463,7 @@ quarto render portal
 quarto preview portal --no-browser
 ```
 
-El pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. Pages es manual y solo develop: tras revisar/integrar, habilitar Pages con Actions y ejecutar Publicar portal revisado desde develop. URL configurada: https://stevej4ra.github.io/inventario-TI-unl/. Se comunica como activa después de verificar el despliegue.
+El pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. Publicamos manualmente el HTML generado desde develop en gh-pages; GitHub Pages usa esa rama como fuente, carpeta raíz. main se conserva. Para actualizar: quarto publish gh-pages portal --no-prompt. [Portal HTTPS verificado](https://stevej4ra.github.io/inventario-TI-unl/).
 
 ## Detener
 
@@ -484,7 +484,7 @@ Conserva el volumen; evitar down -v al cerrar la demostración.
 | Semana 3 | C4/UML, ADR, API base y página con sondeo. |
 | Semana 4 | Amenazas, permisos, límite de intentos y sesión absoluta. |
 | Semana 5 | Integración, Docker/PostgreSQL, dossier y matriz de 104 RF. |
-| Producto final | Contrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente. |
+| Producto final | Contrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente y por CI remoto. |
 
 ## Aportes integrados verificables
 
@@ -497,7 +497,7 @@ Conserva el volumen; evitar down -v al cerrar la demostración.
 | Pedro Jiménez | QR 007; catálogo/evidencia S5 | [#15](https://github.com/SteveJ4ra/inventario-TI-unl/pull/15), [#31](https://github.com/SteveJ4ra/inventario-TI-unl/pull/31) | Enlaces sin datos personales y configuración autenticada. |
 | Emilio Gálvez | CSV 008; documentación S3 | [#14](https://github.com/SteveJ4ra/inventario-TI-unl/pull/14), [#26](https://github.com/SteveJ4ra/inventario-TI-unl/pull/26) | Dos confirmaciones, atomicidad, idempotencia y proveedores. |
 
-Los enlaces corresponden a integraciones reales incluidas en la base del informe. Los cambios finales locales se incorporan después por ramas/PR a develop; no se atribuye un número ni revisión que aún no exista.
+Los aportes anteriores conservan sus autores y PR originales. La consolidación final se incorporó mediante los PR #33 (API/operación), #34 (modelado/SDD/informe) y #35 (Quarto/CI), publicados desde SteveJ4ra.
 
 ## Reflexiones del dossier compartido
 
@@ -551,9 +551,9 @@ El ejemplo HTTP de alta usa IDs obtenidos realmente, no valores supuestamente ex
 | REST, versión y contrato | openapi.json; backend/inventory/openapi_contract.py | 46 rutas/56 operaciones; envoltura JSON y excepciones de archivo/HTTP. |
 | Seguridad | Modelo de amenazas S4; portal/seguridad.qmd | Roles, CSRF, sesión absoluta, límite de intentos, entrada estricta, secretos y mínimo privilegio. |
 | Pruebas | inventory/tests, isolated_tests, contract_tests | 378 pruebas y 284 subcasos; SQL real y dominio aislado. |
-| Git/colaboración | Historial y PR #14-18, #20-32 según integración | Aportes verificables por integrante; nuevos cambios preparados para PR a develop. |
-| Quarto | portal/ y workflow Pages manual | Sitio estático local para revisión; publicación posterior, sin afirmar URL ya activa. |
-| Docker/CI | Dockerfile, compose.yaml, workflows | Runtime/test separados, PostgreSQL y scripts; CI preparado sin atribuir ejecución remota. |
+| Git/colaboración | Historial y PR #14-18, #20-32 según integración | Aportes verificables por integrante; consolidación integrada mediante PR #33-35 a develop. |
+| Quarto | portal/ y publicación manual en gh-pages | [Portal HTTPS activo](https://stevej4ra.github.io/inventario-TI-unl/); fuentes en develop. |
+| Docker/CI | Dockerfile, compose.yaml, workflows | Runtime/test separados, PostgreSQL y scripts; [CI remoto correcto](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951). |
 | Observabilidad | observability.py y health/ready | Logs sanitizados, request_id, estado/duración y SQL de disponibilidad. |
 | Demostración | operacion-ampliada.md y deploy/smoke.py | Flujo real de extremo a extremo, no presentación de mocks. |
 | Contribución/reflexión/IA | portal/equipo.qmd e informe | Seis perspectivas vinculadas a PR reales; uso de IA y fuentes declarados. |

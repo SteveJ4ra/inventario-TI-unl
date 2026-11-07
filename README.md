@@ -51,7 +51,7 @@ Para seleccionar un incremento en Spec Kit, definir SPECIFY_FEATURE_DIRECTORY co
 
 ## Portal Quarto y producto final
 
-Instalar Quarto 1.11.9, ejecutar `quarto render portal` y `quarto preview portal --no-browser`. [Guía operativa](portal/operacion.qmd), [matriz de entrega](docs/producto-final/matriz-entrega.md), [proceso BPMN](docs/producto-final/custodia.bpmn) y [ADR-0901](docs/producto-final/ADR-0901-contrato-y-operacion.md). El portal queda preparado para Pages; la publicación es manual desde develop hacia gh-pages, después de revisión; ver docs/producto-final/publicacion.md. Pages sirve documentación estática, no el backend.
+Instalar Quarto 1.11.9, ejecutar `quarto render portal` y `quarto preview portal --no-browser`. [Guía operativa](portal/operacion.qmd), [matriz de entrega](docs/producto-final/matriz-entrega.md), [proceso BPMN](docs/producto-final/custodia.bpmn) y [ADR-0901](docs/producto-final/ADR-0901-contrato-y-operacion.md). [Portal publicado](https://stevej4ra.github.io/inventario-TI-unl/). Para actualizarlo, publicar manualmente desde develop hacia gh-pages después de revisión; ver docs/producto-final/publicacion.md. Pages sirve documentación estática, no el backend.
 
 La evidencia de semanas anteriores se conserva como historia del incremento. La referencia actual es docs/producto-final y specs/009-consolidacion-final. CI valida backend, migraciones, OpenAPI/BPMN y render de Quarto al incorporarse a GitHub.
 

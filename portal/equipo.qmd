@@ -11,7 +11,7 @@ title: Evolución y contribuciones
 | Semana 3 | C4/UML, ADR, API base y página con sondeo. |
 | Semana 4 | Amenazas, permisos, límite de intentos y sesión absoluta. |
 | Semana 5 | Integración, Docker/PostgreSQL, dossier y matriz de 104 RF. |
-| Producto final | Contrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente. |
+| Producto final | Contrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente y por CI remoto. |
 
 ## Aportes integrados verificables
 
@@ -24,7 +24,7 @@ title: Evolución y contribuciones
 | Pedro Jiménez | QR 007; catálogo/evidencia S5 | [#15](https://github.com/SteveJ4ra/inventario-TI-unl/pull/15), [#31](https://github.com/SteveJ4ra/inventario-TI-unl/pull/31) | Enlaces sin datos personales y configuración autenticada. |
 | Emilio Gálvez | CSV 008; documentación S3 | [#14](https://github.com/SteveJ4ra/inventario-TI-unl/pull/14), [#26](https://github.com/SteveJ4ra/inventario-TI-unl/pull/26) | Dos confirmaciones, atomicidad, idempotencia y proveedores. |
 
-Los enlaces corresponden a integraciones reales incluidas en la base del informe. Los cambios finales locales se incorporan después por ramas/PR a develop; no se atribuye un número ni revisión que aún no exista.
+Los aportes anteriores conservan sus autores y PR originales. La consolidación final se incorporó mediante los PR #33 (API/operación), #34 (modelado/SDD/informe) y #35 (Quarto/CI), publicados desde SteveJ4ra.
 
 ## Reflexiones del dossier compartido
 
