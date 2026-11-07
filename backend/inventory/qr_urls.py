@@ -26,8 +26,10 @@ def build_asset_qr_url(asset_code: str) -> str:
             "PUBLIC_APP_URL debe ser una URL HTTP/HTTPS válida."
         )
 
-    # En producción se exige HTTPS.
-    if not settings.DEBUG and parsed.scheme != "https":
+    # HTTP solo para loopback y con permiso explícito de despliegue local.
+    local_http = (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+                  and getattr(settings, "QR_ALLOW_LOCAL_HTTP", False))
+    if not settings.DEBUG and parsed.scheme != "https" and not local_http:
         raise ImproperlyConfigured(
             "PUBLIC_APP_URL debe utilizar HTTPS en producción."
         )

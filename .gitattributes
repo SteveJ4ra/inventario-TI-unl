@@ -1,0 +1,3 @@
+
+# Scripts montados en contenedores Linux
+deploy/*.sh text eol=lf
