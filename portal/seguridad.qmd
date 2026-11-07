@@ -1,0 +1,33 @@
+---
+title: Seguridad e integridad
+---
+
+| Riesgo | Control | Comprobación |
+|---|---|---|
+| Sesión abandonada | Expiración absoluta 30 min, sin renovación por sondeo. | Pruebas de sesión y smoke. |
+| Fuerza bruta | Cinco fallos/cuenta/IP en 15 min; 429 y Retry-After. | Autenticación y smoke HTTP. |
+| Escritura desde otra página | Cookie de sesión y CSRF obligatorio. | Cliente de pruebas con CSRF estricto. |
+| Escalada de permisos | Gestor/Operador/Revisor; solicitud asignada y facultad distinta. | Políticas/contratos 005. |
+| Concurrencia | Revisión esperada, transacción y bloqueo de fila. | Conflictos, carreras y no mutación. |
+| Ocultar movimientos | Instantáneas y rectificación vinculada; sin borrado de historia. | Movimientos/persistencia. |
+| Baja indebida | Disponible y mantenimiento cerrado; revisión independiente para pérdida. | Políticas y contratos. |
+| Exponer secretos | Archivos ignorados; log sin cuerpos/query/cookies; portal documental. | ObservabilityTests y revisión de archivos. |
+| Lote parcial/repetido | Hash, dos confirmaciones del creador, revalidación e idempotencia. | CSV y concurrencia. |
+
+## Sesión y tokenización
+
+La observación docente se concreta en vencimiento absoluto: tras treinta minutos se pide usuario y contraseña. Utilizamos sesión Django y CSRF; no afirmamos haber implantado JWT. El plazo limita exposición de equipos compartidos y permite operaciones breves de inventario. El sondeo cada cinco segundos no lo renueva.
+
+## Despliegue
+
+DEBUG=false, UID 10001, sin privilegios adicionales; PostgreSQL sin puerto al host y rol limitado. Secretos fuera de Git. HTTP solo local; una exposición pública requiere TLS, cookies seguras y orígenes explícitos. Esta demostración no es una certificación de seguridad ni producción institucional.
+
+## Reglas preservadas
+
+- Condición y asignación son distintas; la alerta no cambia condición automáticamente.
+- Alta Disponible/sin custodio; entrega solo Operativo y sin mantenimiento activo.
+- Devolución con condición/recepción; pérdida sin devolución ficticia.
+- No localizado conserva última condición, asignación, ubicación y custodio. Recuperar exige inspección y cancela con motivo la solicitud pendiente.
+- Mantenimiento activo bloquea entrega; pérdida lo interrumpe.
+- Baja terminal, salvo rectificación del último error elegible; se conserva la ficha.
+- Solo revisor asignado de otra facultad decide; solo operador reasigna y lo hace antes de desactivar revisores con pendientes.

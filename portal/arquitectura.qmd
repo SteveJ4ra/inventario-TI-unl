@@ -1,0 +1,31 @@
+---
+title: Arquitectura y decisiones
+---
+
+## C1: contexto
+
+![Contexto](recursos/docs/producto-final/c4-contexto.png)
+
+## C2: contenedores
+
+![Contenedores](recursos/docs/producto-final/c4-contenedores.png)
+
+React/Vite es la interfaz existente, ejecutada aparte. Compose contiene Django/Gunicorn y PostgreSQL. Quarto es estático y no recibe credenciales ni almacena inventario. HTTP se limita al loopback; exposición externa requiere TLS/endurecimiento.
+
+## C3: componentes
+
+![Componentes integrados](recursos/docs/producto-final/c4-componentes.png)
+
+Vistas/serializadores comprueban entradas/permisos; servicios aplican reglas en transacciones; modelos/restricciones conservan integridad. V1 comparte esas capas. Observabilidad registra solicitudes sin copiar sus datos.
+
+## C4/código: UML del flujo principal
+
+![Clases y dependencias](recursos/docs/producto-final/uml-custodia.png)
+
+Mostramos vistas, módulos de servicio y entidades participantes, no solo tablas. Los módulos adicionales se detallan en C3/especificaciones.
+
+[Structurizr DSL](recursos/docs/producto-final/arquitectura.dsl), [PlantUML](recursos/docs/producto-final/uml-custodia.puml).
+
+## Decisión de consolidación
+
+{{< include ../docs/producto-final/ADR-0901-contrato-y-operacion.md >}}

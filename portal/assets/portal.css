@@ -1,0 +1,10 @@
+:root { --bs-primary: #175c73; }
+.navbar { background: #123f52; }
+main { max-width: 1120px; }
+table { font-size: .9rem; }
+thead { background: #e9f1f4; }
+.hero { padding: 1.4rem; border-left: 5px solid #287c8e; background: #eef5f7; margin-bottom: 1.5rem; }
+img { max-width: 100%; height: auto; }
+pre { overflow-x: auto; }
+
+td, th { overflow-wrap: anywhere; }

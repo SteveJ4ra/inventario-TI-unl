@@ -1,0 +1,37 @@
+project:
+  type: website
+  render:
+    - "*.qmd"
+  output-dir: _site
+  pre-render: python ../tools/prepare_portal.py
+  resources:
+    - recursos/**
+    - assets/**
+website:
+  title: Inventario TI · Grupo 5
+  site-url: https://stevej4ra.github.io/inventario-TI-unl/
+  repo-url: https://github.com/SteveJ4ra/inventario-TI-unl
+  repo-branch: develop
+  navbar:
+    background: "#123f52"
+    foreground: "#ffffff"
+    left:
+      - {href: index.qmd, text: Proyecto}
+      - {href: sdd.qmd, text: Especificación}
+      - {href: procesos.qmd, text: BPMN}
+      - {href: arquitectura.qmd, text: Arquitectura}
+      - {href: api.qmd, text: API}
+      - {href: seguridad.qmd, text: Seguridad}
+      - {href: validacion.qmd, text: Validación}
+      - {href: operacion.qmd, text: Operación}
+      - {href: equipo.qmd, text: Evolución}
+  page-footer: Desarrollo Basado en Plataformas · UNL · Unidad 1
+format:
+  html:
+    theme: cosmo
+    lang: es
+    toc: true
+    code-copy: true
+    css: assets/portal.css
+execute:
+  enabled: false
