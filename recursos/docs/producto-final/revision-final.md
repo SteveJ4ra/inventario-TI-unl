@@ -1,6 +1,6 @@
 # Revisión final del producto de Unidad 1
 
-Validación local de 002-009 desde develop b60f52f. El paquete no publica Pages, no abre PR ni modifica main.
+Validación de 002-009: base b60f52f, consolidación integrada por PR #33-35 en develop (04fa337864ba563c092944174a0368986c217336). Publicación manual en gh-pages, main intacta.
 
 | Área | Resultado |
 |---|---|
@@ -13,4 +13,4 @@ Validación local de 002-009 desde develop b60f52f. El paquete no publica Pages,
 | API visual | Swagger muestra 56 operaciones y consulta autenticada; cuenta ficticia desactivada tras ensayo. |
 | Presentación | Revisión de páginas PDF, tablas, comandos literales y diagramas; fuentes y edición de revisión identificadas. |
 
-La publicación remota de Actions/Pages se verifica cuando los PR revisados se incorporen a develop y se active el workflow manual. Los resultados actuales no se atribuyen a ejecución remota. Las fuentes históricas conservan sus fechas y estado, incluida la constitución PROPOSAL. No se agregan entrevistas, revisiones presenciales ni números de PR inexistentes.
+Integramos los PR [#33](https://github.com/SteveJ4ra/inventario-TI-unl/pull/33), [#34](https://github.com/SteveJ4ra/inventario-TI-unl/pull/34) y [#35](https://github.com/SteveJ4ra/inventario-TI-unl/pull/35) en develop. El [CI posterior al merge](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951) completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local. Las fuentes históricas conservan sus fechas y estado, incluida la constitución PROPOSAL. No se agregan entrevistas, revisiones presenciales ni números de PR inexistentes.

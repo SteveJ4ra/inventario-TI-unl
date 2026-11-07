@@ -1,7 +1,7 @@
 {
   "base_develop": "b60f52f52727ea41bc9bacd1e606879647a967cc",
-  "branch": "feature/producto-final-u1",
-  "scope": "Validación local de la consolidación del backend; publicación posterior a revisión",
+  "branch": "develop",
+  "scope": "Backend integrado en develop, CI remoto correcto y portal HTTPS publicado",
   "tests": {
     "runner": "pytest 9.2.0 / pytest-django 4.14.0",
     "passed": 378,
@@ -50,9 +50,19 @@
     "result": "No changes detected"
   },
   "publication": {
-    "pages": "Preparado; publicar solo después de revisión",
-    "github_actions": "Workflow preparado; sin ejecución remota declarada",
-    "method": "HTML generado manualmente desde develop; Pages source gh-pages; main intacta"
+    "pages": "Publicado y verificado por HTTPS",
+    "github_actions": "success",
+    "method": "HTML generado manualmente desde develop; Pages source gh-pages; main intacta",
+    "url": "https://stevej4ra.github.io/inventario-TI-unl/",
+    "ci_url": "https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951",
+    "validated_develop_commit": "04fa337864ba563c092944174a0368986c217336",
+    "merged_prs": [
+      33,
+      34,
+      35
+    ],
+    "public_pages_checked": 9,
+    "public_https_status": 200
   },
   "commands": [
     "docker compose -p inventario-ti-u1-final --profile test run --rm tests --pytest -q",
@@ -117,7 +127,7 @@
     "demo_account_deactivated": true
   },
   "pdf_review": {
-    "pages": 24,
+    "pages": 23,
     "text_outside_margins": 0,
     "orphan_headings": 0,
     "code_literals_valid": true,

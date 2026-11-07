@@ -21,3 +21,9 @@ El repositorio tiene main como rama predeterminada. GitHub exige que workflow_di
 Fuentes: https://quarto.org/docs/publishing/github-pages.html y https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow.
 
 Pages publica documentación estática; el backend permanece en el despliegue Docker local acordado. No se publican secretos, bases, dumps ni datos de personas reales.
+
+## Publicación comprobada
+
+Integramos los PR [#33](https://github.com/SteveJ4ra/inventario-TI-unl/pull/33), [#34](https://github.com/SteveJ4ra/inventario-TI-unl/pull/34) y [#35](https://github.com/SteveJ4ra/inventario-TI-unl/pull/35) en develop. El [CI posterior al merge](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951) completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.
+
+El archivo build-info.json identifica el commit de develop usado en cada publicación. El HTML público no contiene datos del inventario ni credenciales.

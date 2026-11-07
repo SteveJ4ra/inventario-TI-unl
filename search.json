@@ -18,7 +18,7 @@
     "href": "validacion.html#resultados-del-ensayo-final",
     "title": "Pruebas y evidencia reproducible",
     "section": "Resultados del ensayo final",
-    "text": "Resultados del ensayo final\nEl resumen verificable conserva conteos, comandos y hashes de los artefactos. La matriz de 104 RF enlaza pruebas/componentes; no equivale a una medición porcentual de cobertura de líneas.\n\n\n\n\n\n\n\nComprobación\nResultado verificado\n\n\n\n\nSuite pytest-django\n378 pruebas y 284 subcasos; suite consolidada sin fallos.\n\n\nContrato\n46 rutas y 56 operaciones; cobertura exacta de métodos y referencias.\n\n\nOpenAPI\nDocumento 3.1 válido; 43 respuestas JSON reales comprobadas contra sus esquemas.\n\n\nHTTP real\nRegistro/consulta, entrega/devolución, adquisición, edición, mantenimiento, novedad, baja/rectificación, licencias y CSV sobre Gunicorn.\n\n\nSeguridad HTTP\nRechazo anónimo/CSRF, vencimiento de sesión, cinco fallos y 429; cuenta de ensayo desactivada al terminar.\n\n\nBPMN\nXML/DI válidos frente a XSD oficial OMG 2.0.2; compuertas y referencias comprobadas.\n\n\nArquitectura\nDSL validado y cuatro diagramas PlantUML renderizados.\n\n\nRespaldo\n34 tablas y 212 filas idénticas en cantidad y SHA-256 después de restaurar en una base temporal propia.\n\n\nMigraciones\nComprobación de cambios de modelo/migración ejecutada sobre testdb.\n\n\n\nLos conteos corresponden a comprobaciones locales del código preparado. CI/Pages están configurados para ejecutarse tras revisión e incorporación, y no se presentan como ejecuciones remotas ya realizadas."
+    "text": "Resultados del ensayo final\nEl resumen verificable conserva conteos, comandos y hashes de los artefactos. La matriz de 104 RF enlaza pruebas/componentes; no equivale a una medición porcentual de cobertura de líneas.\n\n\n\n\n\n\n\nComprobación\nResultado verificado\n\n\n\n\nSuite pytest-django\n378 pruebas y 284 subcasos; suite consolidada sin fallos.\n\n\nContrato\n46 rutas y 56 operaciones; cobertura exacta de métodos y referencias.\n\n\nOpenAPI\nDocumento 3.1 válido; 43 respuestas JSON reales comprobadas contra sus esquemas.\n\n\nHTTP real\nRegistro/consulta, entrega/devolución, adquisición, edición, mantenimiento, novedad, baja/rectificación, licencias y CSV sobre Gunicorn.\n\n\nSeguridad HTTP\nRechazo anónimo/CSRF, vencimiento de sesión, cinco fallos y 429; cuenta de ensayo desactivada al terminar.\n\n\nBPMN\nXML/DI válidos frente a XSD oficial OMG 2.0.2; compuertas y referencias comprobadas.\n\n\nArquitectura\nDSL validado y cuatro diagramas PlantUML renderizados.\n\n\nRespaldo\n34 tablas y 212 filas idénticas en cantidad y SHA-256 después de restaurar en una base temporal propia.\n\n\nMigraciones\nComprobación de cambios de modelo/migración ejecutada sobre testdb.\n\n\n\nIntegramos los PR #33, #34 y #35 en develop. El CI posterior al merge completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. Portal técnico publicado. Pages sirve documentación estática; el backend funciona con Docker Compose local."
   },
   {
     "objectID": "validacion.html#hallazgos-y-correcciones",
@@ -46,7 +46,7 @@
     "href": "validacion.html#límites-de-la-evidencia",
     "title": "Pruebas y evidencia reproducible",
     "section": "Límites de la evidencia",
-    "text": "Límites de la evidencia\nLas pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. El portal se revisa localmente antes de publicar."
+    "text": "Límites de la evidencia\nLas pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. Revisamos el portal localmente y comprobamos su acceso HTTPS después de publicar."
   },
   {
     "objectID": "sdd.html",
@@ -130,7 +130,7 @@
     "href": "operacion.html#quarto-y-pages",
     "title": "Ejecución, observabilidad y respaldo",
     "section": "Quarto y Pages",
-    "text": "Quarto y Pages\nquarto render portal\nquarto preview portal --no-browser\nEl pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. La publicación es manual desde fuentes integradas en develop: ejecutar quarto publish gh-pages portal --no-prompt y configurar Pages con la rama gh-pages, carpeta raíz. main no se modifica. URL configurada: https://stevej4ra.github.io/inventario-TI-unl/. Se comunica como activa después de verificar el despliegue."
+    "text": "Quarto y Pages\nquarto render portal\nquarto preview portal --no-browser\nEl pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. La publicación es manual desde fuentes integradas en develop: ejecutar quarto publish gh-pages portal --no-prompt y configurar Pages con la rama gh-pages, carpeta raíz. main no se modifica. Portal HTTPS verificado."
   },
   {
     "objectID": "operacion.html#detener",
@@ -144,21 +144,21 @@
     "href": "equipo.html",
     "title": "Evolución y contribuciones",
     "section": "",
-    "text": "Etapa\nResultado\n\n\n\n\nSemana 1\nProblema, actores, alcance, entorno y SDD.\n\n\nSemana 2\nRequisitos, historias, aceptación y trazabilidad.\n\n\nSemana 3\nC4/UML, ADR, API base y página con sondeo.\n\n\nSemana 4\nAmenazas, permisos, límite de intentos y sesión absoluta.\n\n\nSemana 5\nIntegración, Docker/PostgreSQL, dossier y matriz de 104 RF.\n\n\nProducto final\nContrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente."
+    "text": "Etapa\nResultado\n\n\n\n\nSemana 1\nProblema, actores, alcance, entorno y SDD.\n\n\nSemana 2\nRequisitos, historias, aceptación y trazabilidad.\n\n\nSemana 3\nC4/UML, ADR, API base y página con sondeo.\n\n\nSemana 4\nAmenazas, permisos, límite de intentos y sesión absoluta.\n\n\nSemana 5\nIntegración, Docker/PostgreSQL, dossier y matriz de 104 RF.\n\n\nProducto final\nContrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente y por CI remoto."
   },
   {
     "objectID": "equipo.html#evolución",
     "href": "equipo.html#evolución",
     "title": "Evolución y contribuciones",
     "section": "",
-    "text": "Etapa\nResultado\n\n\n\n\nSemana 1\nProblema, actores, alcance, entorno y SDD.\n\n\nSemana 2\nRequisitos, historias, aceptación y trazabilidad.\n\n\nSemana 3\nC4/UML, ADR, API base y página con sondeo.\n\n\nSemana 4\nAmenazas, permisos, límite de intentos y sesión absoluta.\n\n\nSemana 5\nIntegración, Docker/PostgreSQL, dossier y matriz de 104 RF.\n\n\nProducto final\nContrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente."
+    "text": "Etapa\nResultado\n\n\n\n\nSemana 1\nProblema, actores, alcance, entorno y SDD.\n\n\nSemana 2\nRequisitos, historias, aceptación y trazabilidad.\n\n\nSemana 3\nC4/UML, ADR, API base y página con sondeo.\n\n\nSemana 4\nAmenazas, permisos, límite de intentos y sesión absoluta.\n\n\nSemana 5\nIntegración, Docker/PostgreSQL, dossier y matriz de 104 RF.\n\n\nProducto final\nContrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente y por CI remoto."
   },
   {
     "objectID": "equipo.html#aportes-integrados-verificables",
     "href": "equipo.html#aportes-integrados-verificables",
     "title": "Evolución y contribuciones",
     "section": "Aportes integrados verificables",
-    "text": "Aportes integrados verificables\n\n\n\nIntegrante\nComponente\nPR\nDecisión/comprobación\n\n\n\n\nAlex Sigcho\nFichas/adquisiciones/facultades 003\n#18\nFactura compartida, valor por activo, corrección auditada y concurrencia.\n\n\nYandri Piscocama\nCiclo de vida 004; despliegue S5\n#17, #32\nAlertas/condición separadas, mantenimiento, perfiles Docker.\n\n\nSteven Jumbo\nBajas/aprobación 005; dossier\n#20, #30\nIndependencia por facultad, políticas y contratos de persistencia.\n\n\nAnderson Coello\nLicencias 006; API S3\n#16, #25\nEnteros, vigencia, remanentes y pruebas de concurrencia.\n\n\nPedro Jiménez\nQR 007; catálogo/evidencia S5\n#15, #31\nEnlaces sin datos personales y configuración autenticada.\n\n\nEmilio Gálvez\nCSV 008; documentación S3\n#14, #26\nDos confirmaciones, atomicidad, idempotencia y proveedores.\n\n\n\nLos enlaces corresponden a integraciones reales incluidas en la base del informe. Los cambios finales locales se incorporan después por ramas/PR a develop; no se atribuye un número ni revisión que aún no exista."
+    "text": "Aportes integrados verificables\n\n\n\nIntegrante\nComponente\nPR\nDecisión/comprobación\n\n\n\n\nAlex Sigcho\nFichas/adquisiciones/facultades 003\n#18\nFactura compartida, valor por activo, corrección auditada y concurrencia.\n\n\nYandri Piscocama\nCiclo de vida 004; despliegue S5\n#17, #32\nAlertas/condición separadas, mantenimiento, perfiles Docker.\n\n\nSteven Jumbo\nBajas/aprobación 005; dossier\n#20, #30\nIndependencia por facultad, políticas y contratos de persistencia.\n\n\nAnderson Coello\nLicencias 006; API S3\n#16, #25\nEnteros, vigencia, remanentes y pruebas de concurrencia.\n\n\nPedro Jiménez\nQR 007; catálogo/evidencia S5\n#15, #31\nEnlaces sin datos personales y configuración autenticada.\n\n\nEmilio Gálvez\nCSV 008; documentación S3\n#14, #26\nDos confirmaciones, atomicidad, idempotencia y proveedores.\n\n\n\nLos aportes anteriores conservan sus autores y PR originales. La consolidación final se incorporó mediante los PR #33 (API/operación), #34 (modelado/SDD/informe) y #35 (Quarto/CI), publicados desde SteveJ4ra."
   },
   {
     "objectID": "equipo.html#reflexiones-del-dossier-compartido",
@@ -312,7 +312,7 @@
     "href": "index.html#lectura-del-portal",
     "title": "Backend de inventario TI",
     "section": "Lectura del portal",
-    "text": "Lectura del portal\nEspecificaciones, BPMN, arquitectura, API, seguridad, validación, operación y evolución.\nRepositorio. Quarto queda preparado para Pages; la dirección configurada se activa tras revisión/publicación, y no es un backend público."
+    "text": "Lectura del portal\nEspecificaciones, BPMN, arquitectura, API, seguridad, validación, operación y evolución.\nRepositorio. Portal técnico publicado. Pages sirve documentación estática; el backend funciona con Docker Compose local."
   },
   {
     "objectID": "procesos.html",
