@@ -1,106 +1,56 @@
-# Inventario de Tecnologías de Información · UNL
+# Inventario de Tecnologías de Información - UNL
 
-Proyecto académico del Grupo 5 para registrar y consultar activos tecnológicos y conservar la trazabilidad de su custodia. Se desarrolla por incrementos mediante Spec-Driven Development (SDD) con GitHub Spec Kit.
+Backend académico del Grupo 5, desarrollado por incrementos con Spec-Driven Development (SDD) y GitHub Spec Kit. La base integrada 435b0e0 contiene 002-008 y los controles de seguridad de semana 4; esta rama añade el despliegue local reproducible de semana 5.
 
-## Base implementada 002
+## Alcance del backend
 
-API Django REST Framework y pantalla React + TypeScript con:
+| Módulo | Funciones y contrato |
+| --- | --- |
+| 002 | Registro/consulta de activos, custodios, entregas/devoluciones, condición, historial y rectificación. [Especificación](specs/002-registro-consulta-activos/spec.md) |
+| 003 | Compras/donaciones compartidas, importes por activo, facultades y edición auditada. [Especificación](specs/003-fichas-adquisiciones/spec.md) |
+| 004 | Daños/observaciones, mantenimiento, pérdida/robo y recuperación. [Especificación](specs/004-novedades-mantenimiento/spec.md) |
+| 005 | Bajas, aprobación por revisor de otra facultad y administración técnica de revisores. [Especificación](specs/005-bajas-aprobacion/spec.md) |
+| 006 | Lotes finitos de licencias con cantidades, vigencia y auditoría. [Especificación](specs/006-lotes-licencias/spec.md) |
+| 007 | QR SVG sin datos personales, destino canónico y acceso protegido. [Especificación](specs/007-qr-activos/spec.md) |
+| 008 | Importación CSV de activos y licencias con validación completa, dos confirmaciones y aplicación atómica. [Especificación](specs/008-importacion-csv/spec.md) |
 
-- Acceso de gestores autorizados, con iguales permisos sobre todo el inventario.
-- Registro de activos con código TI automático, identificación individual y prevención de duplicados por marca/modelo/serie.
-- Registro de personas custodias sin cuenta de acceso.
-- Listado, ficha, búsqueda parcial y filtros combinados.
-- Entregas, devoluciones y cambios reales de condición con motivo cuando corresponde.
-- Historial con autoría y rectificación del último movimiento elegible, conservando el original y restaurando la situación anterior.
-- Controles de concurrencia, CSRF y restricciones de integridad en PostgreSQL.
+Gestores con acceso global acordado; operador con facultades/cuentas revisoras; revisor limitado a solicitudes asignadas e independencia de facultad; custodios sin cuenta. Sesiones de treinta minutos absolutos, CSRF en escrituras y cinco fallos por cuenta/IP en quince minutos. No hay auto-registro ni claves de activación de licencias.
 
-Las seis categorías y las reglas funcionales provienen de las respuestas documentadas de Steven; la FPGA fue únicamente un ejemplo. No se implementan edición general de activos, eliminación, órdenes de mantenimiento, portal de custodios, reportes ni aplicación móvil en este incremento.
-
-## Paquete 004 · Novedades y mantenimiento
-
-La ficha permite reportar y resolver daños y observaciones, iniciar y cerrar mantenimiento, reportar pérdida o robo y recuperar activos. Conserva el historial de 002 y suma las nuevas transiciones con autoría y revisión. Un activo en taller no se puede entregar. El reporte de pérdida o robo conserva el último estado conocido y la recuperación mantiene el código original.
-
-La rama de 004 requiere las migraciones `inventory.0004_asset_lifecycle_events` y `inventory.0005_asset_transition_evidence`. Para reproducir el recorrido con datos ficticios, consulta el [quickstart de 004](specs/004-novedades-mantenimiento/quickstart.md). Los resultados y sus límites están en la [validación de 004](specs/004-novedades-mantenimiento/validation.md).
-
-## Ejecutar localmente
-
-Requisitos: Python 3.13, PostgreSQL 17 y Node.js 22.23.1 o compatible con las versiones fijadas. Preparación completa de base de datos y .env: [backend/README.md](backend/README.md). Frontend: [frontend/README.md](frontend/README.md).
-
-En una instalación ya configurada, PowerShell desde la raíz:
+## Ejecutar con Docker Compose
 
 ```powershell
-& .\backend\.venv\Scripts\python.exe backend/manage.py migrate
-& .\backend\.venv\Scripts\python.exe backend/manage.py create_gestor
-npm.cmd --prefix frontend ci
+python deploy/prepare_secrets.py
+docker compose build web
+docker compose up -d --wait --no-build web
+docker compose exec web python manage.py create_gestor
 ```
 
-El comando create_gestor pide usuario y contraseña localmente; no hay credenciales predeterminadas. No vuelve administrador general al gestor. Si ya tienes un gestor autorizado no necesitas crear otro.
+Abrir http://localhost:8005/api/docs/ . La API y documentación se sirven con Gunicorn, DEBUG=false y usuario sin root. PostgreSQL usa un rol limitado, datos persistentes y secretos montados como archivos. No hay contraseña predeterminada; los comandos piden credenciales localmente.
 
-En dos terminales:
+[Guía de despliegue, pruebas y operación](deploy/README.md). El HTTP se limita a loopback; no se declara un servidor público con TLS. El frontend React existente se ejecuta aparte y PUBLIC_APP_URL debe apuntar a su dirección para navegar desde el QR.
 
 ```powershell
-& .\backend\.venv\Scripts\python.exe backend/manage.py runserver 127.0.0.1:8000
+docker compose --profile test run --rm tests
+docker compose --profile test run --rm tests makemigrations --check --dry-run
 ```
 
-```powershell
-cd frontend
-npm.cmd run dev
-```
+Resultado comprobado en Docker: 333 pruebas Django/API/contrato, 21 pruebas aisladas de políticas y 16 de importación; 30 respuestas HTTP del recorrido protegido y persistencia después de recrear servicios. [Evidencia y límites](docs/semana-5/validacion.md). Estas pruebas usan testdb separado; no elevan privilegios del usuario operativo. Las instrucciones de las dos suites aisladas están en la guía de despliegue.
 
-Abrir [la pantalla web local](http://127.0.0.1:5173/). La API está bajo /api/ en el backend; la raíz de Django no sirve la pantalla React. En Linux se usa backend/.venv/bin/python. No copiar encima del .env privado existente.
+## Ejecutar sin contenedores
 
-## Pruebas y estado comprobado
+Python 3.13 y PostgreSQL 17 con ICU. Preparar entorno y .env según [backend/README.md](backend/README.md), sin sobrescribir configuración existente. Ejecutar migraciones y crear gestor solo si corresponde. Arrancar backend con backend/.venv/Scripts/python.exe backend/manage.py runserver 127.0.0.1:8000 (en Linux, backend/.venv/bin/python). El frontend requiere Node y sus comandos están en [frontend/README.md](frontend/README.md).
 
-```powershell
-& .\backend\.venv\Scripts\python.exe backend/tools/test_postgres.py
-npm.cmd --prefix frontend test -- --run
-npm.cmd --prefix frontend run build
-```
+## API y documentación SDD
 
-El runner crea PostgreSQL temporal privado en loopback, usa credenciales efímeras, ejecuta las pruebas y lo detiene/elimina. Requiere binarios PostgreSQL 17 con ICU; PG_BIN permite indicar su carpeta bin. No concede CREATEDB al usuario de la aplicación ni cambia backend/.env. Ejecutarlo como usuario normal, no como root en Linux.
+- [Catálogo de rutas y contratos](docs/semana-5/catalogo-api.md): la API completa conserva rutas /api/; /api/v1/ y su OpenAPI cubren el recorrido base. No se promete un único formato para todos los módulos.
+- [Dossier técnico](docs/semana-5/dossier-backend.md), [104 requisitos trazados](docs/semana-5/matriz-trazabilidad.md), [bitácora](docs/semana-5/bitacora-integracion.md) y [estándares](docs/semana-5/estandares.md).
+- [Arquitectura de semana 3](docs/semana-3/c4-contenedores.puml), [seguridad de semana 4](docs/semana-4/modelo-amenazas.md) y [ADR de despliegue](docs/semana-5/ADR-0501-despliegue-local.md).
+- [.specify/memory/constitution.md](.specify/memory/constitution.md) conserva su estado de propuesta; las decisiones funcionales confirmadas están en docs/sdd/. No se atribuyen políticas institucionales a esta entrega académica.
 
-Validación automatizada del 1 de noviembre de 2026: **28 pruebas backend, 17 pruebas frontend y compilación correctas**. El 20 de octubre se verificó además el recorrido real en navegador con dos gestores ficticios, custodia, rectificación, búsqueda/filtros y conflicto de un formulario obsoleto. Evidencia y límites: [validation.md](specs/002-registro-consulta-activos/validation.md). La reproducción por otro integrante y la revisión por pares siguen pendientes; no se declara despliegue productivo.
+Para seleccionar un incremento en Spec Kit, definir SPECIFY_FEATURE_DIRECTORY con su directorio specs/00X-... en la sesión correspondiente. No reinicializar Spec Kit ni sobrescribir las integraciones Copilot/Codex. El flujo es specify, clarify, plan, tasks, analyze, implement y validate con evidencia.
 
-## Ruta SDD y organización
+## Colaboración y cuidado de datos
 
-| Artefacto / carpeta | Propósito |
-|---|---|
-| [.specify/memory/constitution.md](.specify/memory/constitution.md) | Principios propuestos; ratificación del grupo pendiente. |
-| [specs/001-inventario-ti/](specs/001-inventario-ti/) | Contexto inicial conservado. |
-| [Decisiones del incremento](docs/sdd/decisiones-incremento-registro-consulta.md) | 36 decisiones confirmadas y su evidencia. |
-| [spec.md](specs/002-registro-consulta-activos/spec.md) | Qué se requiere, reglas y aceptación. |
-| [plan.md](specs/002-registro-consulta-activos/plan.md) | Cómo se diseñó, modelo y contratos. |
-| [tasks.md](specs/002-registro-consulta-activos/tasks.md) | Desglose y estado real de 38 tareas. |
-| [quickstart.md](specs/002-registro-consulta-activos/quickstart.md) | Recorrido reproducible de validación. |
-| backend/inventory/ | Modelos, servicios, API, comandos y pruebas. |
-| frontend/ | Pantalla web, cliente API y pruebas. |
+Ramas propias y PR hacia develop según [CONTRIBUTING.md](CONTRIBUTING.md); main permanece fuera de esta integración. No publicar .env, deploy/.secrets, respaldos, credenciales o datos institucionales. No borrar el volumen de Docker para resolver un problema con datos existentes. Las validaciones históricas por módulo se conservan en specs/; el dossier integrado distingue esos registros de la evidencia actual.
 
-Se siguió specify → clarify → plan → tasks → analyze → implement. Las reglas de negocio fueron aclaradas antes de programar; el análisis detectó y corrigió con aprobación de Steven una dependencia circular en las tareas de pruebas. La implementación contó con asistencia de Codex; la revisión humana del equipo continúa siendo necesaria.
-
-## Seleccionar el incremento en Spec Kit
-
-El marcador .specify/feature.json es local y está ignorado por Git. En una copia nueva, antes de usar las skills de Spec Kit, seleccionar explícitamente el directorio activo en la sesión PowerShell:
-
-```powershell
-$env:SPECIFY_FEATURE_DIRECTORY = "specs/002-registro-consulta-activos"
-```
-
-Esto conserva la rama Git feature/registro-consulta-activos; el identificador lógico es 002-registro-consulta-activos. No requiere reinicializar Spec Kit ni reemplazar Copilot por Codex. Los scripts incluidos son PowerShell; en Linux requieren pwsh. Esta configuración de Spec Kit es independiente de ejecutar la aplicación con Python y npm.
-
-## Colaboración
-
-Ramas main/develop/feature; contribuciones y revisión antes de integrar según [CONTRIBUTING.md](CONTRIBUTING.md). No publicar .env, contraseñas, datos institucionales o archivos temporales. Mantener la revisión de este incremento en su rama feature sin atribuir aprobación al equipo antes de obtenerla.
-
-## Paquete 003 — estado de entrega
-
-Fichas, facultades y adquisiciones se desarrollan en Alex_Sigcho_Feature para integración hacia develop. El alcance implementado incorpora compras/donaciones compartidas, Operador, edición auditada e importación real de adquisiciones mediante 008. La entrega sigue parcial por transición histórica, decisiones funcionales y proveedor 005 ausente; no se declara lista para merge integral.
-
-Consultar [estado por tarea](specs/003-fichas-adquisiciones/tasks.md), [validación](specs/003-fichas-adquisiciones/validation.md), [integraciones pendientes](specs/003-fichas-adquisiciones/integration-notes.md) y [quickstart aislado](specs/003-fichas-adquisiciones/quickstart.md). La migración 0004 solo se ha probado en PostgreSQL temporal; no se aplicó a la base local. El cuerpo del PR Draft está preparado en [pr-description.md](specs/003-fichas-adquisiciones/pr-description.md), sin publicación.
-
-## Lotes de licencias · 006
-
-La navegación Licencias permite registrar, consultar y editar lotes finitos por usuario/dispositivo con historial auditable. Inicio obligatorio, fin opcional, cantidades cero válidas, remanentes calculados y estado temporal. Los vencidos conservan su conteo y se distinguen de puestos utilizables. No se almacenan claves ni asignaciones individuales.
-
-Migraciones nuevas 0004/0005 y proveedor reutilizable por 008. Lista e historial paginados; sesión/CSRF y expected_revision protegen escrituras. En Linux, antes del runner: `export PG_BIN=/usr/lib/postgresql/17/bin`. La app se abre en 5173; Django sirve /api/ en 8000, cuya raíz puede devolver 404.
-
-Validación local del 4 de noviembre de 2026: 72 pruebas backend, 33 frontend, 16 puras y build correctos; recorrido Chrome real con PostgreSQL efímero. DRF se actualizó de 3.16.1 a 3.18.2 por seguridad, con autorización de Anderson. Tras repetir las pruebas, pip-audit y npm audit no reportan vulnerabilidades conocidas en las dependencias auditadas. No se declara producción segura. [Guía de 006](specs/006-lotes-licencias/quickstart.md), [resultados y límites](specs/006-lotes-licencias/validation.md), [cinco revisiones](specs/006-lotes-licencias/reviews.md). La revisión humana y la integración quedan pendientes del PR hacia develop.
+El alcance backend no certifica todas las pantallas o navegación móvil. La documentación indica límites del QR/cliente, donaciones e importes y del despliegue público para evitar asumir funcionalidades no confirmadas.

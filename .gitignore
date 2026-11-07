@@ -21,3 +21,11 @@ coverage/
 *.log
 *.tmp
 *.egg-info/
+
+# Despliegue local: secretos, estáticos y resultados no versionados
+deploy/.secrets/
+deploy/results/
+backend/staticfiles/
+
+# Respaldos de base: contienen datos y no se versionan
+*.dump

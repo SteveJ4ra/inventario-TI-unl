@@ -1,0 +1,23 @@
+**
+!backend/
+!backend/**
+!deploy/
+!deploy/**
+backend/.env
+backend/.env.*
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/staticfiles/
+deploy/.secrets/
+deploy/.env*
+deploy/results/
+
+# Plantilla histórica requerida por dos pruebas de migración.
+!specs/
+!specs/003-fichas-adquisiciones/
+!specs/003-fichas-adquisiciones/migration-notes/
+!specs/003-fichas-adquisiciones/migration-notes/faculty_contract.py.txt
+
+deploy/**/__pycache__/
+deploy/**/*.pyc

@@ -1,0 +1,34 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam linetype polyline
+title Semana 5 - Despliegue local del backend
+actor "Gestor / operador / revisor" as user
+node "Equipo anfitrión" {
+  folder "Secretos locales fuera de Git" as secrets
+  node "Proyecto Docker Compose" {
+    component "web\nGunicorn + Django/DRF\nUID 10001, DEBUG=false" as web
+    component "initialize\ncheck + migrate\nexpire_legacy_sessions" as init
+    database "db - PostgreSQL 17 ICU\nrol inventario_app limitado" as db
+    storage "Volumen pgdata\npersistencia" as vol
+    node "Perfil test (aislado)" {
+      component "tests\n333 Django + 37 aisladas" as tests
+      database "testdb\nbase de pruebas en tmpfs" as testdb
+    }
+  }
+}
+user --> web : HTTP solo loopback\nlocalhost:8005/api/docs/
+secrets ..> web
+secrets ..> init
+init --> db
+web --> db
+init ..> web
+db --> vol
+tests --> testdb
+note bottom of web
+  OpenAPI, HTML y live.js locales
+  Swagger UI usa CDN externo
+  Frontend React se ejecuta aparte
+end note
+@enduml

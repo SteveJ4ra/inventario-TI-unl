@@ -1,4 +1,15 @@
-# Backend · Inventario TI
+# Backend - Inventario TI
+
+## Estado integrado y despliegue de semana 5
+
+La referencia actual del backend está en [dossier-backend.md](../docs/semana-5/dossier-backend.md). Los módulos 002-008 y los controles de semana 4 se integraron en develop; semana 5 prepara su despliegue local con Gunicorn y PostgreSQL mediante Compose. El perfil config.settings_deploy mantiene DEBUG=false y lee secretos montados desde archivos.
+
+Desde la raíz: python deploy/prepare_secrets.py, docker compose build web y docker compose up -d --wait --no-build web. Documentación: http://localhost:8005/api/docs/ . Crear un gestor solo si hace falta con docker compose exec web python manage.py create_gestor. Guía completa: [deploy/README.md](../deploy/README.md).
+
+Pruebas actuales en contenedores: 333 Django/API/contrato, 21 aisladas de políticas y 16 de importación. Se añadieron seis pruebas al perfil de despliegue/QR; no se presentan los conteos históricos de 002 o 006 como total actual. [Validación integrada](../docs/semana-5/validacion.md).
+
+Las secciones siguientes conservan la preparación manual y los registros históricos de los incrementos. Para un PostgreSQL de desarrollo existente no recrear roles/bases ni conceder CREATEDB al usuario de la aplicación. La transición histórica de facultades requiere datos verificados y los diagnósticos de 003.
+
 
 Python 3.13, Django 5.2.18, Django REST Framework 3.18.2 y PostgreSQL 17. DRF se actualizó por seguridad con autorización de Anderson; las demás versiones se conservaron. Versiones exactas: requirements.txt. Implementa activos, custodios, operaciones transaccionales e historial; contratos: [API](../specs/002-registro-consulta-activos/contracts/api.md).
 
@@ -55,12 +66,12 @@ Sesiones Django y CSRF en escrituras, incluido login. Orígenes de desarrollo po
 ## Probar sin alterar la base local
 
 ```powershell
-& .\backend\.venv\Scripts\python.exe backend/tools/test_postgres.py
+& .\backend\.venv\Scripts\python.exe backend/tools/test_postgres.py inventory contract_tests --verbosity 1
 & .\backend\.venv\Scripts\python.exe backend/manage.py makemigrations --check --dry-run
 & .\backend\.venv\Scripts\python.exe -m pip check
 ```
 
-El runner busca initdb/pg_ctl en PostgreSQL 17 de Windows o PATH; PG_BIN permite indicar otra carpeta. Requiere soporte ICU. Crea clúster temporal privado, genera contraseña efímera, escucha solo loopback y detiene/elimina únicamente sus propios archivos. No toca .env ni privilegios del rol de desarrollo. En Linux ejecutarlo como usuario normal. Para un servidor de pruebas preparado por el equipo también puede usarse `python backend/manage.py test inventory`; configurar explícitamente las variables de ese servidor y su rol, no elevar el de la aplicación.
+El runner busca initdb/pg_ctl en PostgreSQL 17 de Windows o PATH; PG_BIN permite indicar otra carpeta. Requiere soporte ICU. Crea clúster temporal privado, genera contraseña efímera, escucha solo loopback y detiene/elimina únicamente sus propios archivos. No toca .env ni privilegios del rol de desarrollo. En Linux ejecutarlo como usuario normal. Para un servidor de pruebas preparado por el equipo también puede usarse `python backend/manage.py test inventory contract_tests`; configurar explícitamente las variables de ese servidor y su rol, no elevar el de la aplicación.
 
 Resultado original del incremento 002: 28 pruebas backend correctas, incluidas carreras reales PostgreSQL, permisos, CSRF, restricciones Unicode, rollback, inmutabilidad y rectificación. Detalles: [validation.md](../specs/002-registro-consulta-activos/validation.md).
 
@@ -71,4 +82,4 @@ Este es un entorno de desarrollo académico. El despliegue público, TLS, copias
 
 Incluye SoftwareLicenseLot, auditoría inmutable, endpoints /api/license-lots/ y proveedor real para lotes de 008. Migraciones 0004/0005, sin modificar tablas de activos. En Linux el runner necesita `export PG_BIN=/usr/lib/postgresql/17/bin`; su socket y credenciales quedan en carpeta temporal privada.
 
-Suite actual: 72 pruebas backend, más 16 puras de 008. Reproducción y avisos de seguridad de DRF en [validation.md](../specs/006-lotes-licencias/validation.md). [Quickstart](../specs/006-lotes-licencias/quickstart.md) incluye navegador real opcional sin instalar herramientas en el entorno de la aplicación. No recrear bases o gestores existentes.
+Registro histórico de 006: 72 pruebas backend, más 16 puras de 008. Reproducción y avisos de seguridad de DRF en [validation.md](../specs/006-lotes-licencias/validation.md). [Quickstart](../specs/006-lotes-licencias/quickstart.md) incluye navegador real opcional sin instalar herramientas en el entorno de la aplicación. No recrear bases o gestores existentes.

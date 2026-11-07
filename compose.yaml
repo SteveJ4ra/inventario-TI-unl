@@ -1,0 +1,96 @@
+name: inventario-ti-u1
+x-app: &app
+  image: inventario-ti-backend:semana5
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  environment: &app-env
+    DJANGO_SETTINGS_MODULE: config.settings_deploy
+    DJANGO_DEBUG: "false"
+    QR_ALLOW_LOCAL_HTTP: "true"
+    DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+    DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:${COMPOSE_HTTP_PORT:-8005},http://127.0.0.1:${COMPOSE_HTTP_PORT:-8005}
+    DJANGO_SECRET_KEY_FILE: /run/secrets/django_secret_key
+    DB_PASSWORD_FILE: /run/secrets/db_password
+    DB_NAME: inventario_ti
+    DB_USER: inventario_app
+    DB_HOST: db
+    DB_PORT: "5432"
+    PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://127.0.0.1:5173}
+  secrets:
+    - django_secret_key
+    - db_password
+services:
+  db:
+    image: postgres:17-bookworm@sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994
+    environment:
+      POSTGRES_USER: inventario_admin
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_admin_password
+      POSTGRES_INITDB_ARGS: --locale-provider=icu --icu-locale=und
+    secrets: [db_admin_password, db_password]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/init-db.sh:/docker-entrypoint-initdb.d/10-inventario.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -h 127.0.0.1 -U inventario_admin -d postgres]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  initialize:
+    <<: *app
+    command: [python, deploy/initialize.py]
+    depends_on:
+      db: {condition: service_healthy}
+  web:
+    <<: *app
+    ports:
+      - "127.0.0.1:${COMPOSE_HTTP_PORT:-8005}:8000"
+    depends_on:
+      initialize: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, deploy/healthcheck.py]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+  testdb:
+    image: postgres:17-bookworm@sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994
+    profiles: [test]
+    environment:
+      POSTGRES_USER: inventario_test_admin
+      POSTGRES_DB: inventario_tests
+      POSTGRES_PASSWORD_FILE: /run/secrets/test_db_password
+      POSTGRES_INITDB_ARGS: --locale-provider=icu --icu-locale=und
+    secrets: [test_db_password]
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -h 127.0.0.1 -U inventario_test_admin -d inventario_tests]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  tests:
+    <<: *app
+    profiles: [test]
+    entrypoint: [python, deploy/test_runner.py]
+    command: [test, inventory, contract_tests, --verbosity, "1"]
+    environment:
+      <<: *app-env
+      DB_NAME: inventario_tests
+      DB_USER: inventario_test_admin
+      DB_HOST: testdb
+      DB_PASSWORD_FILE: /run/secrets/test_db_password
+    secrets: [django_secret_key, test_db_password]
+    depends_on:
+      testdb: {condition: service_healthy}
+secrets:
+  django_secret_key: {file: ./deploy/.secrets/django_secret_key}
+  db_password: {file: ./deploy/.secrets/db_password}
+  db_admin_password: {file: ./deploy/.secrets/db_admin_password}
+  test_db_password: {file: ./deploy/.secrets/test_db_password}
+volumes:
+  pgdata:
