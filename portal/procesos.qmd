@@ -1,0 +1,11 @@
+---
+title: Proceso BPMN de custodia
+---
+
+{{< include recursos/docs/producto-final/proceso-custodia.md >}}
+
+## Vista operativa
+
+![BPMN de entrega y devolución](recursos/docs/producto-final/custodia.svg)
+
+[Descargar BPMN 2.0.2 con DI](recursos/docs/producto-final/custodia.bpmn). La representación SVG utiliza las mismas coordenadas DI. La autorización/atomicidad se aplica en backend, no en un motor BPMN ejecutable.

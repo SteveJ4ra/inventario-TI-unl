@@ -1,0 +1,75 @@
+---
+title: Ejecución, observabilidad y respaldo
+---
+
+## Preparación
+
+Requisitos: Git, Python 3, Docker Desktop/Linux y Compose; Quarto 1.11.9 para documentación. Node/Vite se usa solo para la interfaz existente, aparte.
+
+```powershell
+git clone https://github.com/SteveJ4ra/inventario-TI-unl.git
+cd inventario-TI-unl
+git switch develop
+git pull --ff-only origin develop
+python deploy/prepare_secrets.py
+$env:COMPOSE_HTTP_PORT="8007"
+docker compose -p inventario-ti-u1-final build web tests
+docker compose -p inventario-ti-u1-final up -d --wait web
+```
+
+Linux: `export COMPOSE_HTTP_PORT=8007`. Después de preparar secretos y antes de arrancar contenedores, instalar el paquete `acl` y ejecutar `bash deploy/prepare_linux_secret_access.sh`. El ajuste conserva propietario y restringe lectura a los UID necesarios; no usar chmod 644/777. En copia existente, revisar git status y conservar cambios antes de actualizar con avance rápido. Estos pasos reproducen la consolidación una vez integrados sus PR revisados.
+
+## Configuración
+
+Los cuatro secretos aleatorios se guardan fuera de Git, sin imprimir/sobrescribir valores. Compose define hosts/orígenes/base/rol; contraseñas y clave Django se leen de /run/secrets. initialize ejecuta check, migraciones y expiración de sesiones heredadas antes de web. testdb es independiente.
+
+- [Swagger local](http://127.0.0.1:8007/api/docs/).
+- [OpenAPI](http://127.0.0.1:8007/api/openapi.json).
+- [Disponibilidad](http://127.0.0.1:8007/health/ready/).
+- QR: PUBLIC_APP_URL apunta al frontend existente (por defecto puerto 5173), alcanzable desde el dispositivo. localhost en un teléfono identifica al teléfono, no al equipo demostrador. La ficha exige Gestor.
+
+[Guía ampliada y cuentas](recursos/docs/producto-final/operacion-ampliada.md). No compartir contraseñas en informe/Git.
+
+## Pruebas
+
+```powershell
+docker compose -p inventario-ti-u1-final --profile test run --rm tests --pytest -q
+docker compose -p inventario-ti-u1-final --profile test run --rm tests makemigrations --check --dry-run
+docker compose -p inventario-ti-u1-final exec -T -e INVENTORY_ALLOW_DEMO_DATA=1 web python deploy/smoke.py
+```
+
+El smoke crea datos ficticios, opera por HTTP y desactiva sus cuentas al finalizar; conserva antecedentes. No usarlo contra datos institucionales. Se mantiene el ejecutor Django con `docker compose ... run --rm tests`.
+
+## Observabilidad
+
+```powershell
+docker compose -p inventario-ti-u1-final logs --tail 30 web
+Invoke-RestMethod http://127.0.0.1:8007/health/ready/
+```
+
+Log JSON: fecha UTC, nivel, request_id, método, plantilla de ruta, estado y duración en milisegundos. X-Request-ID permite correlacionar la respuesta. No incluye valores de URL, query, cuerpo, cookies o contraseñas. El historial de negocio sigue en PostgreSQL/API. Readiness verifica HTTP y SQL; 503 no revela configuración.
+
+## Respaldo/restauración
+
+```powershell
+python deploy/backup_roundtrip.py
+```
+
+Restringido al proyecto aislado inventario-ti-u1-final, sin escrituras concurrentes. Hace dump, restaura en una base temporal propia y compara filas y SHA-256 de cada tabla. No sobrescribe inventario_ti; elimina solo su base temporal. Dump/resultado quedan en deploy/results, ignorados. Para operación real se deben definir custodia, cifrado y retención institucional.
+
+## Quarto y Pages
+
+```powershell
+quarto render portal
+quarto preview portal --no-browser
+```
+
+El pre-render copia únicamente documentación. CI valida backend/portal y conserva un artefacto para revisión. La publicación es manual desde fuentes integradas en develop: ejecutar `quarto publish gh-pages portal --no-prompt` y configurar Pages con la rama gh-pages, carpeta raíz. main no se modifica. URL configurada: https://stevej4ra.github.io/inventario-TI-unl/. Se comunica como activa después de verificar el despliegue.
+
+## Detener
+
+```powershell
+docker compose -p inventario-ti-u1-final --profile test down
+```
+
+Conserva el volumen; evitar down -v al cerrar la demostración.

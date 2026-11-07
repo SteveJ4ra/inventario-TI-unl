@@ -1,0 +1,51 @@
+name: Backend y documentación
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Preparar secretos efímeros
+        run: python3 deploy/prepare_secrets.py
+      - name: Permitir lectura acotada de secretos en Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y acl
+          bash deploy/prepare_linux_secret_access.sh
+      - name: Compilar runtime y entorno de pruebas
+        run: docker compose -p inventario-ci build web tests
+      - name: Ejecutar pytest sobre PostgreSQL aislado
+        run: docker compose -p inventario-ci --profile test run --rm tests --pytest -q
+      - name: Verificar migraciones
+        run: docker compose -p inventario-ci --profile test run --rm tests makemigrations --check --dry-run
+      - name: Instalar validadores documentales
+        run: python3 -m pip install -r tools/requirements-validation.txt
+      - name: Comprobar artefactos y exportación OpenAPI
+        run: |
+          docker compose -p inventario-ci --profile test run --rm tests export_openapi > /tmp/openapi-runtime.json
+          python3 tools/validate_openapi.py --runtime /tmp/openapi-runtime.json
+          python3 tools/check_final_artifacts.py
+      - uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          version: 1.11.9
+      - name: Generar portal Quarto
+        run: quarto render portal
+      - name: Conservar portal para revisión
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: portal-tecnico
+          path: portal/_site/
+      - name: Detener entorno efímero
+        if: always()
+        run: docker compose -p inventario-ci --profile test down

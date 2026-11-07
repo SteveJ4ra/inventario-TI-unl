@@ -29,3 +29,8 @@ backend/staticfiles/
 
 # Respaldos de base: contienen datos y no se versionan
 *.dump
+
+# Portal generado; se publica como artefacto de Pages
+portal/_site/
+portal/.quarto/
+portal/recursos/

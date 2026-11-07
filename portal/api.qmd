@@ -1,0 +1,114 @@
+---
+title: Contrato API completo
+---
+
+## Contrato vigente
+
+OpenAPI 3.1.0, versión documental 1.1.0. Prefijo `/api/v1/`. Las rutas históricas `/api/` permanecen compatibles. El contrato v1 completo reutiliza exactamente las mismas reglas, permisos y servicios. Su cobertura se contrasta con urlpatterns y métodos reales.
+
+[Descargar OpenAPI completo](recursos/docs/producto-final/openapi.json). [Swagger del backend local](http://127.0.0.1:8007/api/docs/) permite ejecutar solicitudes reales y muestra cambios de otros usuarios por sondeo cada cinco segundos mientras la ventana está visible. Requiere que el backend esté iniciado; el portal estático no ejecuta operaciones ni almacena sesiones de inventario.
+
+## Autenticación y uso
+
+1. GET /auth/csrf/ y conservar cookies y data.csrfToken.
+2. POST /auth/login/ con username/password y X-CSRFToken.
+3. Obtener de nuevo CSRF tras el inicio de sesión (rotación).
+4. Consultar y operar según permisos, enviando cookie y CSRF para escrituras.
+5. Reconsultar la ficha tras un 409 antes de reenviar una revisión.
+
+La sesión vence absolutamente a los treinta minutos. Login devuelve 400 por credenciales inválidas; permisos/CSRF se rechazan con 403. Cinco fallos por cuenta/IP en quince minutos provocan 429 con Retry-After. La documentación pública no publica inventario.
+
+## Envoltura JSON
+
+```json
+{
+  "success": true,
+  "message": "Operación realizada correctamente.",
+  "data": {"id": 1, "code": "TI-000001"},
+  "errors": null,
+  "meta": {}
+}
+```
+
+En error success=false, data=null y errors contiene el detalle estructurado. El ejemplo de data está abreviado; los esquemas definen cada recurso. CSV y SVG conservan su tipo de archivo; HEAD y 204/304 respetan HTTP. X-Request-ID relaciona una respuesta con su log técnico.
+
+| Estado | Significado |
+|---|---|
+| 200/201 | Consulta/actualización o creación; apply repetido devuelve 200 idempotente. |
+| 400 | JSON/campos/validaciones inválidos o vista previa con filas erróneas. |
+| 403 | Sesión/permiso/CSRF no válido; no se promete 401 para SessionAuthentication. |
+| 404 | Recurso/ruta inexistente o no visible para la cuenta. |
+| 405 | Método no habilitado, por ejemplo DELETE del activo. |
+| 409 | Revisión, identidad o estado en conflicto; sin mutación parcial. |
+| 413 | Archivo/filas superan el límite CSV. |
+| 429 | Límite de intentos de acceso. |
+| 503 | Proveedor de importación o readiness no disponible; sin exponer configuración. |
+
+## Catálogo de operaciones
+
+El contrato contiene **46 rutas y 56 operaciones** de negocio. OPTIONS/HEAD siguen las reglas del framework; readiness es una ruta técnica separada.
+
+| Método | Ruta relativa a /api/v1 | Operación | Acceso |
+|---|---|---|---|
+| GET | `/auth/csrf/` | Obtener token CSRF | public |
+| POST | `/auth/login/` | Iniciar sesión | public |
+| GET | `/auth/me/` | Consultar sesión | cuenta autorizada |
+| POST | `/auth/logout/` | Cerrar sesión | cuenta autorizada |
+| POST | `/auth/change-password/` | Cambiar contraseña de revisor | reviewer (incluye contraseña temporal) |
+| GET | `/assets/` | Buscar activos | manager |
+| POST | `/assets/` | Registrar activo | manager |
+| GET | `/assets/{asset_id}/` | Consultar ficha | manager |
+| PATCH | `/assets/{asset_id}/` | Corregir datos descriptivos con auditoría | manager |
+| GET | `/assets/by-code/{code}/` | Consultar por código TI | manager |
+| GET | `/assets/{asset_id}/qr.svg` | Descargar QR autenticado | manager |
+| GET | `/assets/{asset_id}/movements/` | Consultar movimientos | manager |
+| GET | `/assets/{asset_id}/history/` | Consultar historial consolidado | manager |
+| GET | `/assets/{asset_id}/incidents/` | Consultar novedades | manager |
+| POST | `/assets/{asset_id}/incidents/` | Reportar daño, pérdida o robo | manager |
+| POST | `/assets/{asset_id}/deliver/` | Entregar activo | manager |
+| POST | `/assets/{asset_id}/return/` | Devolver activo | manager |
+| POST | `/assets/{asset_id}/condition/` | Cambiar condición | manager |
+| POST | `/assets/{asset_id}/rectify/` | Rectificar último movimiento | manager |
+| POST | `/incidents/{incident_id}/resolve/` | Resolver novedad | manager |
+| POST | `/assets/{asset_id}/recover/` | Registrar recuperación inspeccionada | manager |
+| POST | `/assets/{asset_id}/maintenance/` | Iniciar mantenimiento | manager |
+| GET | `/maintenance/{maintenance_id}/` | Consultar mantenimiento | manager |
+| POST | `/maintenance/{maintenance_id}/close/` | Cerrar mantenimiento | manager |
+| GET | `/custodians/` | Listar custodios | manager |
+| POST | `/custodians/` | Registrar custodio | manager |
+| PATCH | `/custodians/{custodian_id}/` | Corregir custodio sin alterar instantáneas históricas | manager |
+| GET | `/options/` | Consultar opciones de inventario | manager |
+| GET | `/faculties/` | Listar facultades activas | manager u operator |
+| GET | `/operator/faculties/` | Listar todas las facultades | operator |
+| POST | `/operator/faculties/` | Crear facultad | operator |
+| PATCH | `/operator/faculties/{faculty_id}/` | Actualizar facultad | operator |
+| PATCH | `/operator/assets/{asset_id}/faculty/` | Cambiar facultad con auditoría | operator |
+| POST | `/acquisitions/` | Registrar factura o respaldo compartido | manager |
+| GET | `/acquisitions/{document_id}/` | Consultar adquisición | manager |
+| PATCH | `/acquisitions/{document_id}/` | Corregir documento compartido con control de instantáneas | manager |
+| GET | `/license-lots/` | Consultar lotes de licencias | manager |
+| POST | `/license-lots/` | Registrar lote de licencias | manager |
+| GET | `/license-lots/{lot_id}/` | Consultar lote | manager |
+| PATCH | `/license-lots/{lot_id}/` | Actualizar lote con auditoría | manager |
+| GET | `/license-lots/{lot_id}/history/` | Consultar historial del lote | manager |
+| POST | `/assets/{asset_id}/retire/` | Dar de baja activo Disponible | manager |
+| GET | `/assets/{asset_id}/retirement-requests/` | Consultar solicitudes de baja | manager |
+| POST | `/assets/{asset_id}/retirement-requests/` | Solicitar baja de No localizado | manager |
+| GET | `/reviewer/retirement-requests/` | Consultar solicitudes asignadas | reviewer (contraseña inicial cambiada) |
+| POST | `/retirement-requests/{request_id}/decision/` | Aprobar o rechazar solicitud asignada | reviewer asignado de otra facultad |
+| POST | `/retirement-requests/{request_id}/reassign/` | Reasignar solicitud pendiente | operator |
+| GET | `/operator/reviewers/` | Listar revisores | operator |
+| POST | `/operator/reviewers/` | Crear revisor con contraseña temporal | operator |
+| PATCH | `/operator/reviewers/{user_id}/` | Desactivar revisor sin solicitudes pendientes | operator |
+| GET | `/imports/templates/{kind}/` | Descargar plantilla CSV | manager |
+| POST | `/imports/previews/` | Validar lote completo sin aplicar | manager |
+| GET | `/imports/{batch_id}/` | Consultar vista previa propia | manager |
+| POST | `/imports/{batch_id}/confirm/` | Primera confirmación del mismo gestor | manager |
+| POST | `/imports/{batch_id}/apply/` | Confirmar y aplicar lote atómicamente | manager |
+| POST | `/imports/{batch_id}/cancel/` | Cancelar lote propio | manager |
+
+## Tipos y validaciones
+
+Los cuerpos JSON se derivan de serializadores DRF y rechazan campos extra. El documento añade reglas entre campos: fecha conocida o motivo exclusivamente, compra con factura y donación con respaldo, confirmaciones verdaderas e identificación del revisor. Campos reservados, revisiones, identidad normalizada y cantidades se verifican en servidor.
+
+Las instantáneas históricas son objetos extensibles; conservan el contexto registrado, sin reescribir nombres anteriores. El esquema no sustituye validaciones transaccionales ni la regla de misma facultad/revisor. Los contratos Markdown de 002-008 documentan estas decisiones y sus escenarios.
