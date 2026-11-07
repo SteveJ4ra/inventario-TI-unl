@@ -1,4 +1,5 @@
+"""Comprueba que HTTP y PostgreSQL estén disponibles."""
+import json
 from urllib.request import urlopen
-with urlopen("http://127.0.0.1:8000/api/openapi.json", timeout=4) as response:
-    if response.status != 200:
-        raise SystemExit(1)
+with urlopen("http://127.0.0.1:8000/health/ready/", timeout=3) as response:
+    assert response.status == 200 and json.load(response)["data"]["status"] == "ready"

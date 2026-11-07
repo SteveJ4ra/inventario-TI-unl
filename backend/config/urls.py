@@ -19,7 +19,10 @@ from django.contrib import admin
 from django.urls import include, path
 from inventory.openapi_v1 import schema, swagger_ui, live_script
 
+from inventory.observability import readiness
+
 urlpatterns = [
+    path("health/ready/", readiness),
     path("admin/", admin.site.urls),
     path("api/openapi.json", schema),
     path("api/docs/", swagger_ui),

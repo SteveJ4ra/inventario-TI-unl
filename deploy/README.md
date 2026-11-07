@@ -7,7 +7,7 @@ Desde la raíz del repositorio; requiere Docker Desktop con motor Linux (o Docke
 ```powershell
 python deploy/prepare_secrets.py
 docker compose config --quiet
-docker compose build web
+docker compose build web tests
 docker compose up -d --wait --no-build web
 docker compose ps --all
 ```
@@ -60,7 +60,7 @@ Para demostrar el ciclo HTTP se puede ejecutar:
 docker compose exec -T -e INVENTORY_ALLOW_DEMO_DATA=1 web python deploy/smoke.py
 ```
 
-Este último comando crea registros claramente ficticios en la base de demostración: un gestor, facultad, factura, custodio y activo. Comprueba 30 respuestas HTTP, sesión/CSRF, alta inválida, consulta, entrega, devolución, historial, QR, expiración y bloqueo. La cuenta temporal se desactiva al terminar y los antecedentes se conservan. No usarlo sobre datos operativos; exige la confirmación y la combinación de base/rol/servicio de este despliegue.
+Este último comando crea registros claramente ficticios en la base de demostración: un gestor, facultad, factura, custodio y activo. Comprueba 66 respuestas HTTP, sesión/CSRF, alta/consulta, entrega/devolución, adquisición/edición, mantenimiento, novedades, baja/rectificación, licencias, CSV estricto, QR, expiración y bloqueo. La cuenta temporal se desactiva al terminar y los antecedentes se conservan. No usarlo sobre datos operativos; exige la confirmación y la combinación de base/rol/servicio de este despliegue.
 
 ## Operación y límites
 
@@ -85,3 +85,11 @@ El respaldo contiene datos y debe guardarse fuera del repositorio, con permisos 
 El perfil HTTP local produce W004, W008, W012 y W016 de check --deploy porque no habilita TLS/HSTS/cookies Secure. No se silencian ni se presenta este entorno como producción pública. Para un despliegue público se necesita infraestructura HTTPS real, hosts/orígenes correctos, permisos/retención de respaldos y una revisión operativa. La opción DJANGO_HTTPS=true del perfil activa redirección, cookies Secure y HSTS; no configura certificados ni un proxy de confianza. Swagger necesita conexión a su CDN; el esquema JSON y live.js son locales.
 
 Resultados y límites: docs/semana-5/validacion.md. No publicar deploy/.secrets, respaldos, archivos .env ni la carpeta de resultados locales.
+
+## Consolidación final 009
+
+Ejecutar toda la suite, incluidas las políticas y parser aislados, con `docker compose --profile test run --rm tests --pytest -q`. La imagen de pruebas se construye separada del runtime; los secretos siguen fuera de Git. El healthcheck actual usa /health/ready/ y comprueba SQL. Logs JSON y X-Request-ID no incluyen cuerpos, consultas ni credenciales. El contrato OpenAPI vigente cubre todos los módulos v1; /api/ se conserva.
+
+Para el ensayo final separado: COMPOSE_HTTP_PORT=8007 y proyecto inventario-ti-u1-final. `python deploy/backup_roundtrip.py` restaura exclusivamente en una base temporal de ese proyecto y compara contenido, sin sobrescribir la original. Ver portal/operacion.qmd y docs/producto-final/evidencia-validacion.json.
+
+En anfitrión Linux, después de prepare_secrets.py: instalar el paquete acl y ejecutar `bash deploy/prepare_linux_secret_access.sh`. Compose monta archivos y conserva permisos del anfitrión; la ACL permite solo los UID lectores necesarios, sin hacer públicos los secretos. En Docker Desktop/Windows no se aplica este script.
