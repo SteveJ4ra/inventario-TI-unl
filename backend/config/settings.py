@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "inventory.observability.RequestLoggingMiddleware",
     "inventory.privacy.ApiPrivacyMiddleware",
     "inventory.api_v1.EnvelopeMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -173,3 +174,11 @@ SESSION_SAVE_EVERY_REQUEST = False
 
 # Moneda para nuevos documentos; cada documento conserva su código histórico.
 ASSET_CURRENCY_CODE = "USD"
+
+# Salida estándar para Docker/operación; el historial de negocio reside en PostgreSQL.
+LOGGING = {
+    "version": 1, "disable_existing_loggers": False,
+    "formatters": {"request_json": {"()": "inventory.observability.JsonRequestFormatter"}},
+    "handlers": {"request_console": {"class": "logging.StreamHandler", "formatter": "request_json"}},
+    "loggers": {"inventory.http": {"handlers": ["request_console"], "level": os.environ.get("INVENTORY_HTTP_LOG_LEVEL", "INFO"), "propagate": False}},
+}

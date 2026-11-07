@@ -58,10 +58,10 @@ class VersionedFlowTests(InventoryCase):
         self.assertEqual(anonymous.status_code, 403)
         self.assertFalse(anonymous.json()['success'])
 
-    def test_versioned_detail_rejects_undocumented_edit(self):
+    def test_versioned_detail_rejects_edit_without_revision_and_reason(self):
         asset = self.new_asset()
         response = self.client.patch(f"/api/v1/assets/{asset['id']}/", {'name': 'Otro'}, format='json')
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()['success'])
         self.assertEqual(self.client.get(f"/api/assets/{asset['id']}/").json()['name'], asset['name'])
 

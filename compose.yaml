@@ -1,9 +1,10 @@
 name: inventario-ti-u1
 x-app: &app
-  image: inventario-ti-backend:semana5
+  image: inventario-ti-backend:producto-final
   build:
     context: .
     dockerfile: backend/Dockerfile
+    target: runtime
   init: true
   security_opt:
     - no-new-privileges:true
@@ -75,6 +76,11 @@ services:
       retries: 30
   tests:
     <<: *app
+    image: inventario-ti-backend:producto-final-test
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: test
     profiles: [test]
     entrypoint: [python, deploy/test_runner.py]
     command: [test, inventory, contract_tests, --verbosity, "1"]
