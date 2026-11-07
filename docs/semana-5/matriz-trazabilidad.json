@@ -1,0 +1,949 @@
+{
+  "conteos": {
+    "002": 23,
+    "003": 16,
+    "004": 16,
+    "005": 17,
+    "006": 12,
+    "007": 8,
+    "008": 12
+  },
+  "requisitos": [
+    {
+      "id": "002/FR-001",
+      "requisito": "permitir registrar y consultar activos físicos, registrar entregas y devoluciones, rectificar movimientos, cambiar la condición de activos Disponibles y consultar su historial mediante pantalla web y API. La entrega incluirá pruebas de las funcionalidades acordadas.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_creation_code_fields_and_stability",
+      "alcance": "Backend/API; interacción de cliente fuera del despliegue S5"
+    },
+    {
+      "id": "002/FR-002",
+      "requisito": "generar automáticamente un código de inventario único y estable con prefijo `TI-` y numeración creciente, presentada como `TI-000001`, `TI-000002`, etc. La numeración no se reinicia por año ni categoría y no se reutilizan códigos.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_creation_code_fields_and_stability",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-003",
+      "requisito": "conservar nombre y descripción como campos separados, además de categoría, marca, modelo, número de serie, ubicación y custodio.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_required_lengths_choices_and_reserved_fields",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-004",
+      "requisito": "exigir nombre, descripción, categoría, marca, modelo, número de serie y ubicación al registrar el activo. El custodio representa a la persona que tiene la custodia temporal; no se exige ni se asigna custodio temporal al dar de alta el activo o después de una devolución.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_required_lengths_choices_and_reserved_fields",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-005",
+      "requisito": "exigir los dos campos separados: condición (`Operativo`, `Averiado` o `En reparación`) y asignación (`Disponible` o `Asignado`). Al dar de alta se establece Disponible; esto no implica que su condición sea Operativo.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_required_lengths_choices_and_reserved_fields",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-006",
+      "requisito": "utilizar las categorías confirmadas: computadora de escritorio, portátil, monitor, impresora, equipo de red y periférico.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_only_six_categories_and_no_edit_delete",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-007",
+      "requisito": "rechazar un activo duplicado por la combinación marca + modelo + serie, comparando los tres campos sin distinguir mayúsculas y eliminando espacios al principio y al final. Conservar los caracteres internos de la serie: ABC-123 y ABC123 son distintos. La serie por sí sola no se establece como identificador único global.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_duplicates_normalized_but_internal_characters_preserved",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-008",
+      "requisito": "permitir ver el listado de activos y la ficha individual de cada equipo registrado.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_queries.py",
+      "caso": "test_empty_missing_and_pagination",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-009",
+      "requisito": "permitir buscar por coincidencia parcial sin distinguir mayúsculas en al menos uno de estos campos: código, nombre del activo, marca, modelo, serie y nombre/correo del custodio actual. Permitir filtrar por categoría, condición, asignación, ubicación y custodio actual; cada resultado debe satisfacer la búsqueda y todos los filtros seleccionados.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_search.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-010",
+      "requisito": "restringir el acceso a la aplicación y sus operaciones a gestores identificados y autorizados. Los custodios se registran como personas sin cuenta de acceso en este incremento. Todos los gestores autorizados tienen los mismos permisos sobre el inventario completo: registrar activos y custodios, consultar, entregar, devolver, cambiar condición y rectificar movimientos elegibles, incluso si los registró otro gestor.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_permissions.py",
+      "caso": "test_anonymous_and_non_manager_denied",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-011",
+      "requisito": "distinguir al gestor que registra operaciones del custodio temporal del activo. Distintos gestores autorizados pueden gestionar los activos; no se fija un gestor responsable único por activo.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_cycle_authors_locations_and_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-012",
+      "requisito": "permitir una entrega únicamente si el activo está Disponible y Operativo; la entrega lo deja Asignado a un custodio temporal identificado y conserva el gestor autor del movimiento.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_invalid_states_stale_revision_and_forged_author",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-013",
+      "requisito": "rechazar devoluciones sin entrega activa. Al registrar una devolución válida, exigir que el gestor indique la condición de recepción entre Operativo, Averiado y En reparación; dejar el activo Disponible y sin custodio temporal; conservar el antecedente, el autor y las condiciones anterior y recibida en el historial.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_cycle_authors_locations_and_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-014",
+      "requisito": "conservar y consultar en cada movimiento el activo, tipo de operación, fecha y hora de registro generadas automáticamente, gestor autor, custodio relacionado y condiciones anterior y posterior, además de una observación opcional escrita por el gestor. El autor corresponde al gestor que realiza la operación; no es una persona elegida para sustituir a quien la registra.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_cycle_authors_locations_and_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-015",
+      "requisito": "dar de alta todos los activos como Disponible y sin custodio temporal. Cualquier custodia temporal posterior se inicia mediante una entrega registrada; no se permite un alta directamente Asignada en este incremento.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_creation_code_fields_and_stability",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-016",
+      "requisito": "conservar sin reescritura ni borrado el movimiento original cuando se corrija un error; añadir una rectificación vinculada con motivo obligatorio, gestor autor y fecha/hora que anule su efecto y restaure la situación anterior. La operación correcta se registra después como una nueva operación separada; la rectificación no edita directamente los datos originales.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_rectification.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-017",
+      "requisito": "permitir rectificar únicamente la última entrega, devolución o cambio de condición vigente de cada activo, sin operaciones posteriores. Rechazar movimientos con operaciones posteriores, ya rectificados y las propias rectificaciones. Anular el último movimiento no habilita la rectificación de movimientos anteriores.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_rectification.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-018",
+      "requisito": "permitir Cambiar condición únicamente sobre activos Disponibles, eligiendo otra de las condiciones admitidas y exigiendo motivo. Conservar el cambio, su autor, fecha/hora y condiciones anterior/posterior en el historial. Esta operación representa un cambio real y no sustituye la rectificación de un registro erróneo.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_condition.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-019",
+      "requisito": "identificar a cada custodio con nombre completo y correo institucional obligatorios y dependencia opcional. El correo es único entre custodios comparándolo sin distinguir mayúsculas y eliminando espacios exteriores; la persona no recibe una cuenta de acceso. Validar el formato del correo sin restringir el dominio en este incremento.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_custodian_email_unique_without_domain_restriction_no_user",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-020",
+      "requisito": "conservar la ubicación actual informada del activo; exigir y registrar la ubicación de destino en la entrega y el lugar de recepción en la devolución, actualizando la ficha y conservando esos lugares en los movimientos correspondientes. La rectificación restaura también la ubicación anterior si el movimiento anulado la cambió.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_cycle_authors_locations_and_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-021",
+      "requisito": "permitir introducir marca, modelo y ubicación como texto; no incorporar catálogos administrables para esos tres datos en este incremento. Se mantienen las categorías y los valores de condición/asignación ya confirmados.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_assets.py",
+      "caso": "test_required_lengths_choices_and_reserved_fields",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-022",
+      "requisito": "conservar todo el historial de este incremento sin borrado automático. Los plazos institucionales de conservación se definirán en una etapa posterior, sin inventar una política institucional en este trabajo.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_custody.py",
+      "caso": "test_original_immutable_in_model_and_database",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "002/FR-023",
+      "requisito": "mantener las reglas de identidad y estado también ante solicitudes simultáneas: no crear duplicados, repetir códigos ni aceptar doble entrega, devolución o rectificación incompatible. Una operación rechazada no deja cambios parciales ni un movimiento válido.",
+      "fuente": "specs/002-registro-consulta-activos/spec.md",
+      "componentes": "services.py; permissions.py; models.py",
+      "prueba": "backend/inventory/tests/test_concurrency.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-001",
+      "requisito": "El sistema MUST conservar los datos base de activo y custodio definidos en 002 y permitir editar los campos descriptivos acordados.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_asset_edit_audit_history_and_rectification_guard",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-002",
+      "requisito": "Toda edición de datos de activo MUST exigir motivo y conservar antes/después, actor y fecha/hora.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_asset_edit_audit_history_and_rectification_guard",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-003",
+      "requisito": "El sistema MUST preservar la representación histórica del custodio en movimientos previos después de corregir su ficha.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_audited_correction_preserves_movement_snapshot_and_asset_revision",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-004",
+      "requisito": "Una edición general MUST rechazar cambios de ubicación, condición, asignación, custodio actual y situación de baja/no localizado.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_duplicate_identity_and_reserved_fields_do_not_write",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-005",
+      "requisito": "El operador técnico MUST crear, consultar y actualizar la lista manual de facultades sin sincronización institucional.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_operator_api.py",
+      "caso": "test_catalog_normalized_unique_and_references_preserved",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-006",
+      "requisito": "Cada activo MUST referenciar una facultad responsable existente.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisitions.py",
+      "caso": "test_purchase_required_fields_and_no_partial_document",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-007",
+      "requisito": "El sistema MUST representar adquisición de activos como compra o donación.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisitions.py",
+      "caso": "test_donation_metadata_without_invoice",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-008",
+      "requisito": "Una compra MUST registrar referencia, fecha y proveedor de factura, total en USD, y líneas de activo con importe individual.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisitions.py",
+      "caso": "test_several_assets_reuse_invoice_and_keep_exact_individual_values",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-009",
+      "requisito": "Una donación MUST registrar referencia textual de respaldo y valor estimado individual por activo; un documento podrá enlazarse a varios activos.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_donations.py",
+      "caso": "test_shared_support_one_and_several_assets_preserve_individual_estimates",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-010",
+      "requisito": "La fecha de adquisición MUST registrarse o marcarse desconocida con motivo obligatorio.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisitions.py",
+      "caso": "test_unknown_acquisition_date_requires_reason_and_rejects_both",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-011",
+      "requisito": "Los documentos de adquisición MUST admitir asociación con varios activos y conservar total común e importes individuales donde correspondan.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisitions.py",
+      "caso": "test_several_assets_reuse_invoice_and_keep_exact_individual_values",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-012",
+      "requisito": "El importe monetario MUST usar USD mediante una constante/configuración única del backend; no habrá selector de moneda en interfaz.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_acquisition_models.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-013",
+      "requisito": "La edición de custodio MUST preservar historia de movimientos y registrar autor, fecha/hora y antes/después del perfil.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_audited_correction_preserves_movement_snapshot_and_asset_revision",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-014",
+      "requisito": "El sistema MUST rechazar una edición que cree una duplicidad de identidad de activo según la regla marca+modelo+serie de 002.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_metadata_edit.py",
+      "caso": "test_duplicate_identity_and_reserved_fields_do_not_write",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-015",
+      "requisito": "El sistema MUST evitar borrado físico de documentos, activos, facultades referenciadas y auditoría.",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_operator_api.py",
+      "caso": "test_catalog_normalized_unique_and_references_preserved",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "003/FR-016",
+      "requisito": "Solo el operador MUST cambiar la facultad responsable; cada cambio exige motivo y auditoría antes/después. Si hay solicitud de baja pendiente, debe rechazarse (integración con 005).",
+      "fuente": "specs/003-fichas-adquisiciones/spec.md",
+      "componentes": "acquisition_services.py; custodian_services.py; faculty_services.py",
+      "prueba": "backend/inventory/tests/test_retirement_integration.py",
+      "caso": "test_pending_request_blocks_faculty_change_and_cancels_on_recovery",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-001",
+      "requisito": "Registrar novedad por daño/observación con descripción, tipo, fecha/hora y gestor autor.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_damage_and_observation_can_be_stored_without_changing_assignment",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-002",
+      "requisito": "Permitir novedad de daño/observación en activo Disponible o Asignado y mostrar alerta hasta su resolución.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_assigned_asset_report_and_resolution_preserve_custody_and_history",
+      "alcance": "Backend/API; interacción de cliente fuera del despliegue S5"
+    },
+    {
+      "id": "004/FR-003",
+      "requisito": "Resolver novedad con nota obligatoria, gestor y fecha/hora; conservarla en el historial.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_resolution_requires_note_and_is_reserved_for_damage_or_observation",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-004",
+      "requisito": "No cambiar condición automáticamente por una novedad; usar el flujo de condición existente para cambios reales.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_damage_and_observation_can_be_stored_without_changing_assignment",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-005",
+      "requisito": "Iniciar mantenimiento para activo localizado, Disponible, sin custodia actual y sin otro mantenimiento En curso.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_maintenance.py",
+      "caso": "test_ineligible_duplicate_and_stale_start_leave_no_partial_writes",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-006",
+      "requisito": "Guardar al inicio descripción, ubicación/taller, autor, fecha/hora y ubicación previa.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_maintenance.py",
+      "caso": "test_preventive_maintenance_blocks_delivery_and_closes_without_changing_condition",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-007",
+      "requisito": "Bloquear entregas mientras exista mantenimiento En curso, aunque la condición sea Operativo.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_maintenance.py",
+      "caso": "test_preventive_maintenance_blocks_delivery_and_closes_without_changing_condition",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-008",
+      "requisito": "Cerrar mantenimiento exigiendo resultado y ubicación de recepción; proponer ubicación previa y solicitar confirmación explícita antes de guardar.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_maintenance.py",
+      "caso": "test_completed_maintenance_requires_result_and_confirmed_location",
+      "alcance": "Backend/API; interacción de cliente fuera del despliegue S5"
+    },
+    {
+      "id": "004/FR-009",
+      "requisito": "Mantener separado el evento de mantenimiento del cambio de condición.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_maintenance.py",
+      "caso": "test_condition_is_a_separate_operation_and_old_movements_cannot_be_rectified",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-010",
+      "requisito": "Registrar pérdida/robo con tipo, descripción, autor, fecha/hora y snapshots de ubicación, condición, asignación, custodio y mantenimiento previo.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_loss_from_assigned_snapshots_custodian_and_preserves_movements",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-011",
+      "requisito": "Cambiar situación del activo a No localizado; bloquear entrega, devolución como si estuviera físicamente presente y cierre normal de mantenimiento.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_loss_from_available_blocks_incompatible_actions",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-012",
+      "requisito": "Al reportar No localizado durante mantenimiento, marcar dicho evento Interrumpido por No localizado, sin resultado. Al recuperar, cualquier continuación usa un evento nuevo.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_loss_during_maintenance_and_recovery_preserve_original_evidence",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-013",
+      "requisito": "Registrar recuperación con condición y ubicación nuevas, conservar código e historial y dejar Disponible/sin custodio vigente.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_recovery_validates_inspection_condition_location_and_revision",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-014",
+      "requisito": "No dar de baja automáticamente un activo No localizado.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_loss_from_available_blocks_incompatible_actions",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-015",
+      "requisito": "Preservar eventos originales y resolver conflictos concurrentes sin cambios parciales.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_incidents.py",
+      "caso": "test_failed_interruption_rolls_back_report_and_asset",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "004/FR-016",
+      "requisito": "Conservar toda novedad, mantenimiento, reporte y recuperación sin borrado automático.",
+      "fuente": "specs/004-novedades-mantenimiento/spec.md",
+      "componentes": "services.py; models.py; views.py",
+      "prueba": "backend/inventory/tests/test_asset_transitions.py",
+      "caso": "test_event_blocks_rectification_and_preserves_legacy_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-001",
+      "requisito": "Permitir baja normal solo para activo localizado, Disponible, sin custodio vigente y sin mantenimiento En Curso.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/inventory/tests/test_retirement_integration.py",
+      "caso": "test_active_maintenance_blocks_normal_retirement",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-002",
+      "requisito": "Permitir baja normal bajo cualquier condición; exigir motivo y guardar autor/fecha.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_store.py",
+      "caso": "test_normal_retirement_records_state_movement_and_audit",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-003",
+      "requisito": "Antes de la baja normal de un activo en mantenimiento, exigir cierre del mantenimiento con resultado.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/inventory/tests/test_retirement_integration.py",
+      "caso": "test_active_maintenance_blocks_normal_retirement",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-004",
+      "requisito": "Conservar ficha, historial y código; no borrar activo ni reutilizar su identificador.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/inventory/tests/test_retirement_integration.py",
+      "caso": "test_normal_retirement_preserves_acquisition",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-005",
+      "requisito": "Permitir solicitar baja solo a activo No localizado, con motivo, usuario Gestor, fecha y revisor asignado.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_api.py",
+      "caso": "test_manager_requests_and_assigned_reviewer_decides",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-006",
+      "requisito": "Rechazar autoaprobación y revisores cuya facultad sea igual a la responsable del activo.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_models.py",
+      "caso": "test_one_pending_and_no_self_review",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-007",
+      "requisito": "Limitar cada revisor a solicitudes asignadas y datos del activo necesarios para decidir; no conceder acceso de edición/inventario.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_api.py",
+      "caso": "test_other_reviewer_cannot_read_or_decide_request",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-008",
+      "requisito": "Aprobar baja No localizado mediante decisión inmutable con autor/fecha; al aprobar el activo pasa a Baja.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_store.py",
+      "caso": "test_request_approval_persists_and_is_not_repeatable",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-009",
+      "requisito": "Rechazar solicitud con motivo obligatorio; el activo continúa No localizado y admite nueva solicitud con motivo actualizado.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_models.py",
+      "caso": "test_decision_requires_reason_and_is_immutable",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-010",
+      "requisito": "Cancelar automáticamente solicitud pendiente si el activo se recupera; guardar motivo, autor del evento automático, fecha y vínculo a recuperación.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_store.py",
+      "caso": "test_recovery_cancellation_has_link_and_rolls_back_with_recovery",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-011",
+      "requisito": "Solo el operador puede reasignar una solicitud pendiente a otro revisor elegible; impedir desactivar revisor hasta que el operador reasigne todas las pendientes.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_api.py",
+      "caso": "test_operator_can_create_reviewer_but_cannot_deactivate_pending",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-012",
+      "requisito": "Operador técnico autorizado puede crear/desactivar revisores desde la interfaz y asignar facultad.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_api.py",
+      "caso": "test_operator_can_create_reviewer_but_cannot_deactivate_pending",
+      "alcance": "Backend/API; interacción de cliente fuera del despliegue S5"
+    },
+    {
+      "id": "005/FR-013",
+      "requisito": "El primer inicio de sesión del revisor exige cambiar la contraseña temporal.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_api.py",
+      "caso": "test_temporary_reviewer_denied_until_password_change",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-014",
+      "requisito": "Alta/baja de gestores permanece por comandos locales; usuario inactivo no accede y la autoría histórica se conserva.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/inventory/tests/test_deactivate_gestor.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-015",
+      "requisito": "Permitir rectificar una baja errónea solo si es el error más reciente, con motivo y vínculo, preservando baja original.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_store.py",
+      "caso": "test_rectify_latest_retirement_restores_snapshot_without_erasing_event",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-016",
+      "requisito": "Mantener los datos e historial sin borrado automático.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/contract_tests/test_models.py",
+      "caso": "test_direct_sql_cannot_rewrite_decision",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "005/FR-017",
+      "requisito": "Rechazar el cambio de facultad responsable mientras exista solicitud de baja pendiente; la autorización y auditoría del cambio corresponden a 003.",
+      "fuente": "specs/005-bajas-aprobacion/spec.md",
+      "componentes": "retirement_workflow.py; retirement_store.py; retirement_api.py",
+      "prueba": "backend/inventory/tests/test_retirement_integration.py",
+      "caso": "test_pending_request_blocks_faculty_change_and_cancels_on_recovery",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-001",
+      "requisito": "Registrar y consultar lotes de licencia de software sin asociarlos individualmente a activos/personas.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_create_read_edit_and_history",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-002",
+      "requisito": "Registrar producto, proveedor y modalidad de puestos finitos por usuario o dispositivo.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_strict_types_unknown_fields_and_service_permissions",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-003",
+      "requisito": "Registrar cantidad comprada y cantidad en uso como enteros no negativos.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_zero_quantities_and_optional_end_date",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-004",
+      "requisito": "Calcular remanentes = compradas − en uso; rechazar cantidad en uso > compradas.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_database_rejects_invalid_values_even_without_api",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-005",
+      "requisito": "Exigir fecha de inicio de vigencia; fecha de fin opcional.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_zero_quantities_and_optional_end_date",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-006",
+      "requisito": "Derivar estado Por iniciar/Vigente/Vencido a partir de fechas, sin borrar el lote.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_zero_remaining_and_temporal_boundaries",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-007",
+      "requisito": "Mostrar remanentes aun si está vencido y distinguirlos de disponibilidad vigente.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_zero_remaining_and_temporal_boundaries",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-008",
+      "requisito": "Permitir edición auditada de los campos de lote y cantidades; preservar autor, fecha/hora y antes/después.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_create_edit_all_fields_and_preserve_author_snapshot",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-009",
+      "requisito": "No guardar claves de activación, licencias ilimitadas/de campus o asignaciones individuales.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_reserved_fields_are_rejected_on_create_and_patch",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-010",
+      "requisito": "Gestores autorizados tienen mismos permisos; operaciones sujetas a sesión, CSRF y validación del servidor.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_other_managers_have_equal_access",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-011",
+      "requisito": "El listado permite buscar producto/proveedor y filtrar tipo/estado para localizar el lote.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_search_combined_filters_injection_and_query_validation",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "006/FR-012",
+      "requisito": "No relacionar una licencia con el registro de adquisición de activos físicos en este alcance.",
+      "fuente": "specs/006-lotes-licencias/spec.md",
+      "componentes": "license_services.py; models.py",
+      "prueba": "backend/inventory/tests/test_license_lots.py",
+      "caso": "test_reserved_fields_are_rejected_on_create_and_patch",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-001",
+      "requisito": "generar enlace interno con código TI y sin datos personales.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_qr_contiene_url_canonica_sin_datos_privados",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-002",
+      "requisito": "descargar QR SVG imprimible para un activo físico.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_gestor_descarga_svg_bajo_demanda",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-003",
+      "requisito": "preservar destino interno tras login y rechazar redirecciones externas arbitrarias.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_resolucion_exacta_por_codigo",
+      "alcance": "Backend/API; interacción de cliente fuera del despliegue S5"
+    },
+    {
+      "id": "007/FR-004",
+      "requisito": "requerir autenticación y permiso Gestor antes de mostrar la ficha.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_sin_sesion_no_puede_descargar_ni_consultar",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-005",
+      "requisito": "responder sin revelar datos cuando el código no existe.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_codigo_inexistente_o_parcial_no_coincide",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-006",
+      "requisito": "construir URL desde `PUBLIC_APP_URL` configurada, no desde Host no confiable.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_host_alternativo_no_define_destino_qr",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-007",
+      "requisito": "regenerar QR bajo demanda sin persistir imagen; no crear QR para licencias.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_gestor_descarga_svg_bajo_demanda",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "007/FR-008",
+      "requisito": "mantener acceso protegido en cualquier estado del activo.",
+      "fuente": "specs/007-qr-activos/spec.md",
+      "componentes": "qr_urls.py; views.py",
+      "prueba": "backend/inventory/test_qr_assets.py",
+      "caso": "test_gestor_descarga_svg_bajo_demanda",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-001",
+      "requisito": "aceptar CSV de activos físicos y lotes de licencias mediante plantillas separadas y versionadas.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_plantilla_descargable",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-002",
+      "requisito": "validar el archivo completo y mostrar todos los errores por fila/campo antes de escribir datos.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_preview_invalido_lista_errores_y_no_habilita_confirmacion",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-003",
+      "requisito": "ante cualquier error, rechazar el lote entero y crear cero registros de dominio.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_revalidacion_al_aplicar_rechaza_todo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-004",
+      "requisito": "presentar una vista previa completa y resumen de los registros válidos.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_get_pagina_todas_las_filas",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-005",
+      "requisito": "exigir dos confirmaciones explícitas del mismo Gestor que inició el lote.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_otro_gestor_no_consulta_ni_confirma",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-006",
+      "requisito": "vincular confirmaciones a una vista previa inmutable identificada por lote/hash.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_apply_requiere_confirmacion_y_hash_vigente",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-007",
+      "requisito": "aplicar activos o lotes en una transacción atómica, sin resultados parciales.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_fallo_del_proveedor_revierte_y_permite_reintentar",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-008",
+      "requisito": "generar código TI en servidor y crear activos importados como Disponibles/sin custodio.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_import_acquisitions.py",
+      "caso": "suite del archivo",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-009",
+      "requisito": "respetar reglas de adquisición de compra/donación y documentos compartidos de 003.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_documentos_compartidos_y_referencias",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-010",
+      "requisito": "tratar cada fila de licencias como un lote, aplicando reglas de fecha y cantidad de 006.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_licencias_validas_e_invalidas",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-011",
+      "requisito": "hacer idempotente el reintento de aplicación del mismo lote ya aplicado.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_ciclo_doble_confirmacion_y_reintento_idempotente",
+      "alcance": "Backend; evidencia asociada"
+    },
+    {
+      "id": "008/FR-012",
+      "requisito": "rechazar archivo que exceda límites técnicos configurados; nunca truncar ni importar parcialmente.",
+      "fuente": "specs/008-importacion-csv/spec.md",
+      "componentes": "imports/services.py; acquisition_imports.py",
+      "prueba": "backend/inventory/tests/test_imports.py",
+      "caso": "test_limite_de_bytes",
+      "alcance": "Backend; evidencia asociada"
+    }
+  ]
+}
