@@ -5,15 +5,17 @@ export class ApiError extends Error {
     public code: string,
     message: string,
     public fields?: Record<string, string[]>,
+    public payload?: unknown,
   ) {
     super(message);
   }
 }
 export async function request<T>(
   path: string,
-  options: { body?: Body; signal?: AbortSignal } = {},
+  options: { body?: Body | FormData; signal?: AbortSignal } = {},
 ): Promise<T> {
   const headers: Record<string, string> = {};
+  const form = options.body instanceof FormData;
   if (options.body) {
     let csrf: Response;
     try {
@@ -26,7 +28,7 @@ export async function request<T>(
     if (!csrf.ok)
       throw new Error("No se pudo preparar la sesión. Vuelve a intentarlo.");
     headers["X-CSRFToken"] = (await csrf.json()).csrfToken;
-    headers["Content-Type"] = "application/json";
+    if (!form) headers["Content-Type"] = "application/json";
   }
   const uncertain = options.body
     ? "No se pudo confirmar la operación. Consulta la ficha y el historial antes de repetirla."
@@ -38,7 +40,11 @@ export async function request<T>(
       credentials: "same-origin",
       headers,
       signal: options.signal,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body: form
+        ? (options.body as FormData)
+        : options.body
+          ? JSON.stringify(options.body)
+          : undefined,
     });
   } catch (error) {
     if (
@@ -61,6 +67,7 @@ export async function request<T>(
       data.code || "request_error",
       data.detail || "No se pudo completar la operación.",
       data.fields,
+      data,
     );
   }
   return data;

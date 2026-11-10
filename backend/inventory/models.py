@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -153,3 +155,58 @@ class Movement(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("El historial debe conservarse.")
+
+
+class ImportBatch(models.Model):
+    class Kind(models.TextChoices):
+        ASSETS = "assets", "Activos"
+        LICENSE_LOTS = "license_lots", "Lotes de licencias"
+
+    class State(models.TextChoices):
+        INVALID = "INVALID", "Inválido"
+        PREVIEW_READY = "PREVIEW_READY", "Preview listo"
+        CONFIRMED_ONCE = "CONFIRMED_ONCE", "Confirmado una vez"
+        APPLIED = "APPLIED", "Aplicado"
+        EXPIRED = "EXPIRED", "Vencido"
+        CANCELLED = "CANCELLED", "Cancelado"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    schema_version = models.CharField(max_length=32)
+    state = models.CharField(
+        max_length=20, choices=State.choices, default=State.INVALID
+    )
+    content_hash = models.CharField(max_length=64, blank=True)
+    preview_summary = models.JSONField(default=dict, blank=True)
+    preview_errors = models.JSONField(default=list, blank=True)
+    rows_count = models.PositiveIntegerField(default=0)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="import_batches"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    applied_result = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["actor", "state"]),
+        ]
+
+
+class ImportBatchRow(models.Model):
+    batch = models.ForeignKey(
+        ImportBatch, related_name="rows", on_delete=models.CASCADE
+    )
+    row_number = models.PositiveIntegerField()
+    normalized = models.JSONField()
+
+    class Meta:
+        ordering = ["row_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["batch", "row_number"], name="import_batch_row_unique"
+            )
+        ]

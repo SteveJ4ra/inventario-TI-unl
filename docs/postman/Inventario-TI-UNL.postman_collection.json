@@ -1,0 +1,420 @@
+{
+  "info": {
+    "name": "Inventario TI UNL API",
+    "description": "Colección de endpoints. Importar en Postman o Insomnia. Orden sugerido: 1) CSRF, 2) Login, luego el resto. La cookie de sesión y el header X-CSRFToken se manejan automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = pm.cookies.get('csrftoken') || pm.collectionVariables.get('csrfToken');",
+          "if (token) {",
+          "  pm.request.headers.upsert({ key: 'X-CSRFToken', value: token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "1. Obtener CSRF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/csrf/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "csrf", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('csrfToken', pm.response.json().csrfToken);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "2. Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRFToken", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Usuario autenticado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cerrar sesión",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Activos",
+      "item": [
+        {
+          "name": "Listar activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/?page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", ""],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "condition", "value": "", "disabled": true },
+                { "key": "assignment", "value": "", "disabled": true },
+                { "key": "location", "value": "", "disabled": true },
+                { "key": "custodian", "value": "", "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear activo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell\",\n  \"description\": \"Equipo de prueba\",\n  \"category\": \"portatil\",\n  \"brand\": \"Dell\",\n  \"model\": \"Latitude 5440\",\n  \"serial_number\": \"SN-123456\",\n  \"location\": \"Laboratorio 1\",\n  \"condition\": \"operativo\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de activo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Movimientos de activo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/movements/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", "movements", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Entrega (deliver)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_revision\": 1,\n  \"note\": \"Entrega de equipo\",\n  \"custodian_id\": 1,\n  \"destination\": \"Oficina 2\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/deliver/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", "deliver", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Devolución (return)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_revision\": 2,\n  \"note\": \"\",\n  \"condition\": \"operativo\",\n  \"reception_location\": \"Bodega\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/return/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", "return", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cambio de condición (condition)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_revision\": 2,\n  \"note\": \"\",\n  \"condition\": \"averiado\",\n  \"reason\": \"Pantalla rota\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/condition/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", "condition", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rectificación (rectify)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_revision\": 3,\n  \"note\": \"\",\n  \"movement_id\": 5,\n  \"reason\": \"Corrección de registro\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/1/rectify/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", "1", "rectify", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Custodios",
+      "item": [
+        {
+          "name": "Listar custodios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/custodians/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "custodians", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear custodio",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Juan Perez\",\n  \"email\": \"juan@unl.edu.ec\",\n  \"department\": \"TI\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/custodians/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "custodians", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Catálogos",
+      "item": [
+        {
+          "name": "Opciones para formularios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/options/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "options", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Importación CSV",
+      "item": [
+        {
+          "name": "Descargar plantilla",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/templates/assets/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "templates", "assets", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear vista previa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "kind", "value": "assets", "type": "text" },
+                { "key": "schema_version", "value": "v1", "type": "text" },
+                { "key": "file", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/previews",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "previews"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar lote",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/00000000-0000-0000-0000-000000000000?page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "00000000-0000-0000-0000-000000000000"],
+              "query": [{ "key": "page", "value": "1" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar lote",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content_hash\": \"pega-aqui-el-content_hash\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/00000000-0000-0000-0000-000000000000/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "00000000-0000-0000-0000-000000000000", "confirm"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Aplicar lote",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content_hash\": \"pega-aqui-el-content_hash\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/00000000-0000-0000-0000-000000000000/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "00000000-0000-0000-0000-000000000000", "apply"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar lote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/imports/00000000-0000-0000-0000-000000000000/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "imports", "00000000-0000-0000-0000-000000000000", "cancel"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

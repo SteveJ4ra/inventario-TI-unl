@@ -148,3 +148,13 @@ CSRF_TRUSTED_ORIGINS = [
     if x
 ]
 SESSION_COOKIE_HTTPONLY = True
+
+IMPORT_MAX_BYTES = int(os.environ.get("IMPORT_MAX_BYTES", str(5 * 1024 * 1024)))
+IMPORT_MAX_ROWS = int(os.environ.get("IMPORT_MAX_ROWS", "1000"))
+IMPORT_PREVIEW_TTL_MINUTES = int(
+    os.environ.get("IMPORT_PREVIEW_TTL_MINUTES", "30")
+)
+IMPORT_ADAPTERS = {
+    "assets": "inventory.imports.adapters.UnavailableAssetAdapter",
+    "license_lots": "inventory.imports.adapters.UnavailableLicenseLotAdapter",
+}

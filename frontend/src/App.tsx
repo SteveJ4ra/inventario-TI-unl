@@ -16,6 +16,7 @@ import { AssetForm, CustodianForm } from "./components/Registration";
 import { AssetFacts, Badge, Filters, Inventory } from "./components/Inventory";
 import { Movements } from "./components/Movements";
 import { History } from "./components/History";
+import { Imports } from "./components/Imports";
 const emptyOptions: Options = {
   categories: [],
   conditions: [],
@@ -131,6 +132,7 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
   const [error, setError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
   const [modal, setModal] = useState<"asset" | "person" | null>(null);
+  const [view, setView] = useState<"inventory" | "imports">("inventory");
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -212,13 +214,24 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
         </div>
         <span className="nav-label">ESPACIO DE TRABAJO</span>
         <button
-          className="nav-active"
+          className={view === "inventory" ? "nav-active" : "nav-item"}
           onClick={() => {
+            setView("inventory");
             setSelected(null);
             setModal(null);
           }}
         >
           ▦ <span>Inventario</span>
+        </button>
+        <button
+          className={view === "imports" ? "nav-active" : "nav-item"}
+          onClick={() => {
+            setView("imports");
+            setSelected(null);
+            setModal(null);
+          }}
+        >
+          ▤ <span>Importaciones</span>
         </button>
         <div className="sidebar-bottom">
           <span className="avatar">
@@ -233,9 +246,19 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
       <div className="main-area">
         <header className="topbar">
           <span>
-            Gestión de activos <span className="separator">/</span> Inventario
-            TI
+            Gestión de activos <span className="separator">/</span>{" "}
+            {view === "imports" ? "Importación CSV" : "Inventario TI"}
           </span>
+          <button
+            className="mobile-view"
+            onClick={() => {
+              setView(view === "imports" ? "inventory" : "imports");
+              setSelected(null);
+              setModal(null);
+            }}
+          >
+            {view === "imports" ? "Inventario" : "Importar CSV"}
+          </button>
           <button
             onClick={async () => {
               try {
@@ -250,6 +273,10 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
           </button>
         </header>
         <main className="content">
+          {view === "imports" ? (
+            <Imports />
+          ) : (
+            <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">INVENTARIO TI</span>
@@ -392,6 +419,8 @@ function Workspace({ user, onExit }: { user: User; onExit: () => void }) {
             Universidad Nacional de Loja{" "}
             <span>Inventario de tecnologías de información · Grupo 5</span>
           </footer>
+            </>
+          )}
         </main>
       </div>
     </div>
