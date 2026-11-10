@@ -1,0 +1,45 @@
+---
+title: Backend de inventario TI
+author: Grupo 5
+date: 2026-11-06
+---
+
+::: {.hero}
+Consolidamos el backend de Unidad 1 para registrar activos/adquisiciones, controlar custodia y conservar trazabilidad de novedades, mantenimiento y bajas. El portal reúne especificaciones, decisiones, contratos y comprobaciones del incremento.
+:::
+
+## Problema y objetivo
+
+Un inventario disperso dificulta conocer qué equipo existe, dónde está, quién lo recibió y qué ocurrió durante su vida útil. Buscamos mantener registros coherentes y auditables mediante una API autenticada, evitando cambios contradictorios y preservando antecedentes.
+
+## Alcance delimitado
+
+| Módulo | Resultado |
+|---|---|
+| Acceso | Cuentas individuales, sesión de 30 minutos, CSRF, permisos y límite de intentos. |
+| Activos/adquisición | Código TI, facultad, factura/respaldo compartido, valor individual y edición auditada. |
+| Custodia | Personas sin cuenta, entrega/devolución, condición y rectificación del último movimiento elegible. |
+| Ciclo de vida | Alertas; pérdida/robo, recuperación, mantenimiento iniciado/cerrado e historial. |
+| Bajas | Normal desde Disponible; revisión independiente de otra facultad para No localizado. |
+| Licencias | Lotes finitos por usuario/dispositivo, cantidades/vigencia/remanentes; sin claves. |
+| QR | Enlace interno sin datos personales; ficha protegida tras autenticación. |
+| CSV | Plantillas, validación integral, dos confirmaciones del creador y aplicación atómica. |
+
+Sin integración institucional, traslado independiente, licencias ilimitadas, asignaciones individuales de licencias ni frontend nuevo para todo el backend. La interfaz existente y Swagger tienen propósitos distintos; la demostración usa API real.
+
+## Actores
+
+| Actor | Acceso |
+|---|---|
+| Gestor | Opera inventario y solicita bajas; conserva autoría. |
+| Revisor | Cambia contraseña temporal y decide solicitudes asignadas; otra facultad. |
+| Operador | Administra facultades/revisores, reasigna y cambia facultad con controles. |
+| Custodio | Persona con nombre/correo; participa físicamente, sin inicio de sesión. |
+
+Gestores y operador se provisionan por comando local; revisores desde administración del operador. Sin auto-registro.
+
+## Lectura del portal
+
+[Especificaciones](sdd.qmd), [BPMN](procesos.qmd), [arquitectura](arquitectura.qmd), [API](api.qmd), [seguridad](seguridad.qmd), [validación](validacion.qmd), [operación](operacion.qmd) y [evolución](equipo.qmd).
+
+[Repositorio](https://github.com/SteveJ4ra/inventario-TI-unl/tree/develop). [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.

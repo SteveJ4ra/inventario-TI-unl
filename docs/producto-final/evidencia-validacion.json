@@ -1,0 +1,137 @@
+{
+  "base_develop": "b60f52f52727ea41bc9bacd1e606879647a967cc",
+  "branch": "develop",
+  "scope": "Backend integrado en develop, CI remoto correcto y portal HTTPS publicado",
+  "tests": {
+    "runner": "pytest 9.2.0 / pytest-django 4.14.0",
+    "passed": 378,
+    "subtests_passed": 284,
+    "warnings": 0,
+    "postgresql": "17.11 ICU",
+    "isolated_domain_tests_included": 37
+  },
+  "http": {
+    "checks": 66,
+    "result": "OK",
+    "timestamp_utc": "2026-11-07T02:08:33.078332+00:00",
+    "uid": 10001,
+    "database_role": {
+      "nombre": "inventario_app",
+      "superusuario": false,
+      "crea_bases": false,
+      "crea_roles": false
+    }
+  },
+  "contract": {
+    "openapi": "3.1.0",
+    "paths": 46,
+    "operations": 56,
+    "runtime_equals_export": true,
+    "real_json_responses_validated": 43,
+    "response_schema_errors": 0
+  },
+  "models": {
+    "bpmn_xsd_omg": "2.0.2",
+    "bpmn_valid": true,
+    "structurizr_dsl_valid": true,
+    "plantuml_figures_rendered": 4
+  },
+  "backup": {
+    "project": "inventario-ti-u1-final",
+    "source_database": "inventario_ti",
+    "isolated_restore_database": "restorecheck_87809a0dc3304f90a2ac383beb51b2a8",
+    "tables_verified": 34,
+    "rows_verified": 212,
+    "content_sha256_equal": true,
+    "source_overwritten": false
+  },
+  "migrations": {
+    "exit_code": 0,
+    "result": "No changes detected"
+  },
+  "publication": {
+    "pages": "Publicado y verificado por HTTPS",
+    "github_actions": "success",
+    "method": "HTML generado manualmente desde develop; Pages source gh-pages; main intacta",
+    "url": "https://stevej4ra.github.io/inventario-TI-unl/",
+    "ci_url": "https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951",
+    "validated_develop_commit": "04fa337864ba563c092944174a0368986c217336",
+    "merged_prs": [
+      33,
+      34,
+      35
+    ],
+    "public_pages_checked": 9,
+    "public_https_status": 200
+  },
+  "commands": [
+    "docker compose -p inventario-ti-u1-final --profile test run --rm tests --pytest -q",
+    "docker compose -p inventario-ti-u1-final --profile test run --rm tests makemigrations --check --dry-run",
+    "docker compose -p inventario-ti-u1-final exec -T -e INVENTORY_ALLOW_DEMO_DATA=1 web python deploy/smoke.py",
+    "python deploy/backup_roundtrip.py",
+    "python tools/check_final_artifacts.py",
+    "python tools/validate_openapi.py"
+  ],
+  "artifact_sha256": {
+    "backend/inventory/openapi_contract.py": "33a7eadb22fcd9d4d914f75db551816a0396e96268dd893d7e01225fa8b8f41b",
+    "backend/inventory/urls_v1.py": "cbdb00c2ef633ffef3bc4f4afe4f9825c8563b303c685e2b732fbe471da94625",
+    "backend/inventory/observability.py": "d8384c9f18c559cf8ff89f4bb03a9a87cd2451b0fe66fc291b54bed93d42d29c",
+    "backend/inventory/tests/test_complete_v1.py": "8a41110a633e594d03563ab527dafaa7b4e05ccd83d7e8c9703620f51319dc60",
+    "backend/inventory/management/commands/export_openapi.py": "a7ce682f19e88622954ce19fb7d1e1499f009040c44f3c5f4af4e18e91be4c83",
+    "backend/config/settings.py": "d375fc0fc5306ab8a688c4626988427ea6e42fa5510e0da8ca2049403426c92e",
+    "backend/config/urls.py": "cccb8b332e6317a1921f3a20bfb5c0ebe31e67a74c90f23a046f89b078e507cd",
+    "backend/Dockerfile": "1170096f1024786ac598f8b43b2c6f71f72de7867d7dbadb5248dc72acb1b008",
+    "backend/requirements-test.txt": "25bd814bcb70c27b160f9296461b55176fd606b83b713cdc8a2c9a0e5bf81bc1",
+    "backend/pytest.ini": "030511e65476d444e81a6e17c74db66ffc3197a9e8e2f1372236be9d352f4767",
+    "compose.yaml": "97f166708466c60b32482b38b2ce95db0bf781d2604fbe37efa1d67d3710ea3c",
+    "deploy/healthcheck.py": "cd0b42fedd927d530d1498b4ef47b8f7a54c06851fdf9284fc2e02375aea8b81",
+    "deploy/smoke.py": "985b033a28584c4ea464defc74d30be8e22f801a095719cb2ae4db51cc1ea101",
+    "deploy/test_runner.py": "fe8d2ef3287123ac2744b3ae2444f2bc8c15a166f269b8a08fab46b08049729e",
+    "deploy/backup_roundtrip.py": "3edec8cb8bd528292679affa91c5587ec2120cc1951e8ba8cf07afc400482dca",
+    "docs/producto-final/openapi.json": "f2c1400164e8d90da89eb58468b8332d5ecbe4cf9928d60afeac724b2e52b742",
+    "docs/producto-final/custodia.bpmn": "e3fc63c562a991c053fbddffaa1e10a4f5e62470354371a89b36c6ecb642cfc3",
+    "docs/producto-final/arquitectura.dsl": "d5a30f741c0dcd66dcc7f2260c9f8179ae22987e5da8ec05b4fbd7870c0875a9",
+    "deploy/prepare_linux_secret_access.sh": "6c2aaa5140de8a9cf8fc7ae17180a1960862be2261418c749184bc222da6725f"
+  },
+  "linux_secret_access": {
+    "verified": true,
+    "app_uid": 10001,
+    "postgres_uid": 999,
+    "owner_preserved": true,
+    "world_readable": false,
+    "unrelated_uid_denied": true,
+    "app_access": {
+      "django_secret_key": true,
+      "db_password": true,
+      "db_admin_password": false,
+      "test_db_password": true
+    },
+    "postgres_access": {
+      "django_secret_key": false,
+      "db_password": true,
+      "db_admin_password": true,
+      "test_db_password": true
+    }
+  },
+  "portal": {
+    "quarto": "1.11.9",
+    "render_environment": "Linux/Docker sin red",
+    "pages": 9,
+    "local_links_checked": 395,
+    "broken_links": 0,
+    "broken_images": 0,
+    "javascript_errors": 0,
+    "desktop_and_mobile_reviewed": true,
+    "swagger_operations_rendered": 56,
+    "live_authenticated_asset_rows": 1,
+    "demo_account_deactivated": true
+  },
+  "pdf_review": {
+    "pages": 23,
+    "text_outside_margins": 0,
+    "orphan_headings": 0,
+    "code_literals_valid": true,
+    "visual_review": "Páginas completas y figuras revisadas"
+  },
+  "artifact_hash_basis": "SHA-256 de los bytes versionados en Git (git show HEAD:ruta); los finales de línea del checkout Windows pueden diferir."
+}

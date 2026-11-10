@@ -1,0 +1,36 @@
+# Entornos virtuales
+.venv/
+venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos locales
+.vscode/
+# Frontend y resultados locales
+node_modules/
+dist/
+coverage/
+*.log
+*.tmp
+*.egg-info/
+
+# Despliegue local: secretos, estáticos y resultados no versionados
+deploy/.secrets/
+deploy/results/
+backend/staticfiles/
+
+# Respaldos de base: contienen datos y no se versionan
+*.dump
+
+# Portal generado; se publica como artefacto de Pages
+portal/_site/
+portal/.quarto/
+portal/recursos/

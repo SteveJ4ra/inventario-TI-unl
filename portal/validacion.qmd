@@ -1,0 +1,50 @@
+---
+title: Pruebas y evidencia reproducible
+---
+
+## Estrategia
+
+Comprobamos reglas unitarias, políticas de aprobación, parser CSV, servicios/transacciones, endpoints, contratos, permisos, CSRF, sesión y concurrencia sobre PostgreSQL. Las pruebas aisladas de dominio y las integradas se ejecutan juntas con pytest/pytest-django. No se sustituyen por respuestas simuladas del incremento.
+
+## Resultados del ensayo final
+
+El [resumen verificable](recursos/docs/producto-final/evidencia-validacion.json) conserva conteos, comandos y hashes de los artefactos. La matriz de 104 RF enlaza pruebas/componentes; no equivale a una medición porcentual de cobertura de líneas.
+
+| Comprobación | Resultado verificado |
+|---|---|
+| Suite pytest-django | 378 pruebas y 284 subcasos; suite consolidada sin fallos. |
+| Contrato | 46 rutas y 56 operaciones; cobertura exacta de métodos y referencias. |
+| OpenAPI | Documento 3.1 válido; 43 respuestas JSON reales comprobadas contra sus esquemas. |
+| HTTP real | Registro/consulta, entrega/devolución, adquisición, edición, mantenimiento, novedad, baja/rectificación, licencias y CSV sobre Gunicorn. |
+| Seguridad HTTP | Rechazo anónimo/CSRF, vencimiento de sesión, cinco fallos y 429; cuenta de ensayo desactivada al terminar. |
+| BPMN | XML/DI válidos frente a XSD oficial OMG 2.0.2; compuertas y referencias comprobadas. |
+| Arquitectura | DSL validado y cuatro diagramas PlantUML renderizados. |
+| Respaldo | 34 tablas y 212 filas idénticas en cantidad y SHA-256 después de restaurar en una base temporal propia. |
+| Migraciones | Comprobación de cambios de modelo/migración ejecutada sobre testdb. |
+
+Integramos los PR [#33](https://github.com/SteveJ4ra/inventario-TI-unl/pull/33), [#34](https://github.com/SteveJ4ra/inventario-TI-unl/pull/34) y [#35](https://github.com/SteveJ4ra/inventario-TI-unl/pull/35) en develop. El [CI posterior al merge](https://github.com/SteveJ4ra/inventario-TI-unl/actions/runs/42335362951) completó 378 pruebas y 284 subcasos, migraciones, validadores y Quarto. [Portal técnico publicado](https://stevej4ra.github.io/inventario-TI-unl/). Pages sirve documentación estática; el backend funciona con Docker Compose local.
+
+## Hallazgos y correcciones
+
+| Hallazgo | Corrección | Verificación |
+|---|---|---|
+| v1/OpenAPI cubría solo el flujo base | Compartir todas las vistas y completar operaciones/tipos. | Comparación exacta de rutas y métodos. |
+| Identificadores de campos ReadOnly aparecían como texto | Usar metadatos de relación/modelo para tipos y nulabilidad. | Respuestas reales y ContractClient con JSON Schema. |
+| Diccionarios de historial restringidos a texto | Conservar instantáneas JSON extensibles; especializar objetos conocidos. | Validación de historial compuesto. |
+| Caché de pytest sin permisos en imagen limitada | Deshabilitar el proveedor de caché en el entorno efímero. | Nueva suite sin advertencia de caché. |
+| Orden de incoming/outgoing no admitido por BPMN XSD | Agrupar entradas antes de salidas, conforme al esquema. | XMLSchema.assertValid y check_final_artifacts. |
+| Portal C2 podía introducir un alias implícito | Enlazar el componente API ya declarado. | Nuevo render y revisión de figuras. |
+
+## Reproducción
+
+Seguir [operación](operacion.qmd). Para validadores adicionales: instalar `tools/requirements-validation.txt`, ejecutar `python tools/check_final_artifacts.py` y `python tools/validate_openapi.py`. `export_openapi` imprime el contrato del runtime; la opción --runtime permite compararlo con el archivo versionado.
+
+Las muestras de respuesta se capturan solo con datos ficticios mediante INVENTORY_CAPTURE_CONTRACT=1 y se guardan temporalmente; no incluyen respuestas CSRF ni cuerpos de autenticación. `tools/validate_contract_samples.py --samples archivo.json` verifica sus tipos/códigos sin publicarlas.
+
+## Permisos de secretos en Linux
+
+La ACL del perfil Linux permite lectura solo a los UID de aplicación/PostgreSQL. La prueba aislada conserva propietario, niega lectura a otro UID y mantiene los secretos sin acceso público. CI ejecuta esa preparación antes de las pruebas. Docker Desktop/Windows conserva su mecanismo propio de archivos montados.
+
+## Límites de la evidencia
+
+Las pruebas no son pentesting externo ni prueba de carga. No acreditan integración institucional, producción pública, TLS local ni entrega presencial. QR descarga el enlace protegido; su navegación final necesita la aplicación existente y una URL alcanzable. Revisamos el portal localmente y comprobamos su acceso HTTPS después de publicar.

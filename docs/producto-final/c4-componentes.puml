@@ -1,0 +1,19 @@
+@startuml
+title C3 - Componentes del backend
+top to bottom direction
+rectangle "API y serialización\nviews, auth_views\nretirement_api, imports.views\nserializers" as api
+rectangle "Permisos y sesión\npermissions, auth" as auth
+rectangle "Servicios de aplicación\nservices, acquisition_services\nretirement_workflow, imports.services" as services
+rectangle "Modelos y reglas persistentes\nmodels, migraciones" as models
+rectangle "Adaptador v1\nurls_v1, api_v1" as v1
+database PostgreSQL as db
+v1 --> api : Enruta y adapta respuestas
+api --> auth : Comprueba acceso
+api --> services : Solicita operaciones
+api --> models : Lee proyecciones de consulta
+services --> models : Consulta y actualiza
+models --> db : ORM, restricciones, transacciones
+rectangle "Observabilidad\nRequestLoggingMiddleware + readiness" as obs
+obs ..> v1 : Correlaciona solicitudes
+obs --> db : SELECT 1 (disponibilidad)
+@enduml

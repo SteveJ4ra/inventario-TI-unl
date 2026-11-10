@@ -1,0 +1,49 @@
+---
+title: Evolución y contribuciones
+---
+
+## Evolución
+
+| Etapa | Resultado |
+|---|---|
+| Semana 1 | Problema, actores, alcance, entorno y SDD. |
+| Semana 2 | Requisitos, historias, aceptación y trazabilidad. |
+| Semana 3 | C4/UML, ADR, API base y página con sondeo. |
+| Semana 4 | Amenazas, permisos, límite de intentos y sesión absoluta. |
+| Semana 5 | Integración, Docker/PostgreSQL, dossier y matriz de 104 RF. |
+| Producto final | Contrato v1 completo, BPMN, Quarto y observabilidad; consolidación comprobada localmente y por CI remoto. |
+
+## Aportes integrados verificables
+
+| Integrante | Componente | PR | Decisión/comprobación |
+|---|---|---|---|
+| Alex Sigcho | Fichas/adquisiciones/facultades 003 | [#18](https://github.com/SteveJ4ra/inventario-TI-unl/pull/18) | Factura compartida, valor por activo, corrección auditada y concurrencia. |
+| Yandri Piscocama | Ciclo de vida 004; despliegue S5 | [#17](https://github.com/SteveJ4ra/inventario-TI-unl/pull/17), [#32](https://github.com/SteveJ4ra/inventario-TI-unl/pull/32) | Alertas/condición separadas, mantenimiento, perfiles Docker. |
+| Steven Jumbo | Bajas/aprobación 005; dossier | [#20](https://github.com/SteveJ4ra/inventario-TI-unl/pull/20), [#30](https://github.com/SteveJ4ra/inventario-TI-unl/pull/30) | Independencia por facultad, políticas y contratos de persistencia. |
+| Anderson Coello | Licencias 006; API S3 | [#16](https://github.com/SteveJ4ra/inventario-TI-unl/pull/16), [#25](https://github.com/SteveJ4ra/inventario-TI-unl/pull/25) | Enteros, vigencia, remanentes y pruebas de concurrencia. |
+| Pedro Jiménez | QR 007; catálogo/evidencia S5 | [#15](https://github.com/SteveJ4ra/inventario-TI-unl/pull/15), [#31](https://github.com/SteveJ4ra/inventario-TI-unl/pull/31) | Enlaces sin datos personales y configuración autenticada. |
+| Emilio Gálvez | CSV 008; documentación S3 | [#14](https://github.com/SteveJ4ra/inventario-TI-unl/pull/14), [#26](https://github.com/SteveJ4ra/inventario-TI-unl/pull/26) | Dos confirmaciones, atomicidad, idempotencia y proveedores. |
+
+Los aportes anteriores conservan sus autores y PR originales. La consolidación final se incorporó mediante los PR #33 (API/operación), #34 (modelado/SDD/informe) y #35 (Quarto/CI), publicados desde SteveJ4ra.
+
+## Reflexiones del dossier compartido
+
+**Alex.** Separar documento y línea permite vincular una factura a varios activos sin repetir el total. Corregirla exige controlar las revisiones de todos los activos afectados y conservar sus antecedentes.
+
+**Yandri.** Condición, disponibilidad y novedad no son sinónimos. Un rayón puede mantener el activo operativo con alerta, mientras una pérdida exige conservar referencias; el mantenimiento activo debe bloquear entregas.
+
+**Steven.** Autenticarse no autoriza a aprobar cualquier baja. Separar solicitud y decisión y comprobar facultad/revisor hace explicable quién actuó, qué se canceló y por qué, sin borrar la historia.
+
+**Anderson.** Un remanente matemático no equivale a licencia vigente. Mantener compradas menos en uso y mostrar Vencido conserva ambos hechos; enteros/fechas se validan también al editar/importar.
+
+**Pedro.** Un QR identifica una ficha, no concede permiso. El destino debe venir de configuración confiable y ser alcanzable desde el dispositivo real; consultar sigue exigiendo sesión.
+
+**Emilio.** Un lote válido al cargar puede entrar en conflicto después. Hash, mismo gestor, doble confirmación y revalidación transaccional permiten todo o nada y repetición sin duplicados.
+
+## Uso de IA y fuentes
+
+Utilizamos Codex para apoyar análisis, código, documentación, diagramas y pruebas. Verificamos resultados con contratos, PostgreSQL, Docker, validación de modelos y revisión visual; mantenemos la responsabilidad de explicar las decisiones.
+
+Fuentes primarias: [Django](https://docs.djangoproject.com/en/5.2/), [DRF](https://www.django-rest-framework.org/), [OpenAPI](https://spec.openapis.org/oas/v3.1.0), [OMG BPMN](https://www.omg.org/spec/BPMN/2.0.2/), [C4](https://c4model.com/), [Structurizr](https://docs.structurizr.com/dsl), [PlantUML](https://plantuml.com/), [pytest-django](https://pytest-django.readthedocs.io/), [Quarto/Pages](https://quarto.org/docs/publishing/github-pages.html), [pg_dump](https://www.postgresql.org/docs/17/app-pgdump.html).
+
+Referencias de permisos del despliegue: [Docker Compose: secretos](https://docs.docker.com/reference/compose-file/services/#secrets) y [setfacl](https://man7.org/linux/man-pages/man1/setfacl.1.html).

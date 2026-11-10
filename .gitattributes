@@ -1,0 +1,6 @@
+
+# Scripts montados en contenedores Linux
+deploy/*.sh text eol=lf
+
+# Esquemas normativos: conservar bytes para verificar SHA-256 de la fuente OMG.
+tools/standards/bpmn/*.xsd -text -whitespace
